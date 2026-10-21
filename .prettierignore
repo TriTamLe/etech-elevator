@@ -1,0 +1,6 @@
+package-lock.json
+pnpm-lock.yaml
+yarn.lock
+worker-configuration.d.ts
+src/routeTree.gen.ts
+drizzle/meta

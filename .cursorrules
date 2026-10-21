@@ -1,0 +1,7 @@
+# shadcn instructions
+
+This project uses yarn 1. Install shadcn components with the latest CLI (it detects yarn from yarn.lock):
+
+```bash
+npx shadcn@latest add button
+```

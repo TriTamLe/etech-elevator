@@ -1,0 +1,23 @@
+node_modules
+.DS_Store
+dist
+dist-ssr
+*.local
+.env
+.nitro
+.tanstack
+.wrangler
+.output
+.vinxi
+__unconfig*
+todos.json
+
+# Private reference material (client DWG + sample PDFs)
+.external
+
+# Local tooling output
+.verify
+backups
+tools/extract-symbols/.venv
+tools/extract-symbols/.out
+.claude/settings.local.json
