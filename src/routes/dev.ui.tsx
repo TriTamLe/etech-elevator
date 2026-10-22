@@ -2,6 +2,8 @@ import * as React from 'react'
 import { Link, createFileRoute, notFound } from '@tanstack/react-router'
 import { toast } from 'sonner'
 
+import { ICON_MEANINGS, Icons } from '#/components/app/icons'
+import type { IconName } from '#/components/app/icons'
 import { SaveStatus } from '#/components/app/save-status'
 import {
   Accordion,
@@ -164,6 +166,75 @@ function UiGallery() {
       </Section>
 
       <Section
+        title="Biểu tượng"
+        note="Lucide (ISC, miễn phí) — một bộ duy nhất cho cả app. Cỡ 16 / 20 / 24, nét 2px, màu theo chữ. Lấy từ #/components/app/icons."
+      >
+        <ul className="grid grid-cols-2 gap-px overflow-hidden rounded-(--radius-card) border border-(--color-rule) bg-(--color-rule) sm:grid-cols-4 lg:grid-cols-6">
+          {(Object.keys(Icons) as Array<IconName>).map((name) => {
+            const Icon = Icons[name]
+            return (
+              <li
+                key={name}
+                className="grid min-w-0 gap-2 bg-(--color-paper) p-3 text-(--color-ink)"
+              >
+                <Icon className="size-5" aria-hidden="true" />
+                <span className="truncate text-(length:--text-sm)">
+                  {ICON_MEANINGS[name]}
+                </span>
+                <code className="truncate text-(length:--text-xs) text-(--color-ink-3)">
+                  {name}
+                </code>
+              </li>
+            )
+          })}
+        </ul>
+
+        <div className="mt-6 grid gap-6 sm:grid-cols-3">
+          <State name="cỡ 16 · 20 · 24">
+            <div className="flex items-end gap-4 text-(--color-ink)">
+              <Icons.downloadPdf className="size-4" aria-hidden="true" />
+              <Icons.downloadPdf className="size-5" aria-hidden="true" />
+              <Icons.downloadPdf className="size-6" aria-hidden="true" />
+            </div>
+          </State>
+          <State name="màu theo chữ">
+            <div className="flex items-center gap-4">
+              <Icons.search
+                className="size-5 text-(--color-ink-3)"
+                aria-hidden="true"
+              />
+              <Icons.success
+                className="size-5 text-(--color-ok)"
+                aria-hidden="true"
+              />
+              <Icons.warning
+                className="size-5 text-(--color-danger)"
+                aria-hidden="true"
+              />
+              <Icons.create
+                className="size-5 text-(--color-accent)"
+                aria-hidden="true"
+              />
+            </div>
+          </State>
+          <State name="trong nút · nút chỉ có icon">
+            <div className="flex flex-wrap items-center gap-2">
+              <Button>
+                <Icons.create aria-hidden="true" />
+                Tạo dự án
+              </Button>
+              <Button variant="outline" size="icon" aria-label="Thêm thao tác">
+                <Icons.more aria-hidden="true" />
+              </Button>
+              <Button variant="ghost" size="icon" aria-label="Xóa">
+                <Icons.delete aria-hidden="true" />
+              </Button>
+            </div>
+          </State>
+        </div>
+      </Section>
+
+      <Section
         title="Nút"
         note="Hover, focus (Tab) và nhấn: thao tác trực tiếp trên nút ở cột đầu."
       >
@@ -322,7 +393,7 @@ function UiGallery() {
         </div>
       </Section>
 
-      <Section title="Accordion, bảng, hộp thoại, bảng lệnh">
+      <Section title="Accordion, bảng, hộp thoại">
         <Accordion type="single" collapsible defaultValue="b">
           <AccordionItem value="a">
             <AccordionTrigger>A. Thông tin hồ sơ</AccordionTrigger>

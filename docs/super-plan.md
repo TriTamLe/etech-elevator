@@ -299,6 +299,7 @@ Yêu cầu: chữ thân trên nền giấy đạt tương phản **≥ 4.5:1**, 
 - Mới: `field.tsx`, `app-shell.tsx` (nav N13), `command-palette.tsx` (⌘K + `useRegisterCommands`), `save-status.tsx`, trang 404 tiếng Việt, `/dev/ui` (file phẳng `dev.ui.tsx` theo quy ước mới), `design.md`, `.hallmark/log.json`.
 - Đã chụp kiểm tra ở 320 / 375 / 414 / 1280px: không cuộn ngang, dấu tiếng Việt không bị cắt.
 - **Chưa kiểm bằng tay:** Tab qua các control trên trình duyệt thật — làm đầu buổi P2.
+- **Biểu tượng (22/10):** chốt **Lucide** (`lucide-react`, ISC, miễn phí) làm bộ duy nhất; bộ từ vựng icon của app ở `src/components/app/icons.ts`; `/dev/ui` có mục "Biểu tượng" (24 icon, cỡ 16/20/24, màu, trong nút).
 - **Sửa sau review (22/10):** bỏ header (`app-shell.tsx`), bảng lệnh ⌘K (`command-palette.tsx`, `ui/command.tsx`, gói `cmdk`) và logo E-TECH. Trang `/` thành masthead DTP căn giữa + khối danh sách gọn (ô tìm + nút Tạo dự án gắn liền). Thêm `brand-mark.tsx`; 404 cũng không còn header.
 - **Lưu ý:** chunk của `/dev/ui` vẫn có trong bundle client, nhưng ở production route bị chặn bằng `notFound()` trước khi tải.
 
@@ -348,13 +349,33 @@ Yêu cầu: chữ thân trên nền giấy đạt tương phản **≥ 4.5:1**, 
 
 - [ ] **`src/server/projects.ts`:** viết các `createServerFn`: `listProjects`, `getProject`, `createProject(preset)`, `duplicateProject`, `renameProject`, `saveProject(params)`, `saveVersion(note)`, `listVersions`, `deleteProject` (xóa mềm) và `restoreProject`.
   - Kiểm tra đầu vào bằng Zod ở phía server.
-  - Chỉ đọc/ghi JSON nhỏ, mỗi request dưới 10 ms CPU.
+  - Chỉ đọc/ghi JSON nhỏ, mỗi request dưới 10 ms CPU. `listProjects` chỉ trả `id, name, address, updatedAt` (lấy từ `params` lúc lưu hoặc cột riêng), **không** trả cả khối `params`.
   - ID tạo bằng `crypto.randomUUID()`.
-- [ ] **`src/features/projects/queries.ts`:** dùng `queryOptions` và mutation; đổi tên và xóa có cập nhật lạc quan (optimistic).
+- [ ] **`src/features/projects/queries.ts`:** dùng `queryOptions` và mutation; đổi tên và xóa có cập nhật lạc quan (optimistic). Loader của route `/` gọi `ensureQueryData` để SSR có sẵn dữ liệu (không hiện spinner ở lần tải đầu).
+- [ ] **Bảng dự án bằng TanStack Table** (`yarn add @tanstack/react-table`, bản 9.x; nạp Intent skill của gói trước khi viết). Quy tắc chung nằm trong `CLAUDE.md` › Data tables và `design.md` › Data tables.
+  - **Cột:** Tên công trình (link mở dự án) · Địa chỉ · Cập nhật lúc (mono, `vi-VN`, ví dụ "14:32 · 22/10") · Thao tác (menu `Icons.more`: Mở, Nhân bản, Đổi tên, Xuất JSON, Xóa).
+  - **Sắp xếp:** mặc định theo cập nhật mới nhất; bấm tiêu đề Tên / Cập nhật để đổi chiều, có `aria-sort` và icon `sortAsc/sortDesc`.
+  - **Tìm kiếm:** ô tìm trong hàng công cụ (đã có ở `/`); debounce 250 ms bằng `src/lib/use-debounced-value.ts`; so khớp không dấu (`đ`→`d`, bỏ dấu) trên tên + địa chỉ; giữ trong search param `?q=` (`validateSearch` bằng Zod) để tải lại vẫn còn; nút `Icons.clear` để xóa; phím Esc xóa ô tìm.
+  - **Loading & UX:**
+    - Lần đầu: dữ liệu có sẵn từ SSR. Khi client tải lại: 5 dòng skeleton cao đúng bằng dòng thật (không giật bố cục).
+    - Refetch nền: giữ dòng cũ (`placeholderData: keepPreviousData`), chỉ hiện chỉ báo nhỏ ở hàng công cụ.
+    - Mutation: dòng đang xử lý mờ đi và khóa menu; nút trong hộp thoại có `loading`.
+    - Đổi tên: sửa ngay tại dòng (Enter lưu, Esc hủy) hoặc hộp thoại trên mobile; cập nhật lạc quan, lỗi thì trả lại tên cũ + toast.
+    - Xóa: xóa mềm ngay, toast "Đã xóa … — Hoàn tác" (sonner action, ~6 s), không hộp xác nhận.
+    - Lỗi tải: `Alert` ngay trong khối danh sách + nút "Thử lại".
+    - Trạng thái rỗng (chưa có dự án) khác trạng thái không khớp tìm kiếm ("Không có dự án khớp "…"" + nút xóa tìm kiếm).
+  - **Responsive, cuộn và kích thước:**
+    - ≥ 640 px: `table-fixed` + `colgroup` cố định (Cập nhật ~128 px, Thao tác 48 px, Địa chỉ ~35%, Tên phần còn lại); dòng cao 48 px (52 px khi `pointer: coarse`).
+    - < 640 px: cùng `table.getRowModel()` nhưng render dạng danh sách xếp chồng: tên (tối đa 2 dòng) · địa chỉ + thời gian (1 dòng meta) · nút thao tác 44 px. Không có bản dữ liệu thứ hai.
+    - Tên/địa chỉ dài: `min-w-0` + `truncate`/`line-clamp-2`, tên đầy đủ trong `title`; dấu tiếng Việt không bị cắt (line-height ≥ 1.55).
+    - Trang cuộn tự nhiên, không có khung cuộn lồng; hàng công cụ `sticky top-0` (nền paper, kẻ dưới) khi danh sách dài; `scrollbar-gutter: stable` để không xô ngang khi xuất hiện thanh cuộn.
+    - Không phân trang, không ảo hóa (vài trăm dự án là nhiều). Vượt ~500 dòng thì cân nhắc `@tanstack/react-virtual`.
+    - Kiểm ở 320 / 375 / 414 / 768 / 1280 px: không cuộn ngang, menu thao tác không tràn màn hình.
+  - **Bàn phím:** Tab qua ô tìm → nút Tạo → từng dòng (link tên, nút thao tác); menu điều khiển bằng phím mũi tên.
 - [ ] **Route `/`** dựng bằng giao diện P1 theo mục 3.5:
-  - Bảng dự án, tìm kiếm phía client.
-  - Hộp thoại "Tạo dự án" chọn 1 trong 2 bộ mẫu.
-  - Nhập dự án từ file JSON.
+  - Bảng dự án như trên.
+  - Hộp thoại "Tạo dự án" chọn 1 trong 2 bộ mẫu (`PRESETS` trong `src/domain/presets`).
+  - Nhập dự án từ file JSON (chạy `migrate`).
   - Trạng thái rỗng.
 - [ ] **Route `/projects/$id`:** khung màn soạn với `ssr: false`; nạp dự án, hiển thị tên và trạng thái lưu.
 

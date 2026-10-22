@@ -46,6 +46,17 @@ to it. Amend intentionally — the file is the rule.
 - Secondary · `outline` (rule-2 border on paper) or `ghost` · same radius
 - States · default · hover · focus-visible (instant 2 px outline) · active (1 px press) · disabled (0.55) · loading (spinner keeps width) · error (aria-invalid) · success (data-state)
 
+## Icons
+- **Lucide** (`lucide-react`, ISC, free) — the only icon set. Same geometric 24-grid line voice as Be Vietnam Pro; already used by every shadcn primitive.
+- App code imports from `src/components/app/icons.ts` (`Icons.create`, `Icons.duplicate`…): one glyph per action, never two icons for the same verb.
+- Sizes 16 / 20 / 24 only (`size-4/5/6`; 14 px is allowed only inside a 16 px checkbox). Lucide's default 2 px stroke. Colour via `currentColor`; accent only on the one primary CTA.
+- Icon-only buttons need `aria-label`; decorative icons get `aria-hidden`. No emoji as icons.
+
+## Data tables (project list)
+- TanStack Table (headless) rendered with `components/ui/table`. Search is debounced, accent-insensitive, kept in `?q=`.
+- Loading = skeleton rows of the real row height (no layout shift); refetch = quiet indicator, never a blanking spinner.
+- ≥ 640 px: fixed-layout table, name column flexes and truncates. < 640 px: the same row model as a stacked list. Never horizontal scroll at 320 px; the page scrolls, not an inner box.
+
 ## Motion stance
 - Near-silent: dialog fade + 8 px rise, link underline grow. No transition-all, no bounce.
 - Reduced-motion fallback · durations collapse to 1 ms.

@@ -37,6 +37,18 @@ Package manager is **yarn 1** — never run `npm install` / `pnpm` (no extra loc
 
 Hallmark **Cobalt** recoloured with the DTP logo palette (navy `oklch(35.6% 0.083 249)`, one blue signal accent). Fonts: Be Vietnam Pro (UI) + JetBrains Mono (labels/numbers); Tinos only inside drawings. All colours/fonts come from tokens (`src/tokens.css`, set up in P1) — no inline hex/OKLCH. Every interactive control ships all 8 states; Vietnamese needs body line-height ≥ 1.55. Details: `docs/super-plan.md` §3.
 
+### Icons
+
+- One icon set: **Lucide** (`lucide-react`). App code imports from `#/components/app/icons` (`Icons.create`, `Icons.delete`, …); add a new action there before using it. Sizes `size-4/5/6` only, default stroke, `currentColor`, `aria-label` on icon-only buttons. No other icon library, no emoji.
+
+### Data tables
+
+- Use **TanStack Table** (`@tanstack/react-table`, headless; load its Intent skill first) with `components/ui/table`. Don't hand-roll sort/filter logic.
+- Search: debounce ~250 ms (`useDebouncedValue` in `src/lib/`), diacritic-insensitive (`đ`→`d`, strip marks), state in the URL search param `q`.
+- Loading/UX: skeleton rows at real row height; keep old rows while refetching (`placeholderData`); per-row pending state on mutations; optimistic rename/delete with an Undo toast; inline error + "Thử lại"; separate empty vs no-match states.
+- Responsive: `table-fixed` + explicit column widths ≥ 640 px; < 640 px render the same rows as a stacked list (44 px targets). Long Vietnamese names truncate with `min-w-0` + full name in `title`. No horizontal page scroll at 320 px, no nested scroll container, no `100vh` traps.
+- List endpoints return only list columns (never the `params` blob) to stay under the 10 ms CPU budget.
+
 ## Assets & private files
 
 - `public/brand/*.webp` — served logo: DTP on drawings and in the app; `public/favicon.ico` = DTP. PNG/ICO masters (incl. unused E-TECH) live in `assets/brand/`.

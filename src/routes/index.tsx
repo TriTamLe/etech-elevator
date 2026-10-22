@@ -1,8 +1,8 @@
 import * as React from 'react'
 import { createFileRoute } from '@tanstack/react-router'
-import { FolderOpenIcon, PlusIcon, SearchIcon } from 'lucide-react'
 
 import { BrandMark } from '#/components/app/brand-mark'
+import { Icons } from '#/components/app/icons'
 import { Button } from '#/components/ui/button'
 import { Input } from '#/components/ui/input'
 import {
@@ -32,7 +32,7 @@ function ProjectsPage() {
       >
         <div className="flex gap-2 border-b border-(--color-rule) p-3">
           <div className="relative min-w-0 flex-1">
-            <SearchIcon
+            <Icons.search
               className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-(--color-ink-3)"
               aria-hidden="true"
             />
@@ -53,7 +53,7 @@ function ProjectsPage() {
                 className="shrink-0 rounded-(--radius-control)"
               >
                 <Button disabled aria-label="Tạo dự án">
-                  <PlusIcon aria-hidden="true" />
+                  <Icons.create aria-hidden="true" />
                   <span className="hidden sm:inline">Tạo dự án</span>
                 </Button>
               </span>
@@ -63,7 +63,7 @@ function ProjectsPage() {
         </div>
 
         <div className="grid place-items-center gap-2 px-6 py-10 text-center">
-          <FolderOpenIcon
+          <Icons.empty
             className="size-6 text-(--color-ink-3)"
             aria-hidden="true"
           />
