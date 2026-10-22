@@ -268,30 +268,39 @@ Yêu cầu: chữ thân trên nền giấy đạt tương phản **≥ 4.5:1**, 
 
 **Mục tiêu:** có token, font, các component cơ bản đủ 8 trạng thái, khung app và bảng lệnh ⌘K, sẵn sàng cho P3 và P4.
 
-- [ ] **`src/tokens.css`**:
+- [x] **`src/tokens.css`**:
   - Đầy đủ token ở mục 3.3 và 3.4, cùng thang khoảng cách 4pt (`--space-*`), thang chữ (`--text-*`), bo góc (`--radius-control: 6px`, `--radius-card: 10px`), easing (`--ease-out`, `--ease-in`, `--ease-in-out`) và thời lượng (`--dur-*`).
   - Dòng đầu là dấu `/* Hallmark · ... */`.
-- [ ] **`src/styles.css`** (chỉ bổ sung, không xóa nền tảng):
+- [x] **`src/styles.css`** (chỉ bổ sung, không xóa nền tảng):
   - Giữ `@import 'tailwindcss'`, `@plugin`, `tw-animate-css`.
   - Bỏ import Google Fonts (Fraunces/Manrope) và các class demo (`island-shell`, `feature-card`, `body::before`…).
   - Ánh xạ token Hallmark sang biến của shadcn (`--background`, `--foreground`, `--primary`, `--ring`, `--border`…) và vào `@theme inline`.
   - Đặt `html, body { overflow-x: clip }`.
-- [ ] **Font:**
+- [x] **Font:**
   - `yarn add @fontsource/be-vietnam-pro @fontsource-variable/jetbrains-mono`, import vào root.
   - `--font-display` và `--font-body` = Be Vietnam Pro; `--font-mono` = JetBrains Mono.
   - Line-height chuẩn theo mục 3.4.
-- [ ] **Component shadcn:** cài thêm `accordion dialog command table tabs tooltip sonner badge radio-group checkbox separator scroll-area dropdown-menu alert`. Chỉnh lại cho đủ 8 trạng thái, bo góc 6px, viền mảnh.
-- [ ] **Dọn component:** dùng chung một hàm `cn` (`#/lib/utils`), gỡ gói npm `cn` nếu không còn dùng; chạy `yarn format` cho `components/ui/*`.
-- [ ] **Khung app `src/components/app/`:**
+- [x] **Component shadcn:** cài thêm `accordion dialog command table tabs tooltip sonner badge radio-group checkbox separator scroll-area dropdown-menu alert`. Chỉnh lại cho đủ 8 trạng thái, bo góc 6px, viền mảnh.
+- [x] **Dọn component:** dùng chung một hàm `cn` (`#/lib/utils`), gỡ gói npm `cn` nếu không còn dùng; chạy `yarn format` cho `components/ui/*`.
+- [x] **Khung app `src/components/app/`:**
   - `app-shell.tsx`: thanh trên cùng có viền, logo E-TECH, tên app, nút ⌘K, nút chính.
   - `command-palette.tsx`: mở bằng ⌘K hoặc Ctrl+K, điều khiển bằng bàn phím.
   - `save-status.tsx`: chữ trạng thái kiểu mono.
-- [ ] **Trang mẫu `/dev/ui`:** hiển thị từng control ở cả 8 trạng thái để kiểm tra bằng mắt.
-- [ ] **Kiểm tra:** tương phản màu (≥ 4.5:1 cho chữ, ≥ 3:1 cho focus); bố cục ở 320/375/414/768px; `prefers-reduced-motion`.
-- [ ] **Khóa hệ thống:** tạo `design.md` ở gốc dự án (Hallmark "lock the system") để mọi màn sau dùng chung hệ thống. Ghi `.hallmark/log.json`.
-- [ ] **Slop test Hallmark:** mọi cửa kiểm áp dụng phải qua.
+- [x] **Trang mẫu `/dev/ui`:** hiển thị từng control ở cả 8 trạng thái để kiểm tra bằng mắt.
+- [x] **Kiểm tra:** tương phản màu (≥ 4.5:1 cho chữ, ≥ 3:1 cho focus); bố cục ở 320/375/414/768px; `prefers-reduced-motion`.
+- [x] **Khóa hệ thống:** tạo `design.md` ở gốc dự án (Hallmark "lock the system") để mọi màn sau dùng chung hệ thống. Ghi `.hallmark/log.json`.
+- [x] **Slop test Hallmark:** mọi cửa kiểm áp dụng phải qua.
 
 **Tiêu chí xong:** `/dev/ui` hiển thị đúng ở cả 4 độ rộng; không còn class của template; slop test qua; có `design.md`.
+
+**Kết quả P1 (22/10/2026):**
+- Token ở `src/tokens.css` (đã kiểm tương phản WCAG: chữ ≥ 4.5:1, viền control `rule-strong` 3.48:1, vòng focus ≥ 3:1). Font Be Vietnam Pro + JetBrains Mono tự host qua `@fontsource`.
+- `styles.css` viết lại: bỏ Google Fonts, theme sea-ink, class demo, khối `.dark`; biến shadcn ánh xạ lên token. Component gọi token bằng `bg-(--color-…)`.
+- Gỡ gói npm `cn` và `next-themes`; thêm 15 component shadcn; bỏ `transition-all`, vòng focus dạng outline hiện ngay, khoảng cách đưa về bội số 4px.
+- Mới: `field.tsx`, `app-shell.tsx` (nav N13), `command-palette.tsx` (⌘K + `useRegisterCommands`), `save-status.tsx`, trang 404 tiếng Việt, `/dev/ui` (file phẳng `dev.ui.tsx` theo quy ước mới), `design.md`, `.hallmark/log.json`.
+- Đã chụp kiểm tra ở 320 / 375 / 414 / 1280px: không cuộn ngang, dấu tiếng Việt không bị cắt.
+- **Chưa kiểm bằng tay:** thao tác bàn phím với bảng ⌘K (↑↓ / Enter / Esc) và Tab trên trình duyệt thật — làm đầu buổi P2.
+- **Lưu ý:** chunk của `/dev/ui` vẫn có trong bundle client, nhưng ở production route bị chặn bằng `notFound()` trước khi tải.
 
 ---
 

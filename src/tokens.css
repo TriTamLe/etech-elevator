@@ -1,0 +1,83 @@
+/* Hallmark · genre: modern-minimal · macrostructure: Workbench · theme: Cobalt (DTP-tuned) · nav: N13 · footer: none
+ * tone: technical / instrument-panel · anchor hue: 249 (DTP navy) · signal: DTP blue oklch(52% 0.13 245)
+ * contrast (WCAG): ink 15.7 · ink-2 11.2 · ink-3 5.26 · accent 5.23 · accent-ink/accent 5.23 · ok 5.43 · danger 5.12 · rule-strong 3.48
+ */
+
+:root {
+  /* Surfaces — cool engineered paper, never #fff */
+  --color-paper: oklch(98.5% 0.004 249);
+  --color-paper-2: oklch(96.6% 0.006 249);
+  --color-graphite: oklch(23% 0.03 249);
+
+  /* Rules — decorative hairlines vs. control boundaries (≥ 3:1) */
+  --color-rule: oklch(90.5% 0.01 249);
+  --color-rule-2: oklch(84% 0.016 249);
+  --color-rule-strong: oklch(62% 0.02 249);
+
+  /* Ink — cool charcoal leaning DTP navy, never #000 */
+  --color-ink: oklch(24% 0.035 249);
+  --color-ink-2: oklch(34% 0.03 249);
+  --color-ink-3: oklch(52% 0.02 249);
+
+  /* Brand + the one signal accent */
+  --color-brand: oklch(35.6% 0.083 249);
+  --color-accent: oklch(52% 0.13 245);
+  --color-accent-hover: oklch(46% 0.13 245);
+  --color-accent-ink: oklch(98.5% 0.004 249);
+  --color-accent-soft: oklch(94% 0.03 245);
+  --color-focus: oklch(52% 0.13 245);
+
+  /* Status — from the DTP logo greens / orange; danger added (not in logo) */
+  --color-ok: oklch(50% 0.13 145);
+  --color-warn: oklch(79.9% 0.164 77);
+  --color-danger: oklch(55% 0.19 27);
+  --color-danger-soft: oklch(95% 0.025 27);
+
+  /* Type */
+  --font-display: 'Be Vietnam Pro', ui-sans-serif, system-ui, sans-serif;
+  --font-body: 'Be Vietnam Pro', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono Variable', ui-monospace, 'SF Mono', monospace;
+  --font-drawing: 'Tinos', 'Times New Roman', serif;
+
+  --text-xs: 0.75rem;
+  --text-sm: 0.8125rem;
+  --text-base: 0.9375rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.375rem;
+  --text-2xl: 1.75rem;
+  --text-display: 2.25rem;
+
+  --leading-body: 1.55;
+  --leading-heading: 1.25;
+  --tracking-label: 0.06em;
+
+  /* Space — 4 pt scale */
+  --space-2xs: 0.25rem;
+  --space-xs: 0.5rem;
+  --space-sm: 0.75rem;
+  --space-md: 1rem;
+  --space-lg: 1.5rem;
+  --space-xl: 2rem;
+  --space-2xl: 3rem;
+  --space-3xl: 4rem;
+
+  /* Shape */
+  --radius-control: 6px;
+  --radius-card: 10px;
+  --rule-width: 1px;
+  --control-h: 2.5rem;
+
+  /* Motion */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in: cubic-bezier(0.7, 0, 0.84, 0);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --dur-fast: 120ms;
+  --dur-base: 200ms;
+  --dur-slow: 320ms;
+}
+
+@media (pointer: coarse) {
+  :root {
+    --control-h: 2.75rem;
+  }
+}
