@@ -83,6 +83,22 @@ flowchart LR
   P7 & P8 --> P9 --> P10 --> P11 --> P12 --> P13
 ```
 
+### Lịch làm việc (Apple Calendar · lịch "Nghiệp" · 7:00–9:00 mỗi ngày)
+
+Mỗi phase có một buổi 2 tiếng; tên event có dạng `Thang máy · P<n> · …`. Nếu một phase chưa xong trong buổi của nó thì dời các buổi sau, đồng thời cập nhật cả bảng này lẫn lịch.
+
+| Ngày | Phase | Ngày | Phase |
+|---|---|---|---|
+| T5 22/10 | P1 · Giao diện | T5 29/10 | P8 · Phần tử vẽ |
+| T6 23/10 | P2 · Mô hình dữ liệu | T6 30/10 | P9 · Mặt bằng, pit, phòng máy (M2) |
+| T7 24/10 | P3 · Lưu dự án + danh sách | T7 31/10 | P10 · Cửa tầng |
+| CN 25/10 | P4 · Form soạn | CN 1/11 | P11 · Mặt cắt đứng (M3) |
+| T2 26/10 | P5 · Lõi vẽ + PDF | T2 2/11 | P12 · Kiểm thử tổng |
+| T3 27/10 | P6 · Deploy (M1) | T3 3/11 | P13 · Bàn giao (M4) |
+| T4 28/10 | P7 · Ký hiệu DWG | | |
+
+> Ước tính gốc là 38–54 ngày công, trong khi lịch chỉ có 13 buổi × 2 tiếng. Lịch này chỉ chạy kịp nếu Claude viết phần lớn code trong buổi, còn bạn duyệt và chạy thử. P5 và P11 là hai phase dễ phải thêm buổi nhất.
+
 ---
 
 ## 3. Hệ thống giao diện — Hallmark · Cobalt × DTP
