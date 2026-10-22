@@ -15,7 +15,7 @@
 | **Dựng hình** | SVG có tham số (hàm thuần `params → Prim[]`), kết hợp thư viện ký hiệu lấy từ DWG. Xem trước và PDF dùng chung một SVG. |
 | **Stack** | TanStack Start (Router, Form, Query) · Zod 4 · Drizzle + Cloudflare D1 · Cloudflare Workers · Tailwind v4 + shadcn/ui · jsPDF + svg2pdf.js · Vitest + Playwright. Trình quản lý gói: **yarn 1**. |
 | **Giao diện** | **Hallmark · Cobalt**, đổi màu theo logo DTP. Font giao diện **Be Vietnam Pro** + **JetBrains Mono**. Xem mục 3. |
-| **Logo** | **DTP** in trên bản vẽ (bìa + khung tên). **E-TECH** dùng cho giao diện web (thanh trên cùng, favicon). Tất cả chuyển sang **WebP**. |
+| **Logo** | **DTP** in trên bản vẽ (bìa + khung tên). **DTP** cũng dùng cho giao diện web (masthead trang `/`, favicon) — đổi từ E-TECH sau review P1. Tất cả chuyển sang **WebP**. |
 | **Hạ tầng** | Workers + D1 + Cloudflare Access (2 email), địa chỉ `*.workers.dev`. **0 USD/tháng.** |
 | **Ước tính** | **38–54 người-ngày** chưa tính dự phòng; cộng dự phòng 15–20% thì khoảng **44–65 ngày (9–13 tuần)**. So với báo cáo, tăng thêm 2–3 ngày cho phần hệ thống giao diện Hallmark. |
 
@@ -119,7 +119,7 @@ Mỗi phase có một buổi 2 tiếng; tên event có dạng `Thang máy · P<n
 | **Một** màu nhấn tín hiệu, chiếm dưới 5% màn hình | Xanh DTP dùng cho nút chính, vòng focus, mục đang chọn, link khi hover |
 | "Code là nhân vật chính" | **Bản vẽ là nhân vật chính**: khu xem trước là "hộp đèn" nền graphite, trên đó đặt các tờ A3 trắng |
 | Một dải tối duy nhất mỗi trang | Hộp đèn xem trước ở màn soạn chính là dải tối đó. Trang danh sách dự án không có dải tối |
-| Thanh điều hướng có viền + bảng lệnh ⌘K chạy thật | Thanh trên cùng: logo E-TECH, tên app, nút **⌘K** và một nút chính. ⌘K mở bảng lệnh: Tạo dự án từ bộ mẫu, Mở dự án…, Tải PDF, Lưu phiên bản, Xuất JSON |
+| Thanh điều hướng có viền + bảng lệnh ⌘K chạy thật | **Không có header và không có bảng lệnh** (chốt sau review P1: app chỉ có dự án). Trang `/` có masthead căn giữa (logo DTP + tên công cụ); màn soạn chỉ có một thanh mảnh với link về danh sách |
 | Bo góc gọn: 6px cho control, 10px cho thẻ | Giữ nguyên |
 | Nhãn mono viết HOA, giãn chữ `0.06em` | Nhãn nhóm form, trạng thái ("ĐÃ LƯU 14:32"), số đo mm, phím tắt |
 | Chuyển động tiết chế | Chỉ fade + nâng ~10px khi xuất hiện, gạch chân lớn dần khi hover. Không bounce, không parallax. Tôn trọng `prefers-reduced-motion` |
@@ -172,9 +172,8 @@ Yêu cầu: chữ thân trên nền giấy đạt tương phản **≥ 4.5:1**, 
 
 | Màn | Bố cục | Ghi chú |
 |---|---|---|
-| **Danh sách dự án** (`/`) | Thanh trên cùng có viền. Ô tìm dự án + nút **Tạo dự án** (chọn 1 trong 2 bộ mẫu). Bảng dự án kẻ mảnh gồm: tên công trình · địa chỉ · cập nhật lúc · thao tác (mở / nhân bản / đổi tên / xóa) | Kiểu "trang mục lục" bình tĩnh. Hiển thị trạng thái rỗng khi chưa có dự án. Xóa có nút **Hoàn tác**, không hỏi xác nhận |
+| **Danh sách dự án** (`/`) | Logo DTP căn giữa, dưới là tiêu đề "Công cụ tự động sinh báo cáo thiết kế thang máy". Bên dưới là một khối viền gồm hàng công cụ (ô tìm dự án + nút **Tạo dự án**, chọn 1 trong 2 bộ mẫu) và danh sách. Bảng dự án kẻ mảnh gồm: tên công trình · địa chỉ · cập nhật lúc · thao tác (mở / nhân bản / đổi tên / xóa) | Kiểu "trang mục lục" bình tĩnh. Hiển thị trạng thái rỗng khi chưa có dự án. Xóa có nút **Hoàn tác**, không hỏi xác nhận |
 | **Màn soạn** (`/projects/$id`) | Kiểu "Workbench". Form bên trái (~420px, accordion A–F) · hộp đèn graphite bên phải chứa tờ A3 + cột thumbnail · thanh trạng thái dưới (lưu / lỗi / cảnh báo) | Từ 1024px trở lên chia đôi màn hình. Dưới 1024px chuyển thành 2 tab "Thông số / Xem trước". Ở 320px không được vỡ |
-| **Bảng lệnh ⌘K** | Hộp thoại có ô tìm (mono) và danh sách lệnh; điều khiển được bằng phím ↑↓, Enter, Esc | `role="dialog"` + `aria-modal`, quản lý focus đúng |
 | **Trang dev** (`/dev/*`, chỉ khi DEV) | Bộ sưu tập ký hiệu, bộ sưu tập phần tử vẽ, trang xuất PDF từ bộ mẫu | Ở bản production trả về `notFound()` |
 
 ### 3.6 Kỷ luật Hallmark áp dụng cho mọi phase có giao diện
@@ -211,8 +210,8 @@ Yêu cầu: chữ thân trên nền giấy đạt tương phản **≥ 4.5:1**, 
 **Logo sang WebP**
 - [x] Đưa PNG gốc vào `assets/brand/` (giữ làm bản gốc, không phục vụ trên web).
 - [x] Tạo `public/brand/dtp-logo.webp`: giữ 1298px, dùng cho bìa và khung tên, đủ nét khi in A3.
-- [x] Tạo `public/brand/etech-logo.webp` (585px) cho thanh trên cùng.
-- [x] Favicon lấy từ `e-tech.ico` → `public/favicon.ico`.
+- [x] ~~`public/brand/etech-logo.webp`~~ — đã bỏ sau review P1; app dùng logo DTP.
+- [x] Favicon lấy từ `dtp-logo.ico` → `public/favicon.ico` (đổi từ E-TECH sau review P1).
 - [x] Ghi lại dung lượng trước và sau khi chuyển.
 - [x] Lưu ý: PDF có dùng được WebP hay không sẽ thử ở P5. Nếu jsPDF không nhận WebP thì đổi WebP → PNG ngay trong trình duyệt bằng canvas, nên **chỉ cần phục vụ file WebP**.
 - [x] Lưu ý: logo E-TECH chỉ 585px, đủ cho giao diện. Nếu sau này cần in E-TECH lên giấy thì cần file lớn hơn.
@@ -266,7 +265,7 @@ Yêu cầu: chữ thân trên nền giấy đạt tương phản **≥ 4.5:1**, 
 
 ### P1 — Hệ thống giao diện Hallmark Cobalt × DTP (2–3 ngày)
 
-**Mục tiêu:** có token, font, các component cơ bản đủ 8 trạng thái, khung app và bảng lệnh ⌘K, sẵn sàng cho P3 và P4.
+**Mục tiêu:** có token, font, các component cơ bản đủ 8 trạng thái, khung app, sẵn sàng cho P3 và P4.
 
 - [x] **`src/tokens.css`**:
   - Đầy đủ token ở mục 3.3 và 3.4, cùng thang khoảng cách 4pt (`--space-*`), thang chữ (`--text-*`), bo góc (`--radius-control: 6px`, `--radius-card: 10px`), easing (`--ease-out`, `--ease-in`, `--ease-in-out`) và thời lượng (`--dur-*`).
@@ -299,7 +298,8 @@ Yêu cầu: chữ thân trên nền giấy đạt tương phản **≥ 4.5:1**, 
 - Gỡ gói npm `cn` và `next-themes`; thêm 15 component shadcn; bỏ `transition-all`, vòng focus dạng outline hiện ngay, khoảng cách đưa về bội số 4px.
 - Mới: `field.tsx`, `app-shell.tsx` (nav N13), `command-palette.tsx` (⌘K + `useRegisterCommands`), `save-status.tsx`, trang 404 tiếng Việt, `/dev/ui` (file phẳng `dev.ui.tsx` theo quy ước mới), `design.md`, `.hallmark/log.json`.
 - Đã chụp kiểm tra ở 320 / 375 / 414 / 1280px: không cuộn ngang, dấu tiếng Việt không bị cắt.
-- **Chưa kiểm bằng tay:** thao tác bàn phím với bảng ⌘K (↑↓ / Enter / Esc) và Tab trên trình duyệt thật — làm đầu buổi P2.
+- **Chưa kiểm bằng tay:** Tab qua các control trên trình duyệt thật — làm đầu buổi P2.
+- **Sửa sau review (22/10):** bỏ header (`app-shell.tsx`), bảng lệnh ⌘K (`command-palette.tsx`, `ui/command.tsx`, gói `cmdk`) và logo E-TECH. Trang `/` thành masthead DTP căn giữa + khối danh sách gọn (ô tìm + nút Tạo dự án gắn liền). Thêm `brand-mark.tsx`; 404 cũng không còn header.
 - **Lưu ý:** chunk của `/dev/ui` vẫn có trong bundle client, nhưng ở production route bị chặn bằng `notFound()` trước khi tải.
 
 ---
@@ -350,7 +350,6 @@ Yêu cầu: chữ thân trên nền giấy đạt tương phản **≥ 4.5:1**, 
   - Nhập dự án từ file JSON.
   - Trạng thái rỗng.
 - [ ] **Route `/projects/$id`:** khung màn soạn với `ssr: false`; nạp dự án, hiển thị tên và trạng thái lưu.
-- [ ] Bổ sung lệnh vào bảng ⌘K: Tạo dự án, Mở dự án.
 
 **Tiêu chí xong:** CRUD chạy với D1 local; tải lại trang vẫn còn dữ liệu; xóa rồi hoàn tác được.
 
@@ -379,7 +378,6 @@ Yêu cầu: chữ thân trên nền giấy đạt tương phản **≥ 4.5:1**, 
   - "Khôi phục" (đưa phiên bản đó vào form).
   - "Đưa vào bảng hiệu chỉnh".
 - [ ] **Xuất/nhập JSON:** file có `schemaVersion`; khi nhập thì chạy `migrate`.
-- [ ] Bổ sung lệnh vào bảng ⌘K: Lưu phiên bản, Xuất JSON.
 
 **Tiêu chí xong:** sửa cả 2 bộ mẫu không lỗi; tải lại trang vẫn giữ đúng; lỗi và cảnh báo hiện đúng các trường hợp trong P2.
 
@@ -622,7 +620,7 @@ src/
   drawing/         types.ts · render-svg.tsx · text-metrics.ts · primitives/ · symbols/ · frame/ · sheets/ · pages.ts
   pdf/             export-pdf.ts · fonts.ts
   features/        projects/ (danh sách, hộp thoại, queries) · editor/ (các nhóm form, preview, autosave)
-  components/      ui/ (shadcn đã chỉnh theo Cobalt) · app/ (app-shell, command-palette, save-status)
+  components/      ui/ (shadcn đã chỉnh theo Cobalt) · app/ (brand-mark, save-status)
   config/          company.ts (thông tin DTP, đường dẫn logo)
   tokens.css · styles.css
 public/            brand/*.webp · fonts/tinos/*.ttf · favicon.ico

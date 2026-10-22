@@ -38,7 +38,7 @@ Hallmark **Cobalt** recoloured with the DTP logo palette (navy `oklch(35.6% 0.08
 
 ## Assets & private files
 
-- `public/brand/*.webp` — served logos (DTP on drawings, E-TECH in the app chrome). PNG/ICO masters live in `assets/brand/`.
+- `public/brand/*.webp` — served logo: DTP on drawings and in the app; `public/favicon.ico` = DTP. PNG/ICO masters (incl. unused E-TECH) live in `assets/brand/`.
 - `.external/` is git-ignored: the reference DWG and `reference/` (two sample PDFs with real client names/addresses). Never move these into `public/` or commit them.
 
 ## Subagents (`.claude/agents/`)

@@ -9,5 +9,16 @@
     "footer": "none",
     "enrichment": "none",
     "brief": "Bản vẽ thang máy · internal elevator drawing generator (P1 design system)"
+  },
+  {
+    "date": "2026-10-22",
+    "macrostructure": "Workbench",
+    "theme": "custom",
+    "theme_axes": "light / grotesk-sans / cool-blue",
+    "vibe": "Cobalt instrument panel in DTP navy",
+    "nav": "none (centered masthead)",
+    "footer": "none",
+    "enrichment": "none",
+    "brief": "P1 review: drop header + ⌘K palette, DTP logo masthead on project list"
   }
 ]

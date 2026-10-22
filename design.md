@@ -8,7 +8,7 @@ to it. Amend intentionally — the file is the rule.
 - Macrostructure · Workbench (editor: form left · graphite lightbox right) · index list for `/`
 - Theme · Cobalt, recoloured to the DTP logo (navy anchor, one DTP-blue signal)
 - Axes · light (cool paper L 98.5 %) / grotesk-sans (Be Vietnam Pro) / cool blue (hue 245–249)
-- Nav · N13 inline ⌘K search affordance (6 px radius, not a pill) · Footer · none (app)
+- Nav · none — centered DTP masthead (logo + title) on `/`, a minimal back-link bar on the editor · no ⌘K palette · Footer · none (app)
 - Copy · 100 % Vietnamese, specific verbs ("Tải PDF", "Lưu phiên bản", "Tạo dự án")
 
 ## Tokens (canonical · `src/tokens.css` is the source of truth)
@@ -47,7 +47,7 @@ to it. Amend intentionally — the file is the rule.
 - States · default · hover · focus-visible (instant 2 px outline) · active (1 px press) · disabled (0.55) · loading (spinner keeps width) · error (aria-invalid) · success (data-state)
 
 ## Motion stance
-- Near-silent: ⌘K palette fade + 8 px rise, link underline grow. No transition-all, no bounce.
+- Near-silent: dialog fade + 8 px rise, link underline grow. No transition-all, no bounce.
 - Reduced-motion fallback · durations collapse to 1 ms.
 
 ## Rules
