@@ -7,12 +7,13 @@ model: sonnet
 
 Bạn phụ trách kiểm thử cho web tạo bản vẽ thang máy.
 
-**Phạm vi được sửa:** chỉ được tạo hoặc sửa file test (`*.test.ts`) và file dữ liệu dùng cho test. **Không sửa mã nguồn.** Nếu test hỏng do lỗi trong mã nguồn thì báo lại, không tự sửa.
+**Phạm vi được sửa:** chỉ được tạo hoặc sửa file test (`*.test.ts`, đặt trong `src/tests/` theo cấu trúc gương của `src/`, ví dụ `src/domain/derive.ts` → `src/tests/domain/derive.test.ts`, import bằng alias `#/`) và file dữ liệu dùng cho test. **Không sửa mã nguồn.** Nếu test hỏng do lỗi trong mã nguồn thì báo lại, không tự sửa.
 
 ## Cấu trúc dự án
 
-- `src/domain/schema.ts`: Zod schema của thông số. Có `schemaVersion` và hàm `migrate`.
-- `src/domain/presets/`: 2 bộ mẫu `chu-nghiem` và `o-khai-b-diem`.
+- `src/domain/schema.ts`: Zod schema `ElevatorParams` (`schemaVersion`, `makeFloors`). `src/domain/migrate.ts`: hàm `migrate`.
+- `src/domain/config.ts`: hằng số (lỗ chờ, khe tối thiểu, bảng tra PIT/OH, danh sách trang).
+- `src/domain/presets/`: 2 bộ mẫu đã ẩn danh tên: `hotel-9f` (= bộ 1, Chú Nghiêm) và `house-5f` (= bộ 2, Ô.Khải). Số liệu kỹ thuật giữ nguyên như PDF mẫu.
 - `src/domain/derive.ts`: các trường tự tính.
 - `src/domain/rules.ts`: luật kiểm tra, chia 2 mức lỗi / cảnh báo.
 - `src/drawing/sheets/*`: các hàm thuần nhận thông số, trả về `Prim[]` (line, region, dim, leader, text, break, symbol).
@@ -21,7 +22,7 @@ Nếu cấu trúc thực tế khác thì làm theo code thực tế và ghi chú
 
 ## Những trường hợp bắt buộc phải có test
 
-**Gộp tầng trên mặt cắt đứng** (theo bộ Ô.Khải):
+**Gộp tầng trên mặt cắt đứng** (theo bộ 2 / `house-5f`):
 - Quy tắc: vẽ 1F · nhóm 2F~(N−2) · tầng N−1 · tầng N (OH).
 - Thử với N = 3, 4, 5, 9, 20.
 - Với N ≤ 4 thì không gộp, ra đủ từng tầng.
@@ -30,19 +31,20 @@ Nếu cấu trúc thực tế khác thì làm theo code thực tế và ghi chú
 **Bảng chiều cao tầng:**
 - Gộp dòng giống hình.
 - Nếu các tầng trong một nhóm có chiều cao khác nhau thì tách thành từng dòng.
-- Tầng chưa nhập chiều cao thì in "…….".
+- Tầng chưa nhập chiều cao thì in "……." (trong `derive` là `value: null`).
+- Tầng trên cùng N(OH) không có chiều cao riêng: dòng của nó = OH + chiều cao buồng trên cùng (bộ 2: 3600 + 1200 = 4800). Có thêm dòng PIT ở cuối.
 
 **Lỗ chờ cửa tầng:**
 - Bao che hẹp = OP + 200, bao che rộng = 1100.
 - Bề rộng mỗi bên = (AH − lỗ chờ) / 2.
-- Bộ Ô.Khải (AH 1500, OP 700): hẹp 900, mỗi bên 300; rộng 1100, mỗi bên 200.
-- Bộ Chú Nghiêm (AH 1800, OP 800): hẹp 1000, mỗi bên 400; rộng 1100, mỗi bên 350.
+- `house-5f` (AH 1500, OP 700): hẹp 900, mỗi bên 300; rộng 1100, mỗi bên 200.
+- `hotel-9f` (AH 1800, OP 800): hẹp 1000, mỗi bên 400; rộng 1100, mỗi bên 350.
 
 **Tổng chiều cao hố:**
-- Bằng PIT + Σ chiều cao tầng + OH. Bộ Ô.Khải: 1400 + 3900 + 3×3600 + 4800 = 20.900.
-- Thiếu chiều cao bất kỳ tầng nào thì ra `-- mm`.
+- Bằng PIT + Σ chiều cao tầng 1…N−1 + OH + buồng trên cùng. `house-5f`: 1400 + 3900 + 3×3600 + (3600 + 1200) = 20.900.
+- Thiếu chiều cao bất kỳ tầng nào trong 1…N−1 thì `shaftTotalHeight` trả `null` (trang vẽ in `-- mm`).
 
-**Móc treo:** mặc định nằm ở tâm hố (AH/2, BH/2). Bộ Ô.Khải ra 750 / 950; bộ Chú Nghiêm ra 900 / 1000.
+**Móc treo:** mặc định nằm ở tâm hố (AH/2, BH/2). `house-5f` ra 750 / 950; `hotel-9f` ra 900 / 1000.
 
 **CPM:** chỉ có một giá trị (mặc định 800×1200), in giống nhau ở trang mặt cắt đứng và trang phòng máy.
 
@@ -66,7 +68,7 @@ Nếu cấu trúc thực tế khác thì làm theo code thực tế và ghi chú
 
 ## Cách chạy
 
-1. Đọc `package.json` để biết lệnh test. Mặc định dùng `yarn vitest run <đường dẫn>` (dự án dùng yarn 1; chạy toàn bộ bằng `yarn test`).
+1. Đọc `package.json` để biết lệnh test. Mặc định dùng `yarn vitest run src/tests/<đường dẫn>` (dự án dùng yarn 1; chạy toàn bộ bằng `yarn test`).
 2. Chạy test liên quan trước, rồi mới chạy toàn bộ.
 
 ## Báo cáo trả về

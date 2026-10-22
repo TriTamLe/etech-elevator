@@ -25,6 +25,7 @@ Package manager is **yarn 1** — never run `npm install` / `pnpm` (no extra loc
 - Project params are one JSON blob validated by Zod with `schemaVersion`; changing the shape needs a bump + `migrate` step. Deletes are soft (`deletedAt`).
 - No auth code: Cloudflare Access (2 emails) protects the Worker.
 - Imports use the `#/` alias; new files are kebab-case.
+- Tests are **not colocated**: they live in `src/tests/`, mirroring `src/` (e.g. `src/domain/derive.ts` → `src/tests/domain/derive.test.ts`) and import code via `#/`.
 - For the component created by shadCn, remove the "use client" because we do not use nextjs
 
 ### File-based routing defining convention

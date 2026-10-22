@@ -308,15 +308,15 @@ Yêu cầu: chữ thân trên nền giấy đạt tương phản **≥ 4.5:1**, 
 
 **Mục tiêu:** toàn bộ thông số và luật nghiệp vụ nằm trong `src/domain/`, là code thuần và có test.
 
-- [ ] **`src/domain/schema.ts`:**
+- [x] **`src/domain/schema.ts`:**
   - Zod schema `ElevatorParams` gồm nhóm A–F, mảng `floors`, mảng `revisions` (8 cột) và `schemaVersion = 1`.
   - Đơn vị mm. Kiểu dữ liệu xuất ra bằng `z.infer`.
-- [ ] **`src/domain/presets/`:**
-  - `chu-nghiem.ts` và `o-khai-b-diem.ts`, nhập đủ giá trị theo mục 1.5 và mục 2 của báo cáo.
+- [x] **`src/domain/presets/`:**
+  - `hotel-9f.ts` (= bộ 1) và `house-5f.ts` (= bộ 2), nhập đủ giá trị theo mục 1.5 và mục 2 của báo cáo. **Tên công trình, địa chỉ, người ký đã ẩn danh**; số liệu kỹ thuật giữ nguyên.
   - Mã hiệu là chữ tự do.
   - CPM mặc định 800×1200.
   - Bộ Ô.Khải: tầng 1F 3900, 2F–4F 3600, PIT 1400, OH 3600 + buồng 1200, dầm kiềng 200×300 (mái) / 200×400 (tầng), dầm đặt máy 3 phía, bật ghi chú xây chèn.
-- [ ] **`src/domain/derive.ts`:**
+- [x] **`src/domain/derive.ts`:**
   - Tổng chiều cao hố; thiếu dữ liệu thì trả `null`.
   - Lỗ chờ và bề rộng hai bên theo loại bao che.
   - Vị trí móc treo ở tâm hố.
@@ -325,13 +325,20 @@ Yêu cầu: chữ thân trên nền giấy đạt tương phản **≥ 4.5:1**, 
   - Danh sách trang và số hiệu: mỗi loại bao che đang dùng một trang cửa tầng, đánh số liền mạch.
   - Gợi ý hạng mục; địa chỉ rút gọn tự lấy địa chỉ đầy đủ khi trống.
   - Chuỗi "Tầng 2F ~ 5F" cho từng loại bao che.
-- [ ] **`src/domain/rules.ts`:**
+- [x] **`src/domain/rules.ts`:**
   - Mức **lỗi**: CW + khe > AH; CD + khoảng > BH; OP > lỗ chờ; HH ≥ cao lỗ chờ thô; số tầng khác số điểm dừng.
   - Mức **cảnh báo**: PIT/OH dưới mức tham khảo (có ghi chú "kỹ sư cần xác nhận").
-- [ ] **`src/domain/migrate.ts`:** hàm `migrate(raw)` đưa dữ liệu cũ lên `schemaVersion` mới nhất.
-- [ ] **Test Vitest** (giao `test-runner`): số liệu chuẩn lấy từ mục 3 trong file `test-runner.md`, ví dụ 20.900 mm; 900/300; 1100/200; 750/950; gộp tầng với N = 3, 4, 5, 9, 20.
+- [x] **`src/domain/migrate.ts`:** hàm `migrate(raw)` đưa dữ liệu cũ lên `schemaVersion` mới nhất.
+- [x] **Test Vitest** (giao `test-runner`): số liệu chuẩn lấy từ mục 3 trong file `test-runner.md`, ví dụ 20.900 mm; 900/300; 1100/200; 750/950; gộp tầng với N = 3, 4, 5, 9, 20.
 
 **Tiêu chí xong:** cả 2 bộ mẫu qua Zod; mọi test trong danh sách bắt buộc đều xanh.
+
+
+**Kết quả P2 (22/10/2026):**
+- `src/domain/`: `config.ts` (lỗ chờ, khe tối thiểu, bảng tra PIT/OH **tạm**, nhãn tiếng Việt, danh sách trang), `schema.ts` (`ElevatorParams` v1, `makeFloors`), `presets/` (`PRESETS`, `presetParams` trả bản sao), `derive.ts`, `rules.ts` (`checkRules` → `Issue[]` có `path` để gắn vào `Field`), `migrate.ts`.
+- **Quy ước đã chốt khi làm:** tầng trên cùng không có chiều cao riêng, dòng N(OH) = OH + chiều cao buồng trên cùng (bộ 2: 4800, bộ 1: 5100); tổng hố = PIT + Σ tầng 1…N−1 + OH + buồng trên cùng (bộ 2 = 20.900). Bảng chiều cao tầng gộp theo quyết định #14 (khác cách in trong PDF bộ 2). Móc treo `null` = tâm hố.
+- 57 test xanh (subagent `test-runner`), phủ toàn bộ checklist domain.
+- **Còn mở:** bảng tra PIT/OH và `minOpeningSide = 100` là giá trị tạm — kỹ sư cần xác nhận. Kiểm Tab bằng tay trên trình duyệt thật (từ P1) vẫn chưa làm vì trình duyệt tích hợp mất kết nối.
 
 ---
 
@@ -613,7 +620,7 @@ Giao cho `symbol-extractor`.
 
 ```
 src/
-  routes/          __root.tsx · index.tsx (danh sách) · projects.$id.tsx (màn soạn, ssr:false) · dev/ (ui, symbols, primitives, export — chỉ DEV)
+  routes/          __root.tsx · index.tsx (danh sách) · projects.$id.tsx (màn soạn, ssr:false) · dev.ui.tsx, dev.symbols.tsx… (route phẳng, chỉ DEV)
   db/              schema.ts · index.ts (drizzle-orm/d1)
   server/          projects.ts (createServerFn)
   domain/          schema.ts · presets/ · derive.ts · rules.ts · migrate.ts
@@ -622,6 +629,7 @@ src/
   features/        projects/ (danh sách, hộp thoại, queries) · editor/ (các nhóm form, preview, autosave)
   components/      ui/ (shadcn đã chỉnh theo Cobalt) · app/ (brand-mark, save-status)
   config/          company.ts (thông tin DTP, đường dẫn logo)
+  tests/           unit test Vitest, cấu trúc gương của src/ (domain/derive.test.ts · drawing/sheets/… · lib/…)
   tokens.css · styles.css
 public/            brand/*.webp · fonts/tinos/*.ttf · favicon.ico
 assets/brand/      PNG gốc (không phục vụ trên web)

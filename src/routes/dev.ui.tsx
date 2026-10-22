@@ -375,7 +375,7 @@ function UiGallery() {
                 </DialogDescription>
               </DialogHeader>
               <DialogFooter>
-                <Button>Tạo từ bộ Chú Nghiêm</Button>
+                <Button>Tạo từ bộ Khách sạn 9 tầng</Button>
               </DialogFooter>
             </DialogContent>
           </Dialog>
