@@ -477,6 +477,16 @@ Yêu cầu: chữ thân trên nền giấy đạt tương phản **≥ 4.5:1**, 
 
 **Mục tiêu:** chạy hết luồng `params → Prim[] → SVG → xem trước + PDF` cho bìa, DTP 01 và DTP 02, kèm khung trang A3.
 
+**Chia 3 đợt** (chốt 23/10/2026; mỗi đợt có mini plan và commit riêng):
+
+| Đợt | Nội dung | Kết quả nhìn thấy |
+|---|---|---|
+| **5a** | Lõi vẽ (`types`, `render-svg`), font Tinos + đo chữ, khung trang A3 (viền, bảng hiệu chỉnh, khung tên, `config/company.ts`), trang **Bìa**, hộp xem trước đơn giản thay khung "sắp có" | Bìa thật trong vùng xem trước, đổi thông số thấy đổi ngay |
+| **5b** | Trang **DTP 01** và **DTP 02**, ghép trang (`pages.ts`), cột thumbnail chuyển trang (thay "Danh sách trang" đã bỏ ở P4.1), phóng to/thu nhỏ/vừa khung, `useDeferredValue` | Xem đủ 3 trang, chuyển trang, zoom |
+| **5c** | Xuất PDF (jsPDF + svg2pdf, font, WebP→PNG nếu cần, tên file, tiến độ), mở khóa nút **Tải PDF**, Playwright + `/dev/export` + `yarn export:preset`, chạy `sheet-verifier` | Tải được PDF vector; báo cáo so với 2 bộ mẫu |
+
+Việc mang từ P4 sang: dùng `pageOverrides` (ngày hoàn thành, số hiệu chỉnh theo trang) khi in khung tên; chốt số dòng tối đa của bảng hiệu chỉnh theo DWG mẫu (5a).
+
 **Lõi vẽ**
 - [ ] `src/drawing/types.ts`: `Pt`, `Prim` (line, region, dim, leader, text, break, symbol, image), `Layer` gồm 3 cỡ nét 0.13 / 0.25 / 0.5 mm.
 - [ ] `src/drawing/render-svg.tsx`: biến `Prim[]` thành phần tử SVG với `viewBox="0 0 420 297"` (đơn vị mm).
