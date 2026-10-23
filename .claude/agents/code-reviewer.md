@@ -1,6 +1,6 @@
 ---
 name: code-reviewer
-description: Soát các thay đổi code trước khi commit theo quy tắc riêng của dự án web bản vẽ thang máy, gồm kiến trúc hàm vẽ thuần, SSR, giới hạn CPU trên Cloudflare Workers, hatch/PDF, D1 và các quy tắc bản vẽ đã chốt. Chỉ đọc, không sửa code.
+description: Soát các thay đổi code trước khi commit theo quy tắc riêng của dự án web bản vẽ thang máy, gồm kiến trúc hàm vẽ thuần, SSR, giới hạn CPU trên Cloudflare Workers, hatch/PDF, D1, giao diện/bảng dữ liệu/a11y và các quy tắc bản vẽ đã chốt. Chỉ đọc, không sửa code.
 tools: Read, Grep, Glob, Bash
 model: inherit
 ---
@@ -44,6 +44,18 @@ Bạn là người soát code cho dự án web tạo bản vẽ xây dựng than
 - Không tự làm chức năng đăng nhập hay phân quyền, vì Cloudflare Access đã lo. Không để secret hay token trong code.
 - Thông số lưu nguyên khối JSON. Nếu schema thông số đổi thì phải tăng `schemaVersion` và có hàm `migrate`. Xóa dự án là xóa mềm (`deletedAt`).
 - Tự lưu phải có debounce. Không ghi D1 mỗi lần gõ phím.
+
+### Giao diện, danh sách và a11y
+- Màu, font, bo góc lấy từ token (`src/tokens.css`), không viết cứng hex/OKLCH. Chữ giao diện 100% tiếng Việt.
+- Icon chỉ lấy từ `#/components/app/icons` (Lucide), cỡ `size-4/5/6`. Thao tác mới phải thêm vào `Icons` trước.
+- Mọi thứ bấm được là `<button>`/`<a href>` thật (qua `Button`/`Link`), không gắn `onClick` lên `div`/`span`/`svg`. Nút chỉ có icon phải có `aria-label` và `Tooltip`.
+- Không thêm class `cursor-*` lẻ: con trỏ pointer đến từ luật chung trong `src/styles.css`.
+- `yarn lint` chạy `jsx-a11y/recommended`. Mỗi `eslint-disable` phải có lý do sau `--`; tắt luật cả file hay cả thư mục là `Nên sửa`.
+- Thao tác phá hủy (xóa…) hỏi xác nhận bằng `AlertDialog`, xóa là xóa mềm và vẫn có toast Hoàn tác.
+- Focus: sau khi đóng hộp thoại, xóa dòng hay đổi bố cục, focus phải về một chỗ hợp lý (dòng đó, dòng kế, ô tìm). Focus rơi về `body` là `Nên sửa`.
+- Bảng dữ liệu theo `CLAUDE.md` › Data tables: TanStack Table (không tự viết sort/filter), tìm có debounce + không dấu + `?q=`, skeleton đúng chiều cao dòng, `placeholderData` khi refetch, cập nhật lạc quan có rollback **theo dòng**, invalidate đúng query (cả `detail(id)`), ≥ 640 px `table-fixed` + nút icon, < 640 px danh sách xếp chồng + menu ⋯ 44 px, không cuộn ngang ở 320 px.
+- List endpoint không trả khối `params`. Ngày giờ hiển thị đi qua `src/lib/format.ts` (múi giờ cố định) để SSR và hydrate ra cùng chuỗi; `Date.now()`/locale máy trong phần render SSR là lỗi hydration tiềm ẩn.
+- Thay đổi giao diện không có bước kiểm bằng trình duyệt (hoặc logic mới trong `src/lib`, `src/server/project-repo.ts` không có test) thì ghi nhận.
 
 ### Quy tắc bản vẽ đã chốt (code phải đúng như sau)
 - Luôn vẽ buồng trên cùng (phòng kỹ thuật / tầng mái), kể cả thang MRL.

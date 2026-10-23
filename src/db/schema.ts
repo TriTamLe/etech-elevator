@@ -7,7 +7,9 @@ export const projects = sqliteTable(
   'projects',
   {
     id: text('id').primaryKey(),
+    // name/address mirror params.project.* so the list never reads the params blob.
     name: text('name').notNull(),
+    address: text('address').notNull().default(''),
     params: text('params', { mode: 'json' }).notNull(),
     schemaVersion: integer('schema_version').notNull(),
     createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),

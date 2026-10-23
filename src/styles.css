@@ -82,6 +82,32 @@
     overflow-x: clip;
   }
 
+  /* Tailwind v4 dropped the pointer cursor on buttons: one rule for every clickable
+     element, so components never need their own cursor-* class. */
+  :where(
+      button:not(:disabled),
+      a[href],
+      summary,
+      select:not(:disabled),
+      label:has(:is(input, button):not(:disabled)),
+      [role='button'],
+      [role='menuitem'],
+      [role='menuitemradio'],
+      [role='menuitemcheckbox'],
+      [role='option'],
+      [role='radio'],
+      [role='checkbox'],
+      [role='switch'],
+      [role='tab']
+    ):not([aria-disabled='true'], [data-disabled]) {
+    cursor: pointer;
+  }
+
+  /* Reserve the scrollbar lane so the page does not shift sideways when a list grows. */
+  html {
+    scrollbar-gutter: stable;
+  }
+
   html,
   body,
   #app {

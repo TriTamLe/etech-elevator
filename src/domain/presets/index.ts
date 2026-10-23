@@ -2,7 +2,8 @@ import { house5f } from '#/domain/presets/house-5f'
 import { hotel9f } from '#/domain/presets/hotel-9f'
 import type { ElevatorParams } from '#/domain/schema'
 
-export type PresetId = 'hotel-9f' | 'house-5f'
+export const PRESET_IDS = ['hotel-9f', 'house-5f'] as const
+export type PresetId = (typeof PRESET_IDS)[number]
 
 export const PRESETS: ReadonlyArray<{
   id: PresetId

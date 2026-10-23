@@ -1,3 +1,4 @@
+import { formatTime } from '#/lib/format'
 import { cn } from '#/lib/utils'
 
 export type SaveState =
@@ -6,10 +7,6 @@ export type SaveState =
   | { kind: 'saved'; at: Date }
   | { kind: 'error'; retry: () => void }
 
-const timeFormat = new Intl.DateTimeFormat('vi-VN', {
-  hour: '2-digit',
-  minute: '2-digit',
-})
 
 // Silent-success status line in the mono label voice. aria-live so screen readers hear changes.
 export function SaveStatus({
@@ -29,7 +26,7 @@ export function SaveStatus({
       )}
       {state.kind === 'saved' && (
         <span className="text-(--color-ok)">
-          Đã lưu {timeFormat.format(state.at)}
+          Đã lưu {formatTime(state.at)}
         </span>
       )}
       {state.kind === 'error' && (

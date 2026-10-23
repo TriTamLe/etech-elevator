@@ -55,7 +55,13 @@ to it. Amend intentionally — the file is the rule.
 ## Data tables (project list)
 - TanStack Table (headless) rendered with `components/ui/table`. Search is debounced, accent-insensitive, kept in `?q=`.
 - Loading = skeleton rows of the real row height (no layout shift); refetch = quiet indicator, never a blanking spinner.
+- Delete confirms in an alert dialog (Cancel focused, no outside-click dismiss), then still shows an Undo toast.
+- Row actions: icon buttons with tooltips on wide screens, a single "⋯" menu on narrow ones. Editing opens a dialog; cells are never edited inline.
 - ≥ 640 px: fixed-layout table, name column flexes and truncates. < 640 px: the same row model as a stacked list. Never horizontal scroll at 320 px; the page scrolls, not an inner box.
+
+## Interaction details
+- Every clickable element shows the pointer cursor (one base rule in `styles.css`); disabled = `not-allowed`, loading = `progress`.
+- Tooltips open after 200 ms; moving to a neighbouring control shows its tooltip at once.
 
 ## Motion stance
 - Near-silent: dialog fade + 8 px rise, link underline grow. No transition-all, no bounce.

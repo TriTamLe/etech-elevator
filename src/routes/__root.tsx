@@ -73,7 +73,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         <HeadContent />
       </head>
       <body>
-        <TooltipProvider delayDuration={800}>{children}</TooltipProvider>
+        <TooltipProvider delayDuration={200}>{children}</TooltipProvider>
         <Toaster />
         {import.meta.env.DEV && (
           <TanStackDevtools

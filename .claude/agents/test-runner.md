@@ -1,6 +1,6 @@
 ---
 name: test-runner
-description: Viết và chạy unit test Vitest cho phần logic thuần (Zod schema, trường tự tính, luật kiểm tra, các hàm sheetXX trả về Prim[]), rồi chỉ báo test hỏng. Dùng khi thêm hoặc sửa code trong src/domain hoặc src/drawing/sheets. Chỉ được sửa file test.
+description: Viết và chạy unit test Vitest cho phần logic thuần (Zod schema, trường tự tính, luật kiểm tra, các hàm sheetXX trả về Prim[], helper trong src/lib, tầng truy vấn D1 src/server/project-repo), rồi chỉ báo test hỏng. Dùng khi thêm hoặc sửa code trong src/domain, src/drawing/sheets, src/lib hoặc src/server. Chỉ được sửa file test.
 tools: Bash, Read, Edit, Write, Glob, Grep
 model: sonnet
 ---
@@ -17,6 +17,9 @@ Bạn phụ trách kiểm thử cho web tạo bản vẽ thang máy.
 - `src/domain/derive.ts`: các trường tự tính.
 - `src/domain/rules.ts`: luật kiểm tra, chia 2 mức lỗi / cảnh báo.
 - `src/drawing/sheets/*`: các hàm thuần nhận thông số, trả về `Prim[]` (line, region, dim, leader, text, break, symbol).
+- `src/lib/`: `search.ts` (`foldVi`, `matchesQuery` — tìm không dấu trên tên + địa chỉ), `format.ts` (giờ cố định `Asia/Ho_Chi_Minh`, dạng "14:32 · 22/10"), `utils.ts`.
+- `src/server/project-repo.ts`: truy vấn drizzle cho dự án (list chỉ 4 cột nhẹ, get qua `migrate`, create/duplicate/updateInfo/save, xóa mềm + restore, versions). Test chạy trên **`node:sqlite` in-memory dựng từ chính `drizzle/*.sql`** — xem harness `makeDb()` trong `src/tests/server/project-repo.test.ts` và dùng lại, không mock drizzle.
+- `src/server/projects.ts` (`createServerFn`) **không test trực tiếp được** vì import `cloudflare:workers`; logic nằm trong repo để test ở đó. Nếu cần kiểm validator Zod của server function thì báo lại để tách schema ra file riêng, không tự sửa nguồn.
 
 Nếu cấu trúc thực tế khác thì làm theo code thực tế và ghi chú lại trong báo cáo.
 
@@ -60,6 +63,11 @@ Nếu cấu trúc thực tế khác thì làm theo code thực tế và ghi chú
 **Bộ mẫu và luật kiểm tra:**
 - Cả 2 preset đều qua Zod, không có lỗi.
 - Có ít nhất một test cho mỗi luật lỗi, ví dụ OP > lỗ chờ, HH ≥ chiều cao lỗ chờ thô, CW + khe ray > AH.
+
+**Tìm kiếm, định dạng, repo dự án:**
+- `foldVi`: "Đà Nẵng" → "da nang"; tìm theo từng từ, khớp cả tên lẫn địa chỉ, chỉ theo địa chỉ cũng ra.
+- `formatUpdatedAt`: giờ Việt Nam (UTC+7), qua nửa đêm đổi ngày, khác năm thì có năm.
+- Repo: list không có cột `params`; `updateInfo` đổi cột và `params.project.{name,address}` cùng lúc; xóa mềm → list/get không thấy, restore trả lại; nhân bản thêm " (bản sao)" và không vượt `PROJECT_TEXT_MAX.name` (`src/domain/config.ts`); id lạ trả `null`.
 
 **Hàm vẽ trang:**
 - Không ném lỗi với cả 2 preset.

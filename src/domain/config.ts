@@ -111,3 +111,6 @@ export const PAGE_TITLES: Record<(typeof PAGE_KEYS)[number], string> = {
 
 /** Sheet code prefix ("DTP 01"). */
 export const PAGE_CODE_PREFIX = 'DTP'
+
+/** Text limits shared by the forms and the server validators. */
+export const PROJECT_TEXT_MAX = { name: 200, address: 300 } as const

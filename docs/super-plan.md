@@ -172,7 +172,7 @@ Yêu cầu: chữ thân trên nền giấy đạt tương phản **≥ 4.5:1**, 
 
 | Màn | Bố cục | Ghi chú |
 |---|---|---|
-| **Danh sách dự án** (`/`) | Logo DTP căn giữa, dưới là tiêu đề "Công cụ tự động sinh báo cáo thiết kế thang máy". Bên dưới là một khối viền gồm hàng công cụ (ô tìm dự án + nút **Tạo dự án**, chọn 1 trong 2 bộ mẫu) và danh sách. Bảng dự án kẻ mảnh gồm: tên công trình · địa chỉ · cập nhật lúc · thao tác (mở / nhân bản / đổi tên / xóa) | Kiểu "trang mục lục" bình tĩnh. Hiển thị trạng thái rỗng khi chưa có dự án. Xóa có nút **Hoàn tác**, không hỏi xác nhận |
+| **Danh sách dự án** (`/`) | Logo DTP căn giữa, dưới là tiêu đề "Công cụ tự động sinh báo cáo thiết kế thang máy". Bên dưới là một khối viền gồm hàng công cụ (ô tìm dự án + nút **Tạo dự án**, chọn 1 trong 2 bộ mẫu) và danh sách. Bảng dự án kẻ mảnh gồm: tên công trình · địa chỉ · cập nhật lúc · thao tác (mở / nhân bản / đổi tên / xóa) | Kiểu "trang mục lục" bình tĩnh. Hiển thị trạng thái rỗng khi chưa có dự án. Xóa hỏi xác nhận (`AlertDialog`), sau đó vẫn có nút **Hoàn tác** |
 | **Màn soạn** (`/projects/$id`) | Kiểu "Workbench". Form bên trái (~420px, accordion A–F) · hộp đèn graphite bên phải chứa tờ A3 + cột thumbnail · thanh trạng thái dưới (lưu / lỗi / cảnh báo) | Từ 1024px trở lên chia đôi màn hình. Dưới 1024px chuyển thành 2 tab "Thông số / Xem trước". Ở 320px không được vỡ |
 | **Trang dev** (`/dev/*`, chỉ khi DEV) | Bộ sưu tập ký hiệu, bộ sưu tập phần tử vẽ, trang xuất PDF từ bộ mẫu | Ở bản production trả về `notFound()` |
 
@@ -183,7 +183,7 @@ Yêu cầu: chữ thân trên nền giấy đạt tương phản **≥ 4.5:1**, 
 - [ ] Vòng focus hiện ngay, không có hiệu ứng chuyển.
 - [ ] Không vỡ bố cục và không cuộn ngang ở 320 / 375 / 414 / 768px. `html, body { overflow-x: clip }`.
 - [ ] Copy trung thực: không bịa số liệu. Trạng thái rỗng nói rõ việc cần làm tiếp.
-- [ ] Lưu thành công thì im lặng (chỉ đổi chữ trạng thái). Thao tác xóa có nút Hoàn tác.
+- [ ] Lưu thành công thì im lặng (chỉ đổi chữ trạng thái). Thao tác xóa hỏi xác nhận, sau đó có nút Hoàn tác.
 - [ ] Đóng dấu `/* Hallmark · ... */` ở đầu `tokens.css`, ghi `.hallmark/log.json`.
 - [ ] Chạy slop test của Hallmark trước khi xong P1 và P12.
 
@@ -347,13 +347,13 @@ Yêu cầu: chữ thân trên nền giấy đạt tương phản **≥ 4.5:1**, 
 
 **Mục tiêu:** tạo, mở, nhân bản, đổi tên, xóa (có hoàn tác) dự án; dữ liệu nằm trong D1.
 
-- [ ] **`src/server/projects.ts`:** viết các `createServerFn`: `listProjects`, `getProject`, `createProject(preset)`, `duplicateProject`, `renameProject`, `saveProject(params)`, `saveVersion(note)`, `listVersions`, `deleteProject` (xóa mềm) và `restoreProject`.
+- [x] **`src/server/projects.ts`:** viết các `createServerFn`: `listProjects`, `getProject`, `createProject(preset)`, `duplicateProject`, `renameProject`, `saveProject(params)`, `saveVersion(note)`, `listVersions`, `deleteProject` (xóa mềm) và `restoreProject`.
   - Kiểm tra đầu vào bằng Zod ở phía server.
   - Chỉ đọc/ghi JSON nhỏ, mỗi request dưới 10 ms CPU. `listProjects` chỉ trả `id, name, address, updatedAt` (lấy từ `params` lúc lưu hoặc cột riêng), **không** trả cả khối `params`.
   - ID tạo bằng `crypto.randomUUID()`.
-- [ ] **`src/features/projects/queries.ts`:** dùng `queryOptions` và mutation; đổi tên và xóa có cập nhật lạc quan (optimistic). Loader của route `/` gọi `ensureQueryData` để SSR có sẵn dữ liệu (không hiện spinner ở lần tải đầu).
-- [ ] **Bảng dự án bằng TanStack Table** (`yarn add @tanstack/react-table`, bản 9.x; nạp Intent skill của gói trước khi viết). Quy tắc chung nằm trong `CLAUDE.md` › Data tables và `design.md` › Data tables.
-  - **Cột:** Tên công trình (link mở dự án) · Địa chỉ · Cập nhật lúc (mono, `vi-VN`, ví dụ "14:32 · 22/10") · Thao tác (menu `Icons.more`: Mở, Nhân bản, Đổi tên, Xuất JSON, Xóa).
+- [x] **`src/features/projects/queries.ts`:** dùng `queryOptions` và mutation; đổi tên và xóa có cập nhật lạc quan (optimistic). Loader của route `/` gọi `ensureQueryData` để SSR có sẵn dữ liệu (không hiện spinner ở lần tải đầu).
+- [x] **Bảng dự án bằng TanStack Table** (`yarn add @tanstack/react-table`, bản 9.x; nạp Intent skill của gói trước khi viết). Quy tắc chung nằm trong `CLAUDE.md` › Data tables và `design.md` › Data tables.
+  - **Cột:** Tên công trình (link mở dự án) · Địa chỉ · Cập nhật lúc (mono, `vi-VN`, ví dụ "14:32 · 22/10") · Thao tác (Nhân bản, Sửa tên & địa chỉ, Xuất JSON, Xóa — mở dự án bằng link tên; bố cục theo P3.5).
   - **Sắp xếp:** mặc định theo cập nhật mới nhất; bấm tiêu đề Tên / Cập nhật để đổi chiều, có `aria-sort` và icon `sortAsc/sortDesc`.
   - **Tìm kiếm:** ô tìm trong hàng công cụ (đã có ở `/`); debounce 250 ms bằng `src/lib/use-debounced-value.ts`; so khớp không dấu (`đ`→`d`, bỏ dấu) trên tên + địa chỉ; giữ trong search param `?q=` (`validateSearch` bằng Zod) để tải lại vẫn còn; nút `Icons.clear` để xóa; phím Esc xóa ô tìm.
   - **Loading & UX:**
@@ -361,7 +361,7 @@ Yêu cầu: chữ thân trên nền giấy đạt tương phản **≥ 4.5:1**, 
     - Refetch nền: giữ dòng cũ (`placeholderData: keepPreviousData`), chỉ hiện chỉ báo nhỏ ở hàng công cụ.
     - Mutation: dòng đang xử lý mờ đi và khóa menu; nút trong hộp thoại có `loading`.
     - Đổi tên: sửa ngay tại dòng (Enter lưu, Esc hủy) hoặc hộp thoại trên mobile; cập nhật lạc quan, lỗi thì trả lại tên cũ + toast.
-    - Xóa: xóa mềm ngay, toast "Đã xóa … — Hoàn tác" (sonner action, ~6 s), không hộp xác nhận.
+    - Xóa: hỏi xác nhận bằng `AlertDialog` (từ P3.5.5), rồi xóa mềm ngay, toast "Đã xóa … — Hoàn tác" (sonner action, ~6 s).
     - Lỗi tải: `Alert` ngay trong khối danh sách + nút "Thử lại".
     - Trạng thái rỗng (chưa có dự án) khác trạng thái không khớp tìm kiếm ("Không có dự án khớp "…"" + nút xóa tìm kiếm).
   - **Responsive, cuộn và kích thước:**
@@ -372,14 +372,48 @@ Yêu cầu: chữ thân trên nền giấy đạt tương phản **≥ 4.5:1**, 
     - Không phân trang, không ảo hóa (vài trăm dự án là nhiều). Vượt ~500 dòng thì cân nhắc `@tanstack/react-virtual`.
     - Kiểm ở 320 / 375 / 414 / 768 / 1280 px: không cuộn ngang, menu thao tác không tràn màn hình.
   - **Bàn phím:** Tab qua ô tìm → nút Tạo → từng dòng (link tên, nút thao tác); menu điều khiển bằng phím mũi tên.
-- [ ] **Route `/`** dựng bằng giao diện P1 theo mục 3.5:
+- [x] **Route `/`** dựng bằng giao diện P1 theo mục 3.5:
   - Bảng dự án như trên.
   - Hộp thoại "Tạo dự án" chọn 1 trong 2 bộ mẫu (`PRESETS` trong `src/domain/presets`).
   - Nhập dự án từ file JSON (chạy `migrate`).
   - Trạng thái rỗng.
-- [ ] **Route `/projects/$id`:** khung màn soạn với `ssr: false`; nạp dự án, hiển thị tên và trạng thái lưu.
+- [x] **Route `/projects/$id`:** khung màn soạn với `ssr: false`; nạp dự án, hiển thị tên và trạng thái lưu.
 
 **Tiêu chí xong:** CRUD chạy với D1 local; tải lại trang vẫn còn dữ liệu; xóa rồi hoàn tác được.
+
+**Kết quả P3 (23/10/2026):**
+- **D1:** thêm cột `address` (migration `0001_project_address`); `name`/`address` là bản sao của `params.project.*`, ghi lại mỗi lần lưu/đổi tên. Đã chạy `db:migrate:local`.
+- **Server:** `src/server/project-repo.ts` (truy vấn drizzle, không phụ thuộc Worker) + `src/server/projects.ts` (`createServerFn` + Zod, thiếu/đã xóa → `notFound()`). Nhập JSON đi qua `migrate()`, lỗi cấu trúc trả câu tiếng Việt ngắn. `saveVersion`/`listVersions` mới có server, giao diện ở P4.
+- **Danh sách:** TanStack Table 9.3.1 (`useTable` + sorting + global filter), `src/lib/search.ts` (`foldVi`), `use-debounced-value.ts`, `format.ts` (giờ cố định `Asia/Ho_Chi_Minh`, tránh lệch hydration giữa Worker UTC và trình duyệt). Menu dòng bỏ mục "Mở" (link tên đã mở dự án; giữ bộ icon 24 cái).
+- **Test:** 72 xanh; repo chạy trên `node:sqlite` dựng từ chính các file migration (`src/tests/server/project-repo.test.ts`).
+- **Đã chạy tay (headless Chrome + D1 local):** tạo từ 2 bộ mẫu, tải lại còn dữ liệu, tìm "nha o"/"khach san" (giữ `?q=` khi tải lại, Esc xóa), không khớp, nhân bản, đổi tên tại dòng và bằng hộp thoại ở 320 px, xóa → Hoàn tác, xuất JSON → nhập lại, file JSON sai, `/projects/<id lạ>` → 404. Không cuộn ngang ở 320/375/414/768/1280 px; menu không tràn.
+- **Còn mở:** kiểm Tab bằng bàn phím trên trình duyệt thật; skeleton chỉ thấy khi điều hướng phía client lúc cache trống (SSR đã có dữ liệu).
+
+---
+
+### P3.5 — Địa chỉ + thao tác dòng + hộp thoại sửa (nhỏ)
+
+**Mục tiêu:** sau lần xem thử P3: nhập/sửa địa chỉ, thao tác dòng hiện thẳng trên màn rộng, bỏ sửa tại dòng.
+
+- [x] **Địa chỉ:** chuỗi tự do `params.project.address` (không tách tỉnh/phường). Ô "Địa chỉ" trong hộp thoại Tạo dự án (không bắt buộc, để trống — địa chỉ của bộ mẫu là địa chỉ giả). Tìm kiếm khớp theo địa chỉ (`matchesQuery`). Địa chỉ trống hiện "—".
+- [x] **Sửa bằng hộp thoại:** `edit-project-dialog.tsx` sửa tên + địa chỉ trên mọi cỡ màn hình; server `updateProjectInfo` → repo `updateInfo` ghi `params.project` và 2 cột sao chép cùng lúc. Bỏ sửa tại dòng.
+- [x] **Thao tác dòng** (`project-row-actions.tsx`, một danh sách thao tác cho cả 2 bố cục): ≥ 640 px là 4 nút icon `ghost icon-sm` có `Tooltip` + `aria-label`; < 640 px là menu `⋯` 44 px. Cột Thao tác 152 px, Địa chỉ 30%.
+- [x] `Icons.rename` → `Icons.edit` ("Sửa tên & địa chỉ"), bộ icon vẫn 24.
+
+**Kết quả P3.5 (23/10/2026):** 74 test xanh. Đã chạy tay: tạo có địa chỉ "12 Lê Lợi, Hải Châu", tìm "le loi" ra đúng dự án, sửa tên + địa chỉ qua nút icon (1280 px) và menu (375 px), tải lại còn dữ liệu, xóa địa chỉ → "—", tooltip hiện khi hover và khi Tab, xóa → focus sang dòng kế → Hoàn tác. Không cuộn ngang ở 320/640/768/1280 px.
+
+---
+
+### P3.5.5 — Xác nhận xóa, tooltip, con trỏ, ESLint a11y (nhỏ)
+
+- [x] **Xác nhận xóa:** `components/ui/alert-dialog.tsx` (viết tay theo `dialog.tsx`; CLI shadcn bị treo ở câu hỏi ghi đè `button.tsx` nên đã dừng) + `features/projects/delete-project-dialog.tsx`. Focus mặc định ở **Hủy**, bấm ra ngoài không đóng. Xác nhận → xóa mềm lạc quan + toast Hoàn tác như cũ, focus sang dòng kế; Hủy/Esc → focus về link tên của dòng. Có ví dụ trong `/dev/ui`.
+- [x] **Tooltip:** `TooltipProvider delayDuration` 800 → 200 ms (`__root.tsx`).
+- [x] **Con trỏ:** một luật `:where(button:not(:disabled), a[href], [role=menuitem|option|radio|checkbox|switch|tab|button], label:has(input, button), …)` → `cursor: pointer` trong `styles.css`; bỏ `cursor-default` ở item menu/select để luật chung áp dụng. Nút disabled vẫn `not-allowed`, đang tải vẫn `progress`.
+- [x] **ESLint a11y:** `eslint-plugin-jsx-a11y` 6.10.2, `flatConfigs.recommended` cho `src/**/*.tsx`. Một chỉnh option: `label-has-associated-control` nhận `Checkbox`, `Switch`, `RadioGroupItem` là control (Radix render `<button role=…>`, luật không nhìn xuyên được).
+- [x] Cập nhật `CLAUDE.md` (mục Accessibility), `design.md`, subagent `code-reviewer` (nhóm "Giao diện, danh sách và a11y") và `test-runner` (phạm vi `src/lib`, `src/server/project-repo`).
+
+**Kết quả P3.5.5 (23/10/2026):** lint (có jsx-a11y), typecheck, 74 test, build xanh. Chạy tay: con trỏ `pointer` ở nút icon, Tạo, Nhập, sắp xếp, link tên, item menu, thẻ bộ mẫu, nút hộp thoại; nút disabled là `not-allowed`; tooltip hiện trước 300 ms; xóa ở 1280 px (icon) và 375 px (menu): hộp hiện, focus ở Hủy, Esc/Hủy không xóa và trả focus về dòng, bấm ra ngoài không đóng, xác nhận → dòng mất + toast → Hoàn tác trả lại.
+- **Soát code (`code-reviewer`, toàn bộ P3 → P3.5.5):** không có lỗi chặn commit. Đã sửa: gỡ gói `cn` thừa; dialog sửa/xóa luôn được mount (xóa dòng cuối hoặc sửa khiến dòng hết khớp `?q=` không còn cắt ngang animation đóng); nút Nhập JSON dùng `Tooltip` thay cho `title`; hộp xóa giữ tên trong lúc đóng; form sửa tách component con có `key` (bỏ effect đồng bộ); giới hạn chữ chung `PROJECT_TEXT_MAX` trong `domain/config.ts` (có `maxLength` ở form); luật con trỏ không áp cho `select`/label có control đang disabled; bỏ class `cursor-*` lẻ. Giữ `depth: 3` cho luật label (thẻ bộ mẫu lồng chữ 2 tầng `span`) — khác gợi ý của reviewer.
 
 ---
 
@@ -643,7 +677,7 @@ Giao cho `symbol-extractor`.
 src/
   routes/          __root.tsx · index.tsx (danh sách) · projects.$id.tsx (màn soạn, ssr:false) · dev.ui.tsx, dev.symbols.tsx… (route phẳng, chỉ DEV)
   db/              schema.ts · index.ts (drizzle-orm/d1)
-  server/          projects.ts (createServerFn)
+  server/          projects.ts (createServerFn) · project-repo.ts (truy vấn drizzle, test được ngoài Worker)
   domain/          schema.ts · presets/ · derive.ts · rules.ts · migrate.ts
   drawing/         types.ts · render-svg.tsx · text-metrics.ts · primitives/ · symbols/ · frame/ · sheets/ · pages.ts
   pdf/             export-pdf.ts · fonts.ts
