@@ -109,6 +109,12 @@ export const PAGE_TITLES: Record<(typeof PAGE_KEYS)[number], string> = {
   'machine-room': 'Mặt cắt ngang phòng máy',
 }
 
+/** "Bao che rộng (JD320)" → "bao che rộng (JD320)": for use mid-sentence, keeps codes upper-case. */
+export function jambLabelInline(jamb: (typeof JAMB_TYPES)[number]): string {
+  const label = JAMB_TYPE_LABELS[jamb]
+  return label.charAt(0).toLowerCase() + label.slice(1)
+}
+
 /** Sheet code prefix ("DTP 01"). */
 export const PAGE_CODE_PREFIX = 'DTP'
 

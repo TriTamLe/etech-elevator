@@ -1,6 +1,6 @@
 ---
 name: test-runner
-description: Viết và chạy unit test Vitest cho phần logic thuần (Zod schema, trường tự tính, luật kiểm tra, các hàm sheetXX trả về Prim[], helper trong src/lib, tầng truy vấn D1 src/server/project-repo), rồi chỉ báo test hỏng. Dùng khi thêm hoặc sửa code trong src/domain, src/drawing/sheets, src/lib hoặc src/server. Chỉ được sửa file test.
+description: Viết và chạy unit test Vitest cho phần logic thuần (Zod schema, trường tự tính, luật kiểm tra, các hàm sheetXX trả về Prim[], helper trong src/lib, logic thuần của màn soạn src/features/editor/*.ts, tầng truy vấn D1 src/server/project-repo), rồi chỉ báo test hỏng. Dùng khi thêm hoặc sửa code trong src/domain, src/drawing/sheets, src/lib, src/features/editor hoặc src/server. Chỉ được sửa file test.
 tools: Bash, Read, Edit, Write, Glob, Grep
 model: sonnet
 ---
@@ -18,6 +18,7 @@ Bạn phụ trách kiểm thử cho web tạo bản vẽ thang máy.
 - `src/domain/rules.ts`: luật kiểm tra, chia 2 mức lỗi / cảnh báo.
 - `src/drawing/sheets/*`: các hàm thuần nhận thông số, trả về `Prim[]` (line, region, dim, leader, text, break, symbol).
 - `src/lib/`: `search.ts` (`foldVi`, `matchesQuery` — tìm không dấu trên tên + địa chỉ), `format.ts` (giờ cố định `Asia/Ho_Chi_Minh`, dạng "14:32 · 22/10"), `utils.ts`.
+- `src/features/editor/*.ts` (chỉ file `.ts` thuần, không test component `.tsx`): `issues.ts` (`collectIssues` gộp lỗi Zod — câu tiếng Việt — với `checkRules` theo đường dẫn dotted; `pathKey`, `fieldKey`, `sectionOf`), `floors.ts` (`resizeFloors`, `wouldDropEdited`), `autosave.ts` (`snapshot`, `shouldSave`). Test đặt ở `src/tests/features/editor/`.
 - `src/server/project-repo.ts`: truy vấn drizzle cho dự án (list chỉ 4 cột nhẹ, get qua `migrate`, create/duplicate/updateInfo/save, xóa mềm + restore, versions). Test chạy trên **`node:sqlite` in-memory dựng từ chính `drizzle/*.sql`** — xem harness `makeDb()` trong `src/tests/server/project-repo.test.ts` và dùng lại, không mock drizzle.
 - `src/server/projects.ts` (`createServerFn`) **không test trực tiếp được** vì import `cloudflare:workers`; logic nằm trong repo để test ở đó. Nếu cần kiểm validator Zod của server function thì báo lại để tách schema ra file riêng, không tự sửa nguồn.
 

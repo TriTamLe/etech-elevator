@@ -50,6 +50,12 @@ Hallmark **Cobalt** recoloured with the DTP logo palette (navy `oklch(35.6% 0.08
 - Responsive: `table-fixed` + explicit column widths ≥ 640 px; < 640 px render the same rows as a stacked list (44 px targets). Long Vietnamese names truncate with `min-w-0` + full name in `title`. No horizontal page scroll at 320 px, no nested scroll container, no `100vh` traps.
 - List endpoints return only list columns (never the `params` blob) to stay under the 10 ms CPU budget.
 
+### Editor (`src/features/editor/`)
+
+- TanStack Form holds values only; validation is `collectIssues()` (Zod shape with Vietnamese messages + `checkRules`), keyed by dotted path. Bound fields live in `fields.tsx`; every control's DOM id is `fieldId(path)` (focus targets, aria wiring).
+- Numbers use `NumberInput` (`components/ui/number-input.tsx`): blank/invalid → `NaN` (Zod error), `nullable` → `null`. Units go in the `Field` label.
+- Autosave saves only Zod-valid params; rule errors block the PDF, not saving. Replace all values with `replaceParams` (never `form.reset` alone — `useForm` re-applies its `defaultValues` option whenever it differs from the form's and the form is untouched, which `reset` makes true).
+
 ### Accessibility
 
 - `yarn lint` runs `eslint-plugin-jsx-a11y` (recommended) on `src/**/*.tsx`. Fix the markup; disable a rule only per line with `-- <reason>`. Radix controls are registered for `label-has-associated-control` in `eslint.config.js`.

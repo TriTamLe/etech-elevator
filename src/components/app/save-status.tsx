@@ -6,6 +6,10 @@ export type SaveState =
   | { kind: 'saving' }
   | { kind: 'saved'; at: Date }
   | { kind: 'error'; retry: () => void }
+  /** Edited, waiting for the debounce. */
+  | { kind: 'pending' }
+  /** Not saved: the form has shape errors (blank or invalid numbers). */
+  | { kind: 'invalid'; count: number }
 
 
 // Silent-success status line in the mono label voice. aria-live so screen readers hear changes.
@@ -21,6 +25,14 @@ export function SaveStatus({
       aria-live="polite"
       className={cn('label-mono inline-flex items-center gap-2', className)}
     >
+      {state.kind === 'pending' && (
+        <span className="text-(--color-ink-3)">Chưa lưu…</span>
+      )}
+      {state.kind === 'invalid' && (
+        <span className="text-(--color-danger)">
+          Chưa lưu — còn {state.count} lỗi
+        </span>
+      )}
       {state.kind === 'saving' && (
         <span className="text-(--color-ink-3)">Đang lưu…</span>
       )}

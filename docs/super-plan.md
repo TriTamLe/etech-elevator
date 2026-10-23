@@ -173,7 +173,7 @@ Yêu cầu: chữ thân trên nền giấy đạt tương phản **≥ 4.5:1**, 
 | Màn | Bố cục | Ghi chú |
 |---|---|---|
 | **Danh sách dự án** (`/`) | Logo DTP căn giữa, dưới là tiêu đề "Công cụ tự động sinh báo cáo thiết kế thang máy". Bên dưới là một khối viền gồm hàng công cụ (ô tìm dự án + nút **Tạo dự án**, chọn 1 trong 2 bộ mẫu) và danh sách. Bảng dự án kẻ mảnh gồm: tên công trình · địa chỉ · cập nhật lúc · thao tác (mở / nhân bản / đổi tên / xóa) | Kiểu "trang mục lục" bình tĩnh. Hiển thị trạng thái rỗng khi chưa có dự án. Xóa hỏi xác nhận (`AlertDialog`), sau đó vẫn có nút **Hoàn tác** |
-| **Màn soạn** (`/projects/$id`) | Kiểu "Workbench". Form bên trái (~420px, accordion A–F) · hộp đèn graphite bên phải chứa tờ A3 + cột thumbnail · thanh trạng thái dưới (lưu / lỗi / cảnh báo) | Từ 1024px trở lên chia đôi màn hình. Dưới 1024px chuyển thành 2 tab "Thông số / Xem trước". Ở 320px không được vỡ |
+| **Màn soạn** (`/projects/$id`) | Kiểu "Workbench". Header (tên, trạng thái lưu, các nút) · form bên trái (~420px, các nhóm A–F là thẻ viền, tiêu đề sticky) · hộp đèn graphite bên phải chứa tờ A3 + cột thumbnail các trang (cũng là chỗ chuyển trang). Lỗi hiện tại ô, trên tiêu đề nhóm và ở trạng thái lưu — không có thanh lỗi chân trang (bỏ ở P4.1) | Từ 1024px trở lên chia đôi màn hình. Dưới 1024px chuyển thành 2 tab "Thông số / Xem trước". Ở 320px không được vỡ |
 | **Trang dev** (`/dev/*`, chỉ khi DEV) | Bộ sưu tập ký hiệu, bộ sưu tập phần tử vẽ, trang xuất PDF từ bộ mẫu | Ở bản production trả về `notFound()` |
 
 ### 3.6 Kỷ luật Hallmark áp dụng cho mọi phase có giao diện
@@ -421,27 +421,55 @@ Yêu cầu: chữ thân trên nền giấy đạt tương phản **≥ 4.5:1**, 
 
 **Mục tiêu:** sửa được mọi thông số trong mục 2 của báo cáo; tự lưu; có phiên bản.
 
-- [ ] **Form:** TanStack Form với validator Zod. Accordion 6 nhóm A–F, số đo nhập bằng ô mono có đơn vị "mm".
-- [ ] **Danh sách tầng:**
+- [x] **Form:** TanStack Form với validator Zod. Accordion 6 nhóm A–F, số đo nhập bằng ô mono có đơn vị "mm".
+- [x] **Danh sách tầng:**
   - Tự sinh theo số điểm dừng; khi đổi số điểm dừng thì hỏi trước nếu làm mất dòng đã sửa.
   - Mỗi dòng gồm tên, chiều cao, loại bao che, có cửa hay không.
-- [ ] **Lịch sử hiệu chỉnh:** trường mảng 8 cột.
-- [ ] **Panel "Tự tính"** (chỉ đọc): tổng chiều cao, lỗ chờ, móc treo, nhóm tầng, danh sách trang.
-- [ ] **Lỗi và cảnh báo:**
-  - Hiện ngay tại từng trường, kèm bản tổng hợp ở thanh trạng thái.
+- [x] **Lịch sử hiệu chỉnh:** trường mảng 8 cột.
+- [x] **Panel "Tự tính"** (chỉ đọc): tổng chiều cao, lỗ chờ, móc treo, nhóm tầng (danh sách trang chuyển sang vùng xem trước ở P4.1).
+- [x] **Lỗi và cảnh báo:**
+  - Hiện ngay tại từng trường, kèm số lỗi/cảnh báo trên tiêu đề nhóm và ở trạng thái lưu (thanh trạng thái bỏ ở P4.1).
   - Có lỗi thì khóa nút **Tải PDF** và hiện lý do.
-- [ ] **Tự lưu:**
+- [x] **Tự lưu:**
   - Theo dõi thay đổi của form, chờ 1,5 giây sau khi ngừng gõ rồi gọi `saveProject`.
   - Trạng thái hiển thị: "Đang lưu…" / "Đã lưu 14:32" / "Lưu lỗi — Thử lại".
   - Chặn rời trang khi còn thay đổi chưa lưu.
-- [ ] **Phiên bản:**
+- [x] **Phiên bản:**
   - Panel danh sách phiên bản.
   - "Lưu phiên bản" kèm ghi chú.
   - "Khôi phục" (đưa phiên bản đó vào form).
   - "Đưa vào bảng hiệu chỉnh".
-- [ ] **Xuất/nhập JSON:** file có `schemaVersion`; khi nhập thì chạy `migrate`.
+- [x] **Xuất/nhập JSON:** file có `schemaVersion`; khi nhập thì chạy `migrate`.
 
 **Tiêu chí xong:** sửa cả 2 bộ mẫu không lỗi; tải lại trang vẫn giữ đúng; lỗi và cảnh báo hiện đúng các trường hợp trong P2.
+
+**Kết quả P4 (23/10/2026):**
+- **Màn soạn Workbench** (`src/features/editor/`, route `projects.$id.tsx`): header (về danh sách, tên, trạng thái lưu, Phiên bản / Xuất JSON / Nhập JSON / Tải PDF khóa kèm lý do) · form 420 px (accordion nhiều nhóm mở cùng lúc, nhớ theo dự án trong `localStorage`, số lỗi trên từng nhóm) + panel Tự tính · hộp đèn graphite (chỗ trống cho P5) · thanh trạng thái (đếm lỗi/cảnh báo, chọn để mở nhóm và focus đúng ô). Dưới 1024 px là 2 tab.
+- **Kiểm lỗi:** TanStack Form chỉ giữ giá trị; `collectIssues()` gộp Zod (câu tiếng Việt riêng) + `checkRules` theo đường dẫn dotted, mỗi `Field` có `id` = `field-<path>`. Luật chéo chỉ chạy khi hình dạng hợp lệ. `Field` có thêm khe cảnh báo (icon vàng, chữ mực).
+- **Ô số:** `components/ui/number-input.tsx` giữ chuỗi đang gõ, trả `NaN` (trống/sai) hoặc `null` (`nullable`, ví dụ chiều cao tầng, móc treo = tâm hố).
+- **Tự lưu** (`use-autosave.ts`): 1,5 s sau lần sửa cuối, chỉ khi Zod hợp lệ, bỏ qua nếu không đổi, các lần lưu tuần tự (`scope`). Rời trang: còn sửa hợp lệ thì lưu luôn rồi đi; còn lỗi thì hỏi ("Ở lại" / "Rời trang"); đóng tab thì `beforeunload`.
+- **Số điểm dừng → danh sách tầng:** áp dụng khi rời ô/Enter; giảm mà mất dòng đã sửa thì hỏi, Hủy trả về. Tầng trên cùng hiện "OH", không nhập chiều cao.
+- **Phiên bản** (sheet bên phải, `components/ui/sheet.tsx` viết tay): lưu kèm ghi chú (lưu phần đang chờ trước), khôi phục (hỏi lại), đưa vào bảng hiệu chỉnh. Server thêm `getVersion`; `listVersions` trả 404 khi dự án đã xóa.
+- **Nhập JSON trong màn soạn:** `migrate` ngay trên trình duyệt → hỏi "Thay toàn bộ thông số?" → thay. Lưu ý kỹ thuật: `useForm` áp lại option `defaultValues` khi nó khác defaults của form và form chưa bị chạm (mà `reset` làm form thành chưa chạm), nên thay toàn bộ phải đi qua `replaceParams` (đổi cả defaults), không gọi `form.reset` trực tiếp.
+- **Sửa thêm:** nhãn bao che giữa câu giữ chữ hoa mã ("bao che rộng (JD320)", `jambLabelInline`) — trước đây `rules.ts` in thành "jd320".
+- **Test:** 109 xanh (thêm 32 test cho `issues`/`floors`/`autosave` qua subagent `test-runner`, test repo cho phiên bản, `formatDate`).
+- **Đã chạy tay (headless Chrome, D1 local):** 2 bộ mẫu không lỗi, Tự tính đúng (bộ 2: 20.900 mm, 900/300 · 1100/200, móc 750/950; bộ 1: chưa đủ chiều cao → "-- mm", 1000/400 · 1100/350, móc 900/1000); sửa AH → "Đã lưu", tải lại còn; ô trống → lỗi tại ô + "Chưa lưu — còn 1 lỗi"; CW + 400 > AH → lỗi; PIT thấp → cảnh báo "kỹ sư cần xác nhận"; nhảy tới ô từ thanh trạng thái (kể cả nhóm đang đóng); số điểm dừng 5 → 7 → 5 → 4 → 3 (hỏi, Hủy); lưu/khôi phục phiên bản, đưa vào bảng hiệu chỉnh; xuất/nhập JSON; rời trang khi còn lỗi (hỏi) và khi có sửa hợp lệ (lưu rồi đi). Không cuộn ngang ở 320/768/1024/1280 px; Tab: header → nhóm A → các ô.
+- **Soát code (`code-reviewer`):** không có lỗi chặn commit. Đã sửa: tự lưu ghi nhớ "đích" của các lần lưu đang chờ (sửa ngược về giá trị cũ trong lúc đang lưu vẫn tính là chưa lưu; rời trang chờ lần lưu dở xong; phiên bản dùng chung `scope` nên chụp sau các lần lưu); tầng trở thành tầng trên cùng thì xóa chiều cao cũ (trước đây giá trị sai bị ẩn làm tắc tự lưu); nhập JSON báo lỗi tiếng Việt (`migrateImport` dùng chung cho server và màn soạn); tên chỉ có khoảng trắng bị từ chối (`trim` trong schema); xóa lần hiệu chỉnh có Tooltip + toast Hoàn tác + focus; mọi hộp thoại/sheet/menu mở bằng state trả focus về nút đã mở (`focusLater`), Esc ở hộp chặn rời trang = Ở lại; ô số điểm dừng sai thì trả về số cũ khi rời ô; dòng tầng có `aria-describedby` cho lỗi, nhãn thống nhất, `<ol reversed>`; nhảy tới đường dẫn không có ô thì focus nút mở nhóm; badge nhóm tách lỗi/cảnh báo, có chữ cho trình đọc màn hình; nút `aria-disabled` lấy kiểu từ `buttonVariants`; "phase P5" → "sắp có"; "Ghi đè theo trang" luôn mounted.
+- **Còn mở:** chưa có test component cho form và cho state machine trong `use-autosave.ts` (đã chạy tay); chưa đo hiệu năng bằng React Profiler với 20 tầng + mọi nhóm mở (nếu chậm: `useDeferredValue` cho `collectIssues`, memo theo nhóm); ô số thập phân đọc "1.500" là 1,5; `pageOverrides` mới nhập được, P5 mới dùng khi in khung tên.
+
+---
+
+### P4.1 — Chỉnh màn soạn sau buổi xem thử (23/10/2026, commit chung với P4)
+
+- [x] Bỏ "Danh sách trang" khỏi panel Tự tính (chuyển trang sẽ nằm ở vùng xem trước, P5); panel đổi sang nhãn trên – giá trị dưới.
+- [x] Sửa viền focus bị cắt hai bên: `AccordionContent` có `overflow-hidden` (cho hiệu ứng mở/đóng) mà ô nhập sát mép; nay phần ruột thẻ có padding ngang.
+- [x] Nhóm A–F thành **thẻ có viền**: tiêu đề nền `paper-2`, chữ đậm cỡ base, ô chữ cái mono (lịch sử hiệu chỉnh dùng icon), badge lỗi/cảnh báo; tiêu đề **sticky** trong phạm vi thẻ khi cuộn. `accordion.tsx` thêm `data-slot="accordion-header"`, bỏ `hover:underline`. Cột form dùng `minmax(0,1fr)` để không tràn ở 320 px.
+- [x] Bỏ thanh lỗi chân trang (`status-bar.tsx`) và chức năng nhảy tới ô đi kèm.
+- [x] "Loại hồ sơ" (ô LOẠI HỒ SƠ 6 dòng trong khung tên mẫu) chuyển sang Select; bỏ `RadioField`.
+- [x] **Thêm/bớt tầng ngay ở mục D** ("Thêm tầng" / "Bớt tầng trên cùng"); `use-stops-control.tsx` là đường duy nhất đổi số điểm dừng (ô ở mục B dùng chung), vẫn hỏi khi bớt tầng đã sửa. Tầng thành tầng trên cùng chỉ bị xóa chiều cao nếu giá trị **không hợp lệ**; chiều cao hợp lệ được giữ (thêm tầng lại thì còn).
+- [x] Nhãn bảng hiệu chỉnh theo đúng cột trên mẫu: Chi tiết · Hiệu chỉnh · Ngày hiệu chỉnh · Lần hiệu chỉnh · Nhân viên hiệu chỉnh · Kiểm tra · Duyệt · Yêu cầu kỹ thuật.
+- **Soát code (`code-reviewer`):** không có lỗi chặn commit. Đã sửa: hộp xác nhận bớt tầng không còn chạy nhánh Hủy khi bấm đồng ý, chữ trong hộp không nhảy lúc đóng; focus không rơi về `body` khi bớt tới 2 tầng (`focusLater` bỏ qua nút disabled); tiêu đề sticky không che ô đang focus (`scroll-pt-16`), vòng focus vẽ vào trong, nền che góc khi đang dính, nền hover đặc; tiêu đề nhóm là `h2` và có chữ cái cho trình đọc màn hình; icon mới `Icons.remove` (dấu trừ) cho "Bớt tầng"; chiều cao ẩn của tầng trên cùng không còn làm bật hộp hỏi; nút Thêm sửa được danh sách tầng lệch số điểm dừng (sau khi nhập JSON).
+- **Đã trả lời:** 2 bộ mẫu dùng **chung một form**, chỉ khác giá trị điền sẵn (địa chỉ, người ký, tải trọng/hố/cabin/cửa, số điểm dừng, tốc độ, máy kéo, PIT/buồng trên cùng, dầm kiềng tầng, ghi chú xây chèn, chiều cao tầng, tên buồng, kiểu đỡ máy) — giữ cả 2 làm điểm xuất phát.
 
 ---
 

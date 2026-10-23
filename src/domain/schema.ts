@@ -47,7 +47,7 @@ export const ElevatorParams = z.object({
 
   /** A. Thông tin hồ sơ */
   project: z.object({
-    name: z.string().min(1),
+    name: z.string().trim().min(1),
     address: text,
     /** Title-block address; '' = use `address`. */
     shortAddress: text,

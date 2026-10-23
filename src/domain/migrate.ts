@@ -1,3 +1,5 @@
+import { z } from 'zod'
+
 import { CURRENT_SCHEMA_VERSION, ElevatorParams } from '#/domain/schema'
 
 // Upgrade step from version v to v + 1. Add one entry per schema bump, e.g.
@@ -32,4 +34,21 @@ export function migrate(raw: unknown): ElevatorParams {
     version += 1
   }
   return ElevatorParams.parse(data)
+}
+
+/**
+ * migrate() for user files (JSON import): a shape error becomes one short Vietnamese
+ * sentence naming the first bad path, instead of Zod's English JSON dump.
+ */
+export function migrateImport(raw: unknown): ElevatorParams {
+  try {
+    return migrate(raw)
+  } catch (e) {
+    if (e instanceof z.ZodError) {
+      const issue = e.issues.at(0)
+      const where = issue?.path.join('.') || 'gốc'
+      throw new Error(`File không đúng cấu trúc thông số (sai ở “${where}”).`)
+    }
+    throw e
+  }
 }

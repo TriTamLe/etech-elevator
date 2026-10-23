@@ -34,3 +34,9 @@ export function formatUpdatedAt(date: Date, now: Date): string {
       : `${p.day}/${p.month}/${p.year}`
   return `${p.hour}:${p.minute} · ${day}`
 }
+
+/** "22/10/2026" in Vietnam time (title-block and revision dates). */
+export function formatDate(date: Date): string {
+  const p = pick(date)
+  return `${p.day}/${p.month}/${p.year}`
+}

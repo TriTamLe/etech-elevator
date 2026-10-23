@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { ZodError } from 'zod'
 
-import { migrate } from '#/domain/migrate'
+import { migrate, migrateImport } from '#/domain/migrate'
 import { presetParams } from '#/domain/presets'
 import { CURRENT_SCHEMA_VERSION } from '#/domain/schema'
 
@@ -44,5 +44,21 @@ describe('migrate', () => {
     p.tech.shaft.width = 'rộng'
     expect(() => migrate(p)).toThrow(ZodError)
     expect(() => migrate({ schemaVersion: 1 })).toThrow(ZodError)
+  })
+})
+
+describe('migrateImport', () => {
+  it('passes valid params through', () => {
+    const p = presetParams('house-5f')
+    expect(migrateImport(structuredClone(p))).toEqual(p)
+  })
+
+  it('turns a shape error into one Vietnamese sentence with the path', () => {
+    const bad = { ...presetParams('house-5f'), tech: { loadKg: 'x' } }
+    expect(() => migrateImport(bad)).toThrow(/^File không đúng cấu trúc thông số \(sai ở “tech\./)
+  })
+
+  it('keeps the version errors as they are', () => {
+    expect(() => migrateImport({ schemaVersion: 99 })).toThrow(/phiên bản 99/)
   })
 })

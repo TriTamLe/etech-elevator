@@ -180,13 +180,14 @@ function UiGallery() {
         title="Biểu tượng"
         note="Lucide (ISC, miễn phí) — một bộ duy nhất cho cả app. Cỡ 16 / 20 / 24, nét 2px, màu theo chữ. Lấy từ #/components/app/icons."
       >
-        <ul className="grid grid-cols-2 gap-px overflow-hidden rounded-(--radius-card) border border-(--color-rule) bg-(--color-rule) sm:grid-cols-4 lg:grid-cols-6">
+        <ul className="grid grid-cols-2 gap-px overflow-hidden rounded-(--radius-card) border border-(--color-rule) bg-(--color-paper) sm:grid-cols-4 lg:grid-cols-6">
           {(Object.keys(Icons) as Array<IconName>).map((name) => {
             const Icon = Icons[name]
             return (
               <li
                 key={name}
-                className="grid min-w-0 gap-2 bg-(--color-paper) p-3 text-(--color-ink)"
+                // Each cell draws its own hairline, so a short last row leaves no grey gap.
+                className="grid min-w-0 gap-2 bg-(--color-paper) p-3 text-(--color-ink) outline outline-(--color-rule)"
               >
                 <Icon className="size-5" aria-hidden="true" />
                 <span className="truncate text-(length:--text-sm)">

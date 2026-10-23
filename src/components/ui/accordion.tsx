@@ -1,7 +1,7 @@
-import * as React from "react"
-import { cn } from "#/lib/utils"
-import { ChevronDownIcon } from "lucide-react"
-import { Accordion as AccordionPrimitive } from "radix-ui"
+import * as React from 'react'
+import { cn } from '#/lib/utils'
+import { ChevronDownIcon } from 'lucide-react'
+import { Accordion as AccordionPrimitive } from 'radix-ui'
 
 function Accordion({
   ...props
@@ -16,7 +16,7 @@ function AccordionItem({
   return (
     <AccordionPrimitive.Item
       data-slot="accordion-item"
-      className={cn("border-b last:border-b-0", className)}
+      className={cn('border-b last:border-b-0', className)}
       {...props}
     />
   )
@@ -25,21 +25,28 @@ function AccordionItem({
 function AccordionTrigger({
   className,
   children,
+  level = 3,
   ...props
-}: React.ComponentProps<typeof AccordionPrimitive.Trigger>) {
+}: React.ComponentProps<typeof AccordionPrimitive.Trigger> & {
+  /** Heading level of the header element, to fit the page outline. */
+  level?: 2 | 3
+}) {
+  const Heading = level === 2 ? 'h2' : 'h3'
   return (
-    <AccordionPrimitive.Header className="flex">
-      <AccordionPrimitive.Trigger
-        data-slot="accordion-trigger"
-        className={cn(
-          "flex flex-1 items-start justify-between gap-4 rounded-(--radius-control) py-4 text-left text-sm font-medium transition-[background-color,border-color,color,opacity] hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--color-focus) disabled:pointer-events-none disabled:opacity-55 [&[data-state=open]>svg]:rotate-180",
-          className
-        )}
-        {...props}
-      >
-        {children}
-        <ChevronDownIcon className="pointer-events-none size-4 shrink-0 translate-y-0.5 text-muted-foreground transition-transform duration-200" />
-      </AccordionPrimitive.Trigger>
+    <AccordionPrimitive.Header asChild>
+      <Heading data-slot="accordion-header" className="flex">
+        <AccordionPrimitive.Trigger
+          data-slot="accordion-trigger"
+          className={cn(
+            'flex flex-1 items-start justify-between gap-4 rounded-(--radius-control) py-4 text-left text-sm font-medium transition-[background-color,border-color,color,opacity] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--color-focus) disabled:pointer-events-none disabled:opacity-55 [&[data-state=open]>svg]:rotate-180',
+            className,
+          )}
+          {...props}
+        >
+          {children}
+          <ChevronDownIcon className="pointer-events-none size-4 shrink-0 translate-y-0.5 text-muted-foreground transition-transform duration-200" />
+        </AccordionPrimitive.Trigger>
+      </Heading>
     </AccordionPrimitive.Header>
   )
 }
@@ -55,7 +62,7 @@ function AccordionContent({
       className="overflow-hidden text-sm data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down"
       {...props}
     >
-      <div className={cn("pt-0 pb-4", className)}>{children}</div>
+      <div className={cn('pt-0 pb-4', className)}>{children}</div>
     </AccordionPrimitive.Content>
   )
 }

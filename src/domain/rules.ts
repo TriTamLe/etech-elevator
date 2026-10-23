@@ -1,4 +1,4 @@
-import { CLEARANCE, JAMB_TYPE_LABELS, PIT_OH_BY_SPEED } from '#/domain/config'
+import { CLEARANCE, PIT_OH_BY_SPEED, jambLabelInline } from '#/domain/config'
 import { jambsInUse, landingOpening } from '#/domain/derive'
 import type { ElevatorParams } from '#/domain/schema'
 
@@ -38,7 +38,7 @@ export function checkRules(p: ElevatorParams): Array<Issue> {
   const maxOpening = shaft.width - 2 * CLEARANCE.minOpeningSide
   for (const jamb of jambsInUse(p.floors)) {
     const { width } = landingOpening(p, jamb)
-    const name = JAMB_TYPE_LABELS[jamb].toLowerCase()
+    const name = jambLabelInline(jamb)
     if (door.width > width) {
       error(
         'tech.door.width',

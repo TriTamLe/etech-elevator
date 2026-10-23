@@ -8,13 +8,18 @@ import { isNotFound } from '@tanstack/react-router'
 import { toast } from 'sonner'
 
 import type { PresetId } from '#/domain/presets'
+import type { ElevatorParams } from '#/domain/schema'
 import {
   createProject,
   deleteProject,
   duplicateProject,
   getProject,
+  getVersion,
   listProjects,
+  listVersions,
   restoreProject,
+  saveProject,
+  saveVersion,
   updateProjectInfo,
 } from '#/server/projects'
 import type { ProjectListItem } from '#/server/project-repo'
@@ -23,6 +28,7 @@ export const projectKeys = {
   all: ['projects'] as const,
   list: () => [...projectKeys.all, 'list'] as const,
   detail: (id: string) => [...projectKeys.all, 'detail', id] as const,
+  versions: (id: string) => [...projectKeys.all, 'versions', id] as const,
 }
 
 // Fresh for 30 s: the SSR-prefetched list is not refetched again on hydrate.
@@ -189,3 +195,46 @@ export function useRestoreProject() {
   })
 }
 
+
+export const versionsQuery = (id: string) =>
+  queryOptions({
+    queryKey: projectKeys.versions(id),
+    queryFn: () => listVersions({ data: { id } }),
+  })
+
+export function fetchVersion(projectId: string, versionId: string) {
+  return getVersion({ data: { projectId, versionId } })
+}
+
+/**
+ * Autosave write. One scope per project, so saves run strictly in order; on success the
+ * detail cache takes the new params and the list refetches (name/address may have changed).
+ */
+export function useSaveProject(id: string) {
+  const queryClient = useQueryClient()
+  return useMutation({
+    scope: { id: `save-${id}` },
+    mutationFn: (params: ElevatorParams) =>
+      saveProject({ data: { id, params } }),
+    onSuccess: (item, params) => {
+      queryClient.setQueryData(projectKeys.detail(id), (old) =>
+        old ? { ...old, ...item, params } : old,
+      )
+      void queryClient.invalidateQueries({ queryKey: projectKeys.list() })
+    },
+  })
+}
+
+export function useSaveVersion(id: string) {
+  const queryClient = useQueryClient()
+  return useMutation({
+    // Same scope as autosave: the snapshot is taken only after queued saves have landed.
+    scope: { id: `save-${id}` },
+    mutationFn: (note: string | null) =>
+      saveVersion({ data: { id, note } }),
+    onSuccess: () =>
+      queryClient.invalidateQueries({ queryKey: projectKeys.versions(id) }),
+    onError: (error) =>
+      toast.error(`Không lưu được phiên bản: ${errorMessage(error)}`),
+  })
+}

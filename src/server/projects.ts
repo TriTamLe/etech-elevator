@@ -4,7 +4,7 @@ import { z } from 'zod'
 
 import { getDb } from '#/db'
 import { PROJECT_TEXT_MAX } from '#/domain/config'
-import { migrate } from '#/domain/migrate'
+import { migrateImport } from '#/domain/migrate'
 import { PRESET_IDS, presetParams } from '#/domain/presets'
 import { ElevatorParams } from '#/domain/schema'
 import * as repo from '#/server/project-repo'
@@ -16,21 +16,6 @@ const Id = z.string().min(1).max(64)
 const Name = z.string().trim().min(1, 'Tên công trình không được để trống.').max(PROJECT_TEXT_MAX.name)
 const Address = z.string().trim().max(PROJECT_TEXT_MAX.address)
 const ById = z.object({ id: Id })
-
-/** migrate() with a short Vietnamese message instead of a raw Zod issue dump. */
-function importParams(raw: unknown) {
-  try {
-    return migrate(raw)
-  } catch (e) {
-    if (e instanceof z.ZodError) {
-      const issue = e.issues[0]
-      throw new Error(
-        `File không đúng cấu trúc thông số (${issue.path.join('.') || 'gốc'}: ${issue.message}).`,
-      )
-    }
-    throw e
-  }
-}
 
 function found<T>(value: T | null | false): T {
   if (value === null || value === false) throw notFound()
@@ -66,7 +51,7 @@ export const createProject = createServerFn({ method: 'POST' })
       params.project.address = data.address
       return repo.create(getDb(), params)
     }
-    return repo.create(getDb(), importParams(data.params))
+    return repo.create(getDb(), migrateImport(data.params))
   })
 
 export const duplicateProject = createServerFn({ method: 'POST' })
@@ -107,4 +92,10 @@ export const saveVersion = createServerFn({ method: 'POST' })
 
 export const listVersions = createServerFn({ method: 'GET' })
   .validator(ById)
-  .handler(({ data }) => repo.listVersions(getDb(), data.id))
+  .handler(async ({ data }) => found(await repo.listVersions(getDb(), data.id)))
+
+export const getVersion = createServerFn({ method: 'GET' })
+  .validator(z.object({ projectId: Id, versionId: Id }))
+  .handler(async ({ data }) =>
+    found(await repo.getVersion(getDb(), data.projectId, data.versionId)),
+  )

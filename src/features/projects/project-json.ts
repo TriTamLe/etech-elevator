@@ -1,3 +1,4 @@
+import type { ElevatorParams } from '#/domain/schema'
 import { foldVi } from '#/lib/search'
 import { getProject } from '#/server/projects'
 
@@ -9,16 +10,15 @@ export function projectFileName(name: string): string {
   return `${slug || 'du-an'}.json`
 }
 
-/** Download the project's params (with schemaVersion) as a JSON file. */
-export async function exportProjectJson(id: string): Promise<void> {
-  const project = await getProject({ data: { id } })
-  const blob = new Blob([JSON.stringify(project.params, null, 2)], {
+/** Download params (with schemaVersion) as "<project-name>.json". */
+export function downloadParamsJson(params: ElevatorParams): void {
+  const blob = new Blob([JSON.stringify(params, null, 2)], {
     type: 'application/json',
   })
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')
   a.href = url
-  a.download = projectFileName(project.name)
+  a.download = projectFileName(params.project.name)
   a.click()
   // Revoking in the same tick can cancel the download in Safari/Firefox.
   setTimeout(() => URL.revokeObjectURL(url), 0)
@@ -26,6 +26,12 @@ export async function exportProjectJson(id: string): Promise<void> {
 
 // A project export is a few KB; anything far larger is not one of ours.
 const MAX_IMPORT_BYTES = 256 * 1024
+
+/** Download a saved project's params as a JSON file. */
+export async function exportProjectJson(id: string): Promise<void> {
+  const project = await getProject({ data: { id } })
+  downloadParamsJson(project.params)
+}
 
 /** Read a picked .json file into an unknown value (migrate() validates it on the server). */
 export async function readJsonFile(file: File): Promise<unknown> {

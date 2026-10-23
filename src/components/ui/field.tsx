@@ -21,6 +21,8 @@ type FieldProps = {
   hint?: string
   /** Replaces the hint in the same slot, sets aria-invalid on the control. */
   error?: string
+  /** Non-blocking issue (e.g. PIT below the reference table); shown when there is no error. */
+  warning?: string
   status?: FieldStatus
   required?: boolean
   /** Hide the right-edge glyph (e.g. Select already shows a chevron there). */
@@ -42,6 +44,7 @@ function Field({
   unit,
   hint,
   error,
+  warning,
   status = 'idle',
   required,
   showStatusIcon = true,
@@ -52,7 +55,8 @@ function Field({
   const childProps = typeof children === 'function' ? undefined : children.props
   const id = (childProps?.id as string | undefined) ?? autoId
   const messageId = `${id}-message`
-  const message = error ?? hint
+  const message = error ?? warning ?? hint
+  const warned = !error && Boolean(warning)
   const invalid = Boolean(error)
 
   // Only add keys that carry a value: Radix spreads user props after its own
@@ -119,9 +123,21 @@ function Field({
         id={messageId}
         className={cn(
           'min-h-[1lh] text-(length:--text-xs)',
-          invalid ? 'text-(--color-danger)' : 'text-(--color-ink-3)',
+          invalid
+            ? 'text-(--color-danger)'
+            : warned
+              ? 'text-(--color-ink-2)'
+              : 'text-(--color-ink-3)',
         )}
       >
+        {warned && (
+          // Warn yellow is too light for text on paper: it marks, the ink carries the words.
+          <AlertTriangleIcon
+            className="mr-1 inline size-4 -translate-y-px text-(--color-warn)"
+            aria-hidden="true"
+          />
+        )}
+        {warned && <span className="sr-only">Cảnh báo: </span>}
         {message}
       </p>
     </div>

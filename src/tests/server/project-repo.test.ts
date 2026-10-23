@@ -119,6 +119,25 @@ describe('project repo', () => {
     const v = await repo.saveVersion(db, id, 'Gửi khách lần 1')
     expect(v?.note).toBe('Gửi khách lần 1')
     const versions = await repo.listVersions(db, id)
-    expect(versions.map((x) => x.id)).toEqual([v?.id])
+    expect(versions?.map((x) => x.id)).toEqual([v?.id])
+    expect(await repo.listVersions(db, 'missing')).toBeNull()
+  })
+
+  it('getVersion returns the snapshot, not later edits', async () => {
+    const params = presetParams('house-5f')
+    const { id } = await repo.create(db, params)
+    const v = await repo.saveVersion(db, id, null)
+    await repo.updateInfo(db, id, { name: 'ĐỔI SAU', address: '' })
+    const snap = await repo.getVersion(db, id, v?.id ?? '')
+    expect(snap?.params.project.name).toBe(params.project.name)
+    expect(await repo.getVersion(db, 'other', v?.id ?? '')).toBeNull()
+  })
+
+  it('hides versions of a deleted project', async () => {
+    const { id } = await repo.create(db, presetParams('house-5f'))
+    const v = await repo.saveVersion(db, id, null)
+    await repo.softDelete(db, id)
+    expect(await repo.listVersions(db, id)).toBeNull()
+    expect(await repo.getVersion(db, id, v?.id ?? '')).toBeNull()
   })
 })

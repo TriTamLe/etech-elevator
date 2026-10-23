@@ -165,10 +165,16 @@ export async function saveVersion(
   return version
 }
 
-export function listVersions(
+/** Versions of a live project, newest first; null when the project is missing or deleted. */
+export async function listVersions(
   db: ProjectDb,
   id: string,
-): Promise<Array<VersionListItem>> {
+): Promise<Array<VersionListItem> | null> {
+  const project = await db
+    .select({ id: projects.id })
+    .from(projects)
+    .where(alive(id))
+  if (project.length === 0) return null
   return db
     .select({
       id: projectVersions.id,
@@ -178,4 +184,32 @@ export function listVersions(
     .from(projectVersions)
     .where(eq(projectVersions.projectId, id))
     .orderBy(desc(projectVersions.createdAt))
+}
+
+/** One version's params (upgraded by migrate), only while its project is live. */
+export async function getVersion(
+  db: ProjectDb,
+  projectId: string,
+  versionId: string,
+): Promise<(VersionListItem & { params: ElevatorParams }) | null> {
+  const row = (
+    await db
+      .select({
+        id: projectVersions.id,
+        note: projectVersions.note,
+        createdAt: projectVersions.createdAt,
+        params: projectVersions.params,
+      })
+      .from(projectVersions)
+      .innerJoin(projects, eq(projects.id, projectVersions.projectId))
+      .where(
+        and(
+          eq(projectVersions.id, versionId),
+          eq(projectVersions.projectId, projectId),
+          isNull(projects.deletedAt),
+        ),
+      )
+  ).at(0)
+  if (!row) return null
+  return { ...row, params: migrate(row.params) }
 }

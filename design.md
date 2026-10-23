@@ -59,6 +59,9 @@ to it. Amend intentionally — the file is the rule.
 - Row actions: icon buttons with tooltips on wide screens, a single "⋯" menu on narrow ones. Editing opens a dialog; cells are never edited inline.
 - ≥ 640 px: fixed-layout table, name column flexes and truncates. < 640 px: the same row model as a stacked list. Never horizontal scroll at 320 px; the page scrolls, not an inner box.
 
+## Editor form
+- Each parameter group is a bordered card (`--radius-card`, `--color-rule`); its header (paper-2, bold base size, mono letter chip, issue badges) is sticky within the card while its fields scroll. No footer status bar: issues show at the field, on the group header and in the save status.
+
 ## Interaction details
 - Every clickable element shows the pointer cursor (one base rule in `styles.css`); disabled = `not-allowed`, loading = `progress`.
 - Tooltips open after 200 ms; moving to a neighbouring control shows its tooltip at once.

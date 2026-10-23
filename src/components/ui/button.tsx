@@ -17,6 +17,8 @@ const buttonVariants = cva(
     'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--color-focus)',
     'active:translate-y-px',
     'disabled:cursor-not-allowed disabled:opacity-55 aria-busy:cursor-progress',
+    // Focusable-but-unavailable (e.g. "Tải PDF" while errors remain); loading uses aria-busy instead.
+    'aria-disabled:not-aria-busy:cursor-not-allowed aria-disabled:not-aria-busy:opacity-55',
     'aria-invalid:border-(--color-danger)',
     'data-[status=success]:border-(--color-ok) data-[status=success]:bg-(--color-ok) data-[status=success]:text-(--color-accent-ink)',
     "[&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
