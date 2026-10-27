@@ -11,7 +11,7 @@ import {
   text,
   vline,
 } from '#/drawing/prims'
-import { ellipsize, fits, wrap } from '#/drawing/text-metrics'
+import { ellipsize, fits, measure, wrap } from '#/drawing/text-metrics'
 import type { Prim } from '#/drawing/types'
 
 /** The 6 document-type rows, bilingual, in DOC_TYPES order (as printed). */
@@ -190,9 +190,17 @@ export function titleBlock(
   )
   out.push(...addressLines(d.titleBlockAddress))
 
-  // Hạng mục / Part.
+  // Hạng mục / Part: the reference prints only "Part:" in italic (the other labels upright).
+  const partLabel = 'Hạng mục/ '
   out.push(
-    text(textX, T.part.labelBaseline, 'Hạng mục/ Part:', T.large),
+    text(textX, T.part.labelBaseline, partLabel, T.large),
+    text(
+      textX + measure(partLabel, T.large),
+      T.part.labelBaseline,
+      'Part:',
+      T.large,
+      { italic: true },
+    ),
     text(T.center, T.part.valueBaseline, TITLE_BLOCK_PART, T.value, {
       anchor: 'middle',
       italic: true,

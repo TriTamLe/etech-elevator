@@ -1,4 +1,5 @@
 import type { ElevatorParams } from '#/domain/schema'
+import { downloadBlob } from '#/lib/download'
 import { foldVi } from '#/lib/search'
 import { getProject } from '#/server/projects'
 
@@ -15,13 +16,7 @@ export function downloadParamsJson(params: ElevatorParams): void {
   const blob = new Blob([JSON.stringify(params, null, 2)], {
     type: 'application/json',
   })
-  const url = URL.createObjectURL(blob)
-  const a = document.createElement('a')
-  a.href = url
-  a.download = projectFileName(params.project.name)
-  a.click()
-  // Revoking in the same tick can cancel the download in Safari/Firefox.
-  setTimeout(() => URL.revokeObjectURL(url), 0)
+  downloadBlob(blob, projectFileName(params.project.name))
 }
 
 // A project export is a few KB; anything far larger is not one of ours.

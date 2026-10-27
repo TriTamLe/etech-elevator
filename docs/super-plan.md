@@ -485,6 +485,8 @@ Yêu cầu: chữ thân trên nền giấy đạt tương phản **≥ 4.5:1**, 
 | **5b** | Trang **DTP 01** và **DTP 02**, ghép trang (`pages.ts`), cột thumbnail chuyển trang (thay "Danh sách trang" đã bỏ ở P4.1), phóng to/thu nhỏ/vừa khung, `useDeferredValue` | Xem đủ 3 trang, chuyển trang, zoom |
 | **5c** | Xuất PDF (jsPDF + svg2pdf, font, WebP→PNG nếu cần, tên file, tiến độ), mở khóa nút **Tải PDF**, Playwright + `/dev/export` + `yarn export:preset`, chạy `sheet-verifier` | Tải được PDF vector; báo cáo so với 2 bộ mẫu |
 
+Mini plan chi tiết của đợt 5c: `docs/plans/p5c-mini-plan.md`.
+
 Việc mang từ P4 sang: dùng `pageOverrides` (ngày hoàn thành, số hiệu chỉnh theo trang) khi in khung tên; chốt số dòng tối đa của bảng hiệu chỉnh theo DWG mẫu (5a).
 
 **Kết quả 5a (25/10/2026):**
@@ -503,6 +505,13 @@ Việc mang từ P4 sang: dùng `pageOverrides` (ngày hoàn thành, số hiệu
 - 197 test xanh (25 test mới cho DTP 01/02, `formatMm`, hồi quy co chữ). `code-reviewer` đã soát: 4 mục "Nên sửa" và các gợi ý a11y đã xử lý.
 - Còn mở: dấu nối giữa máy kéo và tủ điều khiển trên DTP 02 — hai bộ mẫu khác nhau ("FUJI - THAILAND ĐỒNG BỘ" nối bằng dấu cách; bộ khách sạn ghi "MONTANARI/ STEP", nhãn "MÁY KÉO/ TỦ ĐIỀU KHIỂN"). Hiện nối bằng dấu cách, chờ chốt.
 
+**Kết quả 5c (27/10/2026):**
+- Nút **Tải PDF** đã mở: xuất 3 trang (Bìa, DTP 01, DTP 02) thành PDF vector A3 ngang trong ~1 giây, tên `BV - <tên công trình> - <dd-mm-yyyy>.pdf`. Bị khóa khi còn lỗi (tooltip + toast nêu lý do); đang xuất thì hiện tiến độ, bấm lặp bị bỏ qua, focus ở lại nút; lỗi → toast tiếng Việt kèm "Thử lại" (lỗi lạ của thư viện chỉ ghi console).
+- PDF dựng từ đúng `<SheetSvg>` của bản xem trước. Kiểm bằng `pdfinfo`/`pdffonts`/`pdftotext`/`pdfimages`: 3 trang A3, Tinos nhúng 4 kiểu (CID Identity-H), chữ tiếng Việt đọc đúng, ảnh duy nhất là logo. Không cần phương án dự phòng `doc.text`; WebP không cần đổi sang PNG.
+- jsPDF/svg2pdf/html2canvas nằm ở chunk riêng phía client. Phía Worker chúng chỉ là chunk lazy (route `ssr: false`, không chạy trên server); gzip Worker ~1,03 MB / 3 MB. Theo dõi con số này khi thêm thư viện client lớn.
+- `sheet-verifier` (cả 2 bộ mẫu): Bìa, DTP 01, DTP 02 đều "Lệch nhẹ", không sai số liệu hay thiếu dòng. Đã sửa theo báo cáo: "Part:" trong khung tên in nghiêng như mẫu. Còn lại: khối chữ Bìa thấp hơn mẫu ~2,5 mm (chưa sửa); bảng DTP 02 theo hình học bộ Ô.Khải nên hẹp hơn bộ Chú Nghiêm ~12 mm và tên bản vẽ DTP 02 in HOA — đưa vào `docs/cau-hoi-can-chot.md` (A9, A10).
+- 203 test xanh (5 test tên file/ngày, 1 test nhãn "Part:"). Lint, typecheck, build xanh. `code-reviewer`: không có mục Nghiêm trọng; mục "Nên sửa" (lỗi tiếng Anh lọt ra toast) và các gợi ý a11y/`creator` đã xử lý. Để sau: test cho `use-export-pdf`/`downloadBlob`; tùy chọn alias jsPDF sang stub cho bản build server.
+
 **Lõi vẽ**
 - [x] `src/drawing/types.ts`: `Pt`, `Prim`, `STROKE` 3 cỡ nét 0.13 / 0.25 / 0.5 mm. 5a có line, rect, circle, text, image; dim, leader, break, symbol, hatch thêm ở P8 cùng renderer (5a).
 - [x] `src/drawing/render-svg.tsx`: biến `Prim[]` thành phần tử SVG với `viewBox="0 0 420 297"` (đơn vị mm). Màu mực cố định đen trên trắng, không theo token giao diện (5a).
@@ -511,7 +520,7 @@ Việc mang từ P4 sang: dùng `pageOverrides` (ngày hoàn thành, số hiệu
 
 **Font bản vẽ**
 - [x] Tinos TTF (Regular, Bold, Italic, BoldItalic) đặt trong `public/fonts/tinos/`, lấy từ `google/fonts` `ofl/tinos` (giấy phép SIL OFL, kèm `OFL.txt`) (5a).
-- [x] `@font-face` cho phần xem trước (`styles.css`, 5a). Đăng ký vào jsPDF ở 5c.
+- [x] `@font-face` cho phần xem trước (`styles.css`, 5a). Đăng ký vào jsPDF (`src/pdf/fonts.ts`, 5c).
 - [x] Kiểm tra đủ dấu tiếng Việt trên bản xem trước (5a).
 
 **Đo chữ**
@@ -540,17 +549,17 @@ Việc mang từ P4 sang: dùng `pageOverrides` (ngày hoàn thành, số hiệu
 - [x] Dùng `useDeferredValue` để gõ không giật: gõ tải trọng → DTP 02 đổi sau ~36 ms (5b).
 
 **Xuất PDF `src/pdf/export-pdf.ts`**
-- [ ] Nạp jsPDF + svg2pdf.js bằng dynamic import để không làm nặng bundle.
-- [ ] A3 ngang, đơn vị mm; mỗi trang gọi `svg2pdf(svg, doc, { x: 0, y: 0, width: 420, height: 297 })`.
-- [ ] Đăng ký font Tinos.
-- [ ] **Thử nghiệm WebP:** nếu jsPDF không nhận WebP thì đổi sang PNG data URL bằng canvas trước khi nhúng.
-- [ ] Tên file: `BV - <tên công trình> - <dd-mm-yyyy>.pdf` (bỏ ký tự không hợp lệ).
-- [ ] Có chỉ báo tiến độ trong lúc xuất.
+- [x] Nạp jsPDF 4.2 + svg2pdf.js 2.8 bằng dynamic import: nằm ở chunk riêng, chỉ tải khi bấm "Tải PDF" (5c).
+- [x] A3 ngang, đơn vị mm; mỗi trang dựng đúng `<SheetSvg>` của bản xem trước (React `createRoot` + `flushSync` vào một khung ẩn) rồi gọi `svg2pdf(svg, doc, { x: 0, y: 0, width: 420, height: 297 })` (5c).
+- [x] Đăng ký 4 kiểu Tinos (`src/pdf/fonts.ts`, tải 1 lần rồi giữ lại). svg2pdf tự chọn đúng Bold/Italic/BoldItalic theo `font-weight`/`font-style`; font nhúng dạng CID Identity-H, `pdftotext` đọc đúng tiếng Việt (5c).
+- [x] **Thử nghiệm WebP:** jsPDF nhận thẳng WebP (tự đổi sang JPEG, nhúng 1 lần cho cả bộ) — không cần đổi sang PNG (5c).
+- [x] Tên file: `BV - <tên công trình> - <dd-mm-yyyy>.pdf`, giữ dấu, ký tự cấm `\ / : * ? " < > |` thành dấu cách, tối đa 120 ký tự (`src/pdf/file-name.ts`, ngày theo giờ Việt Nam qua `formatFileDate`) (5c).
+- [x] Có chỉ báo tiến độ trong lúc xuất: nút hiện "Đang chuẩn bị…" → "Đang xuất 2/3…", `aria-busy`, có `aria-live`; bấm lặp bị bỏ qua; lỗi → toast kèm "Thử lại" (5c).
 
 **Phục vụ kiểm tra tự động**
-- [ ] Route `/dev/export` và script `scripts/export-preset.ts` (Playwright) xuất PDF từ bộ mẫu vào `.verify/`.
-- [ ] Thêm script `yarn export:preset <preset>`, dùng cho `sheet-verifier`.
-- [ ] Cài Playwright.
+- [x] Route `/dev/export?preset=…` (chỉ DEV) và script `scripts/export-preset.ts` xuất PDF từ bộ mẫu vào `.verify/` (5c).
+- [x] Thêm script `yarn export:preset [hotel-9f|house-5f|all]`, dùng cho `sheet-verifier` (5c).
+- [x] Cài `playwright-core` 1.63 (không phải `playwright`): chạy bằng Chrome có sẵn trên máy (`channel: 'chrome'`), không tải trình duyệt ~150 MB (5c).
 
 **Tiêu chí xong:**
 - PDF mở được trong Preview và Acrobat, là vector, chữ tiếng Việt đúng.

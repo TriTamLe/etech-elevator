@@ -33,6 +33,7 @@ import {
   downloadParamsJson,
   readJsonFile,
 } from '#/features/projects/project-json'
+import { useExportPdf } from '#/features/editor/use-export-pdf'
 import { errorMessage } from '#/features/projects/queries'
 
 export function EditorHeader({
@@ -64,10 +65,15 @@ export function EditorHeader({
     }
   }
 
-  const pdfBlockedBy =
-    issues.errors > 0
-      ? `Còn ${issues.errors} lỗi cần sửa trước khi xuất PDF.`
-      : 'Xuất PDF sắp có.'
+  // Rule errors block the PDF; warnings do not. Zod errors leave params null.
+  const pdfReady = issues.errors === 0 ? issues.params : null
+  const pdfBlockedBy = `Còn ${issues.errors} lỗi cần sửa trước khi xuất PDF.`
+  const pdf = useExportPdf(pdfReady, pdfBlockedBy)
+  const pdfStatus = !pdf.progress
+    ? null
+    : pdf.progress.total === 0
+      ? 'Đang chuẩn bị…'
+      : `Đang xuất ${pdf.progress.done}/${pdf.progress.total}…`
 
   return (
     <header className="flex flex-wrap items-center gap-x-3 gap-y-2 border-b border-(--color-rule) bg-(--color-paper) px-4 py-2.5 sm:px-6">
@@ -125,18 +131,43 @@ export function EditorHeader({
         />
         <Tooltip>
           <TooltipTrigger asChild>
-            {/* aria-disabled (not disabled) keeps it focusable so the reason stays reachable. */}
+            {/* aria-disabled (not disabled) keeps it focusable: the reason stays reachable
+                while blocked, and focus stays put while exporting. */}
             <Button
-              aria-disabled="true"
-              aria-label={`Tải PDF — ${pdfBlockedBy}`}
-              onClick={() => toast(pdfBlockedBy)}
+              aria-disabled={!pdfReady || pdfStatus !== null || undefined}
+              aria-busy={pdfStatus !== null || undefined}
+              aria-label={pdfReady ? undefined : `Tải PDF — ${pdfBlockedBy}`}
+              onClick={() => void pdf.run()}
             >
-              <Icons.downloadPdf aria-hidden="true" />
-              <span className="max-sm:sr-only">Tải PDF</span>
+              {pdfStatus ? (
+                <Icons.loading
+                  className="motion-safe:animate-spin"
+                  aria-hidden="true"
+                />
+              ) : (
+                <Icons.downloadPdf aria-hidden="true" />
+              )}
+              {/* While exporting the name stays "Tải PDF"; the progress is announced once,
+                  by the live region below, not again as the focused button's name. */}
+              {pdfStatus ? (
+                <>
+                  <span className="sr-only">Tải PDF</span>
+                  <span className="max-sm:hidden" aria-hidden="true">
+                    {pdfStatus}
+                  </span>
+                </>
+              ) : (
+                <span className="max-sm:sr-only">Tải PDF</span>
+              )}
             </Button>
           </TooltipTrigger>
-          <TooltipContent>{pdfBlockedBy}</TooltipContent>
+          <TooltipContent>
+            {pdfReady ? (pdfStatus ?? 'Tải bộ bản vẽ PDF (A3)') : pdfBlockedBy}
+          </TooltipContent>
         </Tooltip>
+        <span className="sr-only" aria-live="polite">
+          {pdfStatus}
+        </span>
       </div>
 
       <AlertDialog

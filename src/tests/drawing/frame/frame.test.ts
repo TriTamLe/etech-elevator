@@ -52,6 +52,16 @@ describe('titleBlock', () => {
     expect(t).toContain('01')
   })
 
+  it('nhãn "Hạng mục/ Part:": chỉ "Part:" in nghiêng, nối ngay sau phần đứng', () => {
+    const t = texts(titleBlock(params(), derive(params()), page()))
+    const label = t.find((x) => x.text === 'Hạng mục/ ')
+    const part = t.find((x) => x.text === 'Part:')
+    expect(label?.italic).toBeFalsy()
+    expect(part?.italic).toBe(true)
+    expect(part?.y).toBe(label?.y)
+    expect(part?.x).toBeCloseTo(textSpan(label!)[1], 6)
+  })
+
   it('text nằm trong [TITLE.left, TITLE.right], kể cả chuỗi 300 ký tự', () => {
     const p = params()
     const long = 'Trần Văn Nguyễn '.repeat(25).slice(0, 300)
