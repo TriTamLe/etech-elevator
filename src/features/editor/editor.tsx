@@ -27,7 +27,7 @@ import {
 } from '#/features/editor/editor-context'
 import { EditorHeader } from '#/features/editor/editor-header'
 import { collectIssues, sectionOf } from '#/features/editor/issues'
-import { PreviewPlaceholder } from '#/features/editor/preview-placeholder'
+import { SheetPreview, useLastValid } from '#/features/editor/sheet-preview'
 import { SectionFloors } from '#/features/editor/section-floors'
 import { SectionProject } from '#/features/editor/section-project'
 import { SectionResponsibility } from '#/features/editor/section-responsibility'
@@ -109,6 +109,8 @@ export function Editor({ project }: { project: ProjectDetail }) {
   const values = useStore(form.store, (s) => s.values)
   const issues = React.useMemo(() => collectIssues(values), [values])
   const autosave = useAutosave(project.id, issues, initial, savedAt)
+  // Kept here, not in the preview: the preview unmounts with its tab on narrow screens.
+  const lastValid = useLastValid(issues.params)
   const [open, setOpen] = useOpenSections(project.id)
   const [tab, setTab] = React.useState('form')
   const [versionsOpen, setVersionsOpen] = React.useState(false)
@@ -215,7 +217,7 @@ export function Editor({ project }: { project: ProjectDetail }) {
               {formPane}
             </aside>
             <section aria-label="Xem trước" className="min-h-0 overflow-hidden">
-              <PreviewPlaceholder />
+              <SheetPreview params={lastValid} stale={!issues.params} />
             </section>
           </div>
         ) : (
@@ -238,7 +240,7 @@ export function Editor({ project }: { project: ProjectDetail }) {
               value="preview"
               className="min-h-0 flex-1 overflow-hidden"
             >
-              <PreviewPlaceholder />
+              <SheetPreview params={lastValid} stale={!issues.params} />
             </TabsContent>
           </Tabs>
         )}

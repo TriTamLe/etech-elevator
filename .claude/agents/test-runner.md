@@ -1,6 +1,6 @@
 ---
 name: test-runner
-description: Viết và chạy unit test Vitest cho phần logic thuần (Zod schema, trường tự tính, luật kiểm tra, các hàm sheetXX trả về Prim[], helper trong src/lib, logic thuần của màn soạn src/features/editor/*.ts, tầng truy vấn D1 src/server/project-repo), rồi chỉ báo test hỏng. Dùng khi thêm hoặc sửa code trong src/domain, src/drawing/sheets, src/lib, src/features/editor hoặc src/server. Chỉ được sửa file test.
+description: Viết và chạy unit test Vitest cho phần logic thuần (Zod schema, trường tự tính, luật kiểm tra, các hàm sheetXX trả về Prim[], khung trang và đo chữ trong src/drawing, helper trong src/lib, logic thuần của màn soạn src/features/editor/*.ts, tầng truy vấn D1 src/server/project-repo), rồi chỉ báo test hỏng. Dùng khi thêm hoặc sửa code trong src/domain, src/drawing, src/lib, src/features/editor hoặc src/server. Chỉ được sửa file test.
 tools: Bash, Read, Edit, Write, Glob, Grep
 model: sonnet
 ---
@@ -16,7 +16,13 @@ Bạn phụ trách kiểm thử cho web tạo bản vẽ thang máy.
 - `src/domain/presets/`: 2 bộ mẫu đã ẩn danh tên: `hotel-9f` (= bộ 1, Chú Nghiêm) và `house-5f` (= bộ 2, Ô.Khải). Số liệu kỹ thuật giữ nguyên như PDF mẫu.
 - `src/domain/derive.ts`: các trường tự tính.
 - `src/domain/rules.ts`: luật kiểm tra, chia 2 mức lỗi / cảnh báo.
-- `src/drawing/sheets/*`: các hàm thuần nhận thông số, trả về `Prim[]` (line, region, dim, leader, text, break, symbol).
+- `src/drawing/`: lõi vẽ thuần, mm, gốc trên-trái, y hướng xuống, trang A3 420 × 297.
+  - `types.ts`: `Prim` hiện có line, rect, circle, text (y là baseline, `size` là cỡ chữ mm), image; dim/leader/hatch/symbol thêm ở P8.
+  - `text-metrics.ts`: đo chữ bằng bảng độ rộng Tinos sinh sẵn (`fonts/tinos-metrics.ts`, sinh bằng `yarn gen:font-metrics` qua fontkit) — `measure`, `fitSize`, `ellipsize`, `wrap`. Có thể đối chiếu với `fontkit` (devDependency) đọc `public/fonts/tinos/*.ttf`.
+  - `frame/`: `layout.ts` (tọa độ đo từ PDF mẫu), `border`, `revision-table` (`printedRevisions`, in `REVISION_TABLE_ROWS` lần mới nhất), `title-block` (`pageStamp`: ghi đè theo trang thắng giá trị dự án), `framed()`.
+  - `sheets/*`: hàm thuần `(params, derive, page) → Prim[]` (`cover.ts` đã có; DTP 01/02 ở P5b). `pages.ts`: `renderPage`.
+  - `render-svg.tsx`: `SheetSvg` (test bằng `renderToStaticMarkup` của `react-dom/server`): không có `<pattern`, `<use`, `<foreignObject`.
+  - Bất biến chung: mọi tọa độ hữu hạn; chữ (đo bằng `measure`) không vượt khỏi ô/viền chứa nó, kể cả với tên/địa chỉ 300 ký tự.
 - `src/lib/`: `search.ts` (`foldVi`, `matchesQuery` — tìm không dấu trên tên + địa chỉ), `format.ts` (giờ cố định `Asia/Ho_Chi_Minh`, dạng "14:32 · 22/10"), `utils.ts`.
 - `src/features/editor/*.ts` (chỉ file `.ts` thuần, không test component `.tsx`): `issues.ts` (`collectIssues` gộp lỗi Zod — câu tiếng Việt — với `checkRules` theo đường dẫn dotted; `pathKey`, `fieldKey`, `sectionOf`), `floors.ts` (`resizeFloors`, `wouldDropEdited`), `autosave.ts` (`snapshot`, `shouldSave`). Test đặt ở `src/tests/features/editor/`.
 - `src/server/project-repo.ts`: truy vấn drizzle cho dự án (list chỉ 4 cột nhẹ, get qua `migrate`, create/duplicate/updateInfo/save, xóa mềm + restore, versions). Test chạy trên **`node:sqlite` in-memory dựng từ chính `drizzle/*.sql`** — xem harness `makeDb()` trong `src/tests/server/project-repo.test.ts` và dùng lại, không mock drizzle.

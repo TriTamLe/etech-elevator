@@ -1,4 +1,9 @@
-import { CLEARANCE, PIT_OH_BY_SPEED, jambLabelInline } from '#/domain/config'
+import {
+  CLEARANCE,
+  PIT_OH_BY_SPEED,
+  REVISION_TABLE_ROWS,
+  jambLabelInline,
+} from '#/domain/config'
 import { jambsInUse, landingOpening } from '#/domain/derive'
 import type { ElevatorParams } from '#/domain/schema'
 
@@ -86,6 +91,14 @@ export function checkRules(p: ElevatorParams): Array<Issue> {
         `OH ${p.tech.overhead} thấp hơn mức tham khảo ${ref.overhead} cho ${p.tech.speed} m/phút — ${ENGINEER_NOTE}.`,
       )
     }
+  }
+
+  const hidden = p.revisions.length - REVISION_TABLE_ROWS
+  if (hidden > 0) {
+    warning(
+      'revisions',
+      `Bảng hiệu chỉnh trên bản vẽ chỉ có ${REVISION_TABLE_ROWS} dòng: in ${REVISION_TABLE_ROWS} lần mới nhất, ${hidden} lần cũ hơn không được in.`,
+    )
   }
 
   return issues

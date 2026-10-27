@@ -12,6 +12,36 @@
 
 @import './tokens.css';
 
+/* Tinos: drawing text only (SVG sheets + PDF). Same files feed jsPDF in P5c. */
+@font-face {
+  font-family: 'Tinos';
+  font-style: normal;
+  font-weight: 400;
+  font-display: block;
+  src: url('/fonts/tinos/Tinos-Regular.ttf') format('truetype');
+}
+@font-face {
+  font-family: 'Tinos';
+  font-style: normal;
+  font-weight: 700;
+  font-display: block;
+  src: url('/fonts/tinos/Tinos-Bold.ttf') format('truetype');
+}
+@font-face {
+  font-family: 'Tinos';
+  font-style: italic;
+  font-weight: 400;
+  font-display: block;
+  src: url('/fonts/tinos/Tinos-Italic.ttf') format('truetype');
+}
+@font-face {
+  font-family: 'Tinos';
+  font-style: italic;
+  font-weight: 700;
+  font-display: block;
+  src: url('/fonts/tinos/Tinos-BoldItalic.ttf') format('truetype');
+}
+
 @custom-variant dark (&:is(.dark *));
 
 /* shadcn semantic variables, mapped onto the Hallmark tokens (light only). */

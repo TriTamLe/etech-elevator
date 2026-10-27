@@ -21,6 +21,7 @@ Package manager is **yarn 1** — never run `npm install` / `pnpm` (no extra loc
 - Data flow: form params → `src/domain/derive.ts` → `src/drawing/sheets/*` (pure `params → Prim[]`) → `render-svg` → preview **and** PDF (jsPDF + svg2pdf.js, in the browser). Never add a PDF-only drawing path.
 - Sheet functions are pure: no React, DOM, fetch, `Date.now()` or randomness (seeded only). Units are mm; never hard-code sample-project numbers.
 - SVG for drawings: no `<pattern>` (hatch = real lines + `clipPath`), no `<use>`/`<foreignObject>`; drawing text uses Tinos.
+- Measure drawing text with `src/drawing/text-metrics.ts` (Tinos width table, regenerate with `yarn gen:font-metrics`), never canvas/DOM. Frame coordinates live in `src/drawing/frame/layout.ts`; company info in `src/config/company.ts`.
 - Server: `createServerFn` in `src/server/`, D1 via `getDb()` from `src/db/index.ts`. Keep requests tiny (Workers free plan: 10 ms CPU). The editor route uses `ssr: false`.
 - Project params are one JSON blob validated by Zod with `schemaVersion`; changing the shape needs a bump + `migrate` step. Deletes are soft (`deletedAt`).
 - No auth code: Cloudflare Access (2 emails) protects the Worker.

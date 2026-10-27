@@ -4,3 +4,4 @@ yarn.lock
 worker-configuration.d.ts
 src/routeTree.gen.ts
 drizzle/meta
+src/drawing/fonts/tinos-metrics.ts

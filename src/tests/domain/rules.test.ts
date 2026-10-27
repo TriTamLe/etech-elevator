@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import { REVISION_TABLE_ROWS } from '#/domain/config'
 
 import { checkRules, hasBlockingErrors } from '#/domain/rules'
 import type { Issue } from '#/domain/rules'
@@ -105,5 +106,32 @@ describe('hasBlockingErrors', () => {
         { level: 'error', path: 'b', message: 'y' },
       ]),
     ).toBe(true)
+  })
+})
+
+describe('cảnh báo bảng hiệu chỉnh', () => {
+  const rev = {
+    detail: 'a',
+    change: 'b',
+    date: 'c',
+    number: '1',
+    by: 'd',
+    checkedBy: 'e',
+    approvedBy: 'f',
+    requirement: 'g',
+  }
+  const warnAt = (n: number) => {
+    const p = presetParams('house-5f')
+    p.revisions = Array.from({ length: n }, () => ({ ...rev }))
+    return checkRules(p).filter(
+      (i) => i.level === 'warning' && i.path === 'revisions',
+    )
+  }
+  it('có cảnh báo khi số lần > REVISION_TABLE_ROWS', () => {
+    expect(warnAt(REVISION_TABLE_ROWS + 1)).toHaveLength(1)
+  })
+  it('không có cảnh báo khi số lần ≤ REVISION_TABLE_ROWS', () => {
+    expect(warnAt(REVISION_TABLE_ROWS)).toHaveLength(0)
+    expect(warnAt(0)).toHaveLength(0)
   })
 })

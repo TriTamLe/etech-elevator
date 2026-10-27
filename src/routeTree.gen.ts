@@ -10,12 +10,18 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as DevSheetsRouteImport } from './routes/dev.sheets'
 import { Route as DevUiRouteImport } from './routes/dev.ui'
 import { Route as ProjectsIdRouteImport } from './routes/projects.$id'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DevSheetsRoute = DevSheetsRouteImport.update({
+  id: '/dev/sheets',
+  path: '/dev/sheets',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DevUiRoute = DevUiRouteImport.update({
@@ -31,30 +37,34 @@ const ProjectsIdRoute = ProjectsIdRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/dev/sheets': typeof DevSheetsRoute
   '/dev/ui': typeof DevUiRoute
   '/projects/$id': typeof ProjectsIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/dev/sheets': typeof DevSheetsRoute
   '/dev/ui': typeof DevUiRoute
   '/projects/$id': typeof ProjectsIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/dev/sheets': typeof DevSheetsRoute
   '/dev/ui': typeof DevUiRoute
   '/projects/$id': typeof ProjectsIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/dev/ui' | '/projects/$id'
+  fullPaths: '/' | '/dev/sheets' | '/dev/ui' | '/projects/$id'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/dev/ui' | '/projects/$id'
-  id: '__root__' | '/' | '/dev/ui' | '/projects/$id'
+  to: '/' | '/dev/sheets' | '/dev/ui' | '/projects/$id'
+  id: '__root__' | '/' | '/dev/sheets' | '/dev/ui' | '/projects/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  DevSheetsRoute: typeof DevSheetsRoute
   DevUiRoute: typeof DevUiRoute
   ProjectsIdRoute: typeof ProjectsIdRoute
 }
@@ -66,6 +76,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dev/sheets': {
+      id: '/dev/sheets'
+      path: '/dev/sheets'
+      fullPath: '/dev/sheets'
+      preLoaderRoute: typeof DevSheetsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/dev/ui': {
@@ -87,6 +104,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  DevSheetsRoute: DevSheetsRoute,
   DevUiRoute: DevUiRoute,
   ProjectsIdRoute: ProjectsIdRoute,
 }

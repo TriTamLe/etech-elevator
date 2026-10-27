@@ -22,7 +22,8 @@
     "db:generate": "drizzle-kit generate",
     "db:migrate:local": "wrangler d1 migrations apply elevator-db --local",
     "db:migrate:remote": "wrangler d1 migrations apply elevator-db --remote",
-    "db:backup": "mkdir -p backups && wrangler d1 export elevator-db --remote --output backups/elevator-db-$(date +%Y-%m-%d).sql"
+    "db:backup": "mkdir -p backups && wrangler d1 export elevator-db --remote --output backups/elevator-db-$(date +%Y-%m-%d).sql",
+    "gen:font-metrics": "tsx scripts/gen-font-metrics.ts"
   },
   "dependencies": {
     "@fontsource-variable/jetbrains-mono": "^5.3.0",
@@ -57,6 +58,7 @@
     "@tanstack/eslint-config": "0.4.0",
     "@tanstack/intent": "^0.5.6",
     "@tanstack/router-cli": "^1.132.0",
+    "@types/fontkit": "^2.0.9",
     "@types/node": "^22.10.2",
     "@types/react": "^19.2.0",
     "@types/react-dom": "^19.2.0",
@@ -64,6 +66,7 @@
     "drizzle-kit": "^0.31.9",
     "eslint": "^9.20.0",
     "eslint-plugin-jsx-a11y": "^6.10.2",
+    "fontkit": "2",
     "prettier": "^3.8.1",
     "tsx": "^4.21.0",
     "typescript": "^6.0.2",

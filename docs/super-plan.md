@@ -487,37 +487,45 @@ Yêu cầu: chữ thân trên nền giấy đạt tương phản **≥ 4.5:1**, 
 
 Việc mang từ P4 sang: dùng `pageOverrides` (ngày hoàn thành, số hiệu chỉnh theo trang) khi in khung tên; chốt số dòng tối đa của bảng hiệu chỉnh theo DWG mẫu (5a).
 
+**Kết quả 5a (25/10/2026):**
+- Bìa thật trong vùng xem trước của màn soạn. Đổi thông số thì Bìa đổi ngay. Form đang lỗi thì giữ bản hợp lệ gần nhất, có ghi "Đang hiện bản hợp lệ gần nhất"; bản này giữ ở `Editor` nên đổi tab trên điện thoại không mất.
+- Khung trang (viền, bảng hiệu chỉnh 1 dòng, khung tên) đặt cạnh trang 1–2 PDF mẫu ở `/dev/sheets` thì khớp gần như hoàn toàn. Khung được dùng lại cho DTP 01/02 ở 5b.
+- Đã chốt theo phương án đề xuất: thông tin công ty chép theo PDF mẫu (`src/config/company.ts`); bảng hiệu chỉnh in lần mới nhất, form cảnh báo ở mục F khi có nhiều hơn.
+- Chữ dài co lại, xuống dòng rồi mới cắt "…"; không bao giờ tràn ô. Có khoảng dung sai `FIT_EPS` để sai số làm tròn không làm cắt chữ oan. Preview tắt kerning cho khớp với bảng đo (và jsPDF).
+- 172 test xanh, gồm 56 test mới trong `src/tests/drawing/`. Lint, typecheck, build xanh. `code-reviewer` đã soát; mọi mục "Nghiêm trọng" và "Nên sửa" đã xử lý.
+- Để lại cho 5c: xác nhận svg2pdf vẽ đúng `fontWeight="bold"` với Tinos Bold đã đăng ký, và logo WebP.
+
 **Lõi vẽ**
-- [ ] `src/drawing/types.ts`: `Pt`, `Prim` (line, region, dim, leader, text, break, symbol, image), `Layer` gồm 3 cỡ nét 0.13 / 0.25 / 0.5 mm.
-- [ ] `src/drawing/render-svg.tsx`: biến `Prim[]` thành phần tử SVG với `viewBox="0 0 420 297"` (đơn vị mm).
+- [x] `src/drawing/types.ts`: `Pt`, `Prim`, `STROKE` 3 cỡ nét 0.13 / 0.25 / 0.5 mm. 5a có line, rect, circle, text, image; dim, leader, break, symbol, hatch thêm ở P8 cùng renderer (5a).
+- [x] `src/drawing/render-svg.tsx`: biến `Prim[]` thành phần tử SVG với `viewBox="0 0 420 297"` (đơn vị mm). Màu mực cố định đen trên trắng, không theo token giao diện (5a).
   - Ký hiệu chèn thẳng thành `<g transform>`, không dùng `<use>`, để svg2pdf xử lý chắc chắn.
   - Hatch là nét thật cắt theo `clipPath`, không dùng `<pattern>`.
 
 **Font bản vẽ**
-- [ ] Tinos TTF (Regular, Bold, Italic, BoldItalic) đặt trong `public/fonts/tinos/`.
-- [ ] Dùng `@font-face` cho phần xem trước và đăng ký vào jsPDF cho phần PDF.
-- [ ] Kiểm tra đủ dấu tiếng Việt.
+- [x] Tinos TTF (Regular, Bold, Italic, BoldItalic) đặt trong `public/fonts/tinos/`, lấy từ `google/fonts` `ofl/tinos` (giấy phép SIL OFL, kèm `OFL.txt`) (5a).
+- [x] `@font-face` cho phần xem trước (`styles.css`, 5a). Đăng ký vào jsPDF ở 5c.
+- [x] Kiểm tra đủ dấu tiếng Việt trên bản xem trước (5a).
 
 **Đo chữ**
-- [ ] `src/drawing/text-metrics.ts`: đo chữ bằng canvas sau khi Tinos đã tải (`document.fonts.load`). Dùng để co chữ cho vừa ô (địa chỉ rút gọn, ô bảng).
+- [x] `src/drawing/text-metrics.ts`: **đổi so với kế hoạch cũ** — không đo bằng canvas mà tra bảng độ rộng Tinos sinh sẵn (`src/drawing/fonts/tinos-metrics.ts`, `yarn gen:font-metrics` qua `fontkit`), để hàm vẽ vẫn thuần và chạy được trong test lẫn lúc xuất PDF. `measure`, `fitSize`, `ellipsize`, `wrap` (5a).
 
 **Khung trang `src/drawing/frame/`**
-- [ ] Viền A3, bảng hiệu chỉnh 8 cột.
-- [ ] Khung tên gồm:
+- [x] Viền A3, bảng hiệu chỉnh 8 cột. Mẫu chỉ có **1 dòng** dữ liệu (`REVISION_TABLE_ROWS`): in lần hiệu chỉnh mới nhất, form cảnh báo khi có nhiều hơn (5a).
+- [x] Khung tên gồm (5a; hạng mục trong khung tên cố định "THANG MÁY" như mẫu):
   - 6 ô loại hồ sơ, ô thỏa thuận chủ đầu tư.
   - Logo DTP + thông tin công ty lấy từ `src/config/company.ts`.
   - Duyệt / Kiểm tra / Thiết kế.
   - Tên công trình, địa chỉ rút gọn (tự co chữ), hạng mục, tên bản vẽ.
   - Vòng tròn DTP + số trang, số hiệu chỉnh, ngày.
-- [ ] Lấy tọa độ thật từ PDF mẫu bằng `pdftotext -bbox-layout` để đặt chữ đúng chỗ.
+- [x] Tọa độ thật lấy từ PDF mẫu: đường kẻ bằng `pdftocairo -svg`, chữ bằng `pdftotext -bbox` + độ rộng Tinos (Tinos khớp Times New Roman). Ghi trong `src/drawing/frame/layout.ts` (5a).
 
 **Trang chữ `src/drawing/sheets/`**
-- [ ] `cover.tsx`: bìa.
+- [x] `cover.ts`: bìa (5a).
 - [ ] `responsibility.tsx`: DTP 01, chữ có chèn số liệu từ nhóm F + ghi chú thêm; sửa chính tả thành "TRÁCH NHIỆM".
 - [ ] `spec.tsx`: DTP 02, bảng 12 dòng; mã hiệu là chữ tự do; tổng chiều cao in số hoặc "-- mm"; sửa thành "CABIN" và "Đặc tính".
 
 **Ghép trang**
-- [ ] `src/drawing/pages.ts`: từ danh sách trang đã tính, tạo ra component tương ứng kèm số trang.
+- [ ] `src/drawing/pages.ts`: từ danh sách trang đã tính, tạo ra component tương ứng kèm số trang. 5a: `renderPage` có Bìa thật, các trang khác là khung trống.
 
 **Giao diện xem trước** (hộp đèn graphite, mục 3.5)
 - [ ] Cột thumbnail các trang và vùng xem chính có `react-zoom-pan-pinch` (vừa chiều rộng / 100% / kéo).
@@ -694,7 +702,7 @@ Giao cho `symbol-extractor`.
 | Rủi ro | Cách giảm |
 |---|---|
 | svg2pdf hiển thị khác trình duyệt (font, clipPath, ảnh WebP) | Thử sớm ở P5; không dùng `<pattern>` và `<use>`; nếu WebP lỗi thì đổi sang PNG bằng canvas |
-| Đo chữ ở trình duyệt khác với PDF | Đo bằng canvas với đúng font Tinos; chừa khoảng an toàn 2–3% |
+| Đo chữ ở trình duyệt khác với PDF | Đo bằng bảng độ rộng sinh từ chính file Tinos dùng cho cả xem trước và PDF (không phụ thuộc trình duyệt) |
 | Mặt cắt đứng phức tạp, ghi chú chồng nhau | Làm cuối (P11) khi đã có đủ phần tử; quy tắc đặt ghi chú cố định; test với N = 20 |
 | Ký hiệu nét rời cắt ra bị thiếu hoặc thừa nét | Cấu hình vùng cắt trong JSON; xem lại ở `/dev/symbols`; dọn tay nếu cần |
 | CPU của Worker vượt 10 ms | `ssr: false` ở màn soạn; server chỉ đọc/ghi JSON; kiểm bằng `wrangler tail` |

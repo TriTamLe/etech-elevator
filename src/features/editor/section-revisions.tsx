@@ -29,8 +29,9 @@ const removeId = (i: number) => `revision-remove-${i}`
 
 /** Lịch sử hiệu chỉnh — the 8-column revision table printed in the title block. */
 export function SectionRevisions() {
-  const { form } = useEditor()
+  const { form, issues } = useEditor()
   const count = useStore(form.store, (s) => s.values.revisions.length)
+  const notice = issues.byPath.get('revisions')?.at(0)?.message
 
   // Remove at once with an Undo toast (autosave would persist a mistaken delete in 1.5 s).
   const remove = (i: number) => {
@@ -117,6 +118,17 @@ export function SectionRevisions() {
         <Icons.create aria-hidden="true" />
         Thêm lần hiệu chỉnh
       </Button>
+      {notice && (
+        <p className="text-(length:--text-xs) text-(--color-ink-2)">
+          {/* Warn yellow marks; the ink carries the words (same as Field). */}
+          <Icons.warning
+            className="mr-1 inline size-4 -translate-y-px text-(--color-warn)"
+            aria-hidden="true"
+          />
+          <span className="sr-only">Cảnh báo: </span>
+          {notice}
+        </p>
+      )}
     </div>
   )
 }
