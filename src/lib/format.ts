@@ -47,7 +47,7 @@ export function formatFileDate(date: Date): string {
   return `${p.day}-${p.month}-${p.year}`
 }
 
-/** "20900" → "20.900" (Vietnamese thousands separator), for lengths printed on sheets. */
-export function formatMm(mm: number): string {
-  return String(Math.round(mm)).replace(/\B(?=(\d{3})+(?!\d))/g, '.')
+/** 2.5 → "2,5": Vietnamese decimal comma, for numbers printed on sheets. */
+export function formatDecimal(n: number): string {
+  return String(n).replace('.', ',')
 }

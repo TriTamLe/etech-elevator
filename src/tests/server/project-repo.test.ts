@@ -133,6 +133,22 @@ describe('project repo', () => {
     expect(await repo.getVersion(db, 'other', v?.id ?? '')).toBeNull()
   })
 
+  it('v1 rows (project and saved version) read back as v2 with "THANG MÁY"', async () => {
+    const params = presetParams('house-5f')
+    const { id } = await repo.create(db, params)
+    const v = await repo.saveVersion(db, id, null)
+    // What a row written before the v2 schema looks like.
+    const toV1 = `json_set(json_remove(params, '$.project.titleBlockPart'), '$.schemaVersion', 1)`
+    sqlite.exec(`update projects set params = ${toV1}, schema_version = 1`)
+    sqlite.exec(`update project_versions set params = ${toV1}, schema_version = 1`)
+
+    const detail = await repo.get(db, id)
+    expect(detail?.params).toEqual(params)
+    const snap = await repo.getVersion(db, id, v?.id ?? '')
+    expect(snap?.params.schemaVersion).toBe(2)
+    expect(snap?.params.project.titleBlockPart).toBe('THANG MÁY')
+  })
+
   it('hides versions of a deleted project', async () => {
     const { id } = await repo.create(db, presetParams('house-5f'))
     const v = await repo.saveVersion(db, id, null)

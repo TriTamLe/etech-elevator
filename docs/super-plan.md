@@ -16,7 +16,7 @@
 | **Stack** | TanStack Start (Router, Form, Query) · Zod 4 · Drizzle + Cloudflare D1 · Cloudflare Workers · Tailwind v4 + shadcn/ui · jsPDF + svg2pdf.js · Vitest + Playwright. Trình quản lý gói: **yarn 1**. |
 | **Giao diện** | **Hallmark · Cobalt**, đổi màu theo logo DTP. Font giao diện **Be Vietnam Pro** + **JetBrains Mono**. Xem mục 3. |
 | **Logo** | **DTP** in trên bản vẽ (bìa + khung tên). **DTP** cũng dùng cho giao diện web (masthead trang `/`, favicon) — đổi từ E-TECH sau review P1. Tất cả chuyển sang **WebP**. |
-| **Hạ tầng** | Workers + D1 + Cloudflare Access (2 email), địa chỉ `*.workers.dev`. **0 USD/tháng.** |
+| **Hạ tầng** | Workers + D1 + Cloudflare Access trên tài khoản Cloudflare cá nhân của người phát triển (chủ repo; danh sách email được vào do chủ tài khoản quản lý), địa chỉ `*.workers.dev`. **0 USD/tháng**; nếu vượt gói free thì gửi bill cho PO. |
 | **Ước tính** | **38–54 người-ngày** chưa tính dự phòng; cộng dự phòng 15–20% thì khoảng **44–65 ngày (9–13 tuần)**. So với báo cáo, tăng thêm 2–3 ngày cho phần hệ thống giao diện Hallmark. |
 
 ### Quy ước làm việc
@@ -65,7 +65,8 @@
 | **P3** | Lưu dự án (server function + D1) + trang danh sách dự án | 3–4 | P1, P2 | |
 | **P4** | Form soạn thông số + tự lưu + phiên bản | 3–4 | P3 | |
 | **P5** | Lõi vẽ, khung trang A3, trang chữ, xem trước, xuất PDF | 6.5–8.5 | P4 | |
-| **P6** | Deploy + Cloudflare Access + sao lưu | 0.5–1 | P5 | **M1: dùng được online** (bìa, 01, 02) |
+| **P5.1** | Áp dụng quyết định PO (A1, A4, A7, C1) | 0.5 | P5 | |
+| **P6** | Deploy + Cloudflare Access + sao lưu | 0.5–1 | P5.1 | **M1: dùng được online** (bìa, 01, 02) |
 | **P7** | Thư viện ký hiệu từ DWG | 3–4 | P0 (chạy song song được với P1–P6) | |
 | **P8** | Bộ phần tử vẽ cơ bản | 3–4 | P5 | |
 | **P9** | Mặt cắt ngang, pit, phòng máy | 4–6 | P7, P8 | **M2: có hình mặt bằng** |
@@ -339,7 +340,7 @@ Yêu cầu: chữ thân trên nền giấy đạt tương phản **≥ 4.5:1**, 
 - `src/domain/`: `config.ts` (lỗ chờ, khe tối thiểu, bảng tra PIT/OH **tạm**, nhãn tiếng Việt, danh sách trang), `schema.ts` (`ElevatorParams` v1, `makeFloors`), `presets/` (`PRESETS`, `presetParams` trả bản sao), `derive.ts`, `rules.ts` (`checkRules` → `Issue[]` có `path` để gắn vào `Field`), `migrate.ts`.
 - **Quy ước đã chốt khi làm:** tầng trên cùng không có chiều cao riêng, dòng N(OH) = OH + chiều cao buồng trên cùng (bộ 2: 4800, bộ 1: 5100); tổng hố = PIT + Σ tầng 1…N−1 + OH + buồng trên cùng (bộ 2 = 20.900). Bảng chiều cao tầng gộp theo quyết định #14 (khác cách in trong PDF bộ 2). Móc treo `null` = tâm hố.
 - 57 test xanh (subagent `test-runner`), phủ toàn bộ checklist domain.
-- **Còn mở:** bảng tra PIT/OH và `minOpeningSide = 100` là giá trị tạm — kỹ sư cần xác nhận. Kiểm Tab bằng tay trên trình duyệt thật (từ P1) vẫn chưa làm vì trình duyệt tích hợp mất kết nối.
+- **Còn mở:** bảng tra PIT/OH và `minOpeningSide = 100` là giá trị tạm — kỹ sư cần xác nhận (B1–B3; chốt 27/10/2026: hỏi kỹ sư **sau MVP**, khi đã dùng thử). Kiểm Tab bằng tay trên trình duyệt thật (từ P1) vẫn chưa làm vì trình duyệt tích hợp mất kết nối.
 
 ---
 
@@ -455,7 +456,7 @@ Yêu cầu: chữ thân trên nền giấy đạt tương phản **≥ 4.5:1**, 
 - **Test:** 109 xanh (thêm 32 test cho `issues`/`floors`/`autosave` qua subagent `test-runner`, test repo cho phiên bản, `formatDate`).
 - **Đã chạy tay (headless Chrome, D1 local):** 2 bộ mẫu không lỗi, Tự tính đúng (bộ 2: 20.900 mm, 900/300 · 1100/200, móc 750/950; bộ 1: chưa đủ chiều cao → "-- mm", 1000/400 · 1100/350, móc 900/1000); sửa AH → "Đã lưu", tải lại còn; ô trống → lỗi tại ô + "Chưa lưu — còn 1 lỗi"; CW + 400 > AH → lỗi; PIT thấp → cảnh báo "kỹ sư cần xác nhận"; nhảy tới ô từ thanh trạng thái (kể cả nhóm đang đóng); số điểm dừng 5 → 7 → 5 → 4 → 3 (hỏi, Hủy); lưu/khôi phục phiên bản, đưa vào bảng hiệu chỉnh; xuất/nhập JSON; rời trang khi còn lỗi (hỏi) và khi có sửa hợp lệ (lưu rồi đi). Không cuộn ngang ở 320/768/1024/1280 px; Tab: header → nhóm A → các ô.
 - **Soát code (`code-reviewer`):** không có lỗi chặn commit. Đã sửa: tự lưu ghi nhớ "đích" của các lần lưu đang chờ (sửa ngược về giá trị cũ trong lúc đang lưu vẫn tính là chưa lưu; rời trang chờ lần lưu dở xong; phiên bản dùng chung `scope` nên chụp sau các lần lưu); tầng trở thành tầng trên cùng thì xóa chiều cao cũ (trước đây giá trị sai bị ẩn làm tắc tự lưu); nhập JSON báo lỗi tiếng Việt (`migrateImport` dùng chung cho server và màn soạn); tên chỉ có khoảng trắng bị từ chối (`trim` trong schema); xóa lần hiệu chỉnh có Tooltip + toast Hoàn tác + focus; mọi hộp thoại/sheet/menu mở bằng state trả focus về nút đã mở (`focusLater`), Esc ở hộp chặn rời trang = Ở lại; ô số điểm dừng sai thì trả về số cũ khi rời ô; dòng tầng có `aria-describedby` cho lỗi, nhãn thống nhất, `<ol reversed>`; nhảy tới đường dẫn không có ô thì focus nút mở nhóm; badge nhóm tách lỗi/cảnh báo, có chữ cho trình đọc màn hình; nút `aria-disabled` lấy kiểu từ `buttonVariants`; "phase P5" → "sắp có"; "Ghi đè theo trang" luôn mounted.
-- **Còn mở:** chưa có test component cho form và cho state machine trong `use-autosave.ts` (đã chạy tay); chưa đo hiệu năng bằng React Profiler với 20 tầng + mọi nhóm mở (nếu chậm: `useDeferredValue` cho `collectIssues`, memo theo nhóm); ô số thập phân đọc "1.500" là 1,5; `pageOverrides` mới nhập được, P5 mới dùng khi in khung tên.
+- **Còn mở:** chưa có test component cho form và cho state machine trong `use-autosave.ts` (đã chạy tay); chưa đo hiệu năng bằng React Profiler với 20 tầng + mọi nhóm mở (nếu chậm: `useDeferredValue` cho `collectIssues`, memo theo nhóm); ô số thập phân đọc "1.500" là 1,5 (đã sửa ở P5.1 theo C1: "1.500" = 1500, số lẻ dùng dấu phẩy); `pageOverrides` mới nhập được, P5 mới dùng khi in khung tên.
 
 ---
 
@@ -503,13 +504,13 @@ Việc mang từ P4 sang: dùng `pageOverrides` (ngày hoàn thành, số hiệu
 - Trình xem: thumbnail (cột trên máy tính, dải ngang trên điện thoại, phím mũi tên), trang trước/sau, thu nhỏ/phóng to/vừa khung/1:1, Ctrl + lăn chuột, chụm 2 ngón, kéo chuột và phím mũi tên để di chuyển khi phóng to. Vừa khung tự tính từ kích thước vùng xem (hàm của thư viện tính sai khi vùng xem đang đổi cỡ) và tự canh lại khi đổi trang/đổi cỡ cho tới khi người dùng zoom tay. Nút 44 px trên màn hẹp; nút ở trang đầu/cuối dùng `aria-disabled` để không mất focus.
 - Gõ tải trọng → DTP 02 đổi sau ~36 ms. Không cuộn ngang ở 1280/768/375/320 px.
 - 197 test xanh (25 test mới cho DTP 01/02, `formatMm`, hồi quy co chữ). `code-reviewer` đã soát: 4 mục "Nên sửa" và các gợi ý a11y đã xử lý.
-- Còn mở: dấu nối giữa máy kéo và tủ điều khiển trên DTP 02 — hai bộ mẫu khác nhau ("FUJI - THAILAND ĐỒNG BỘ" nối bằng dấu cách; bộ khách sạn ghi "MONTANARI/ STEP", nhãn "MÁY KÉO/ TỦ ĐIỀU KHIỂN"). Hiện nối bằng dấu cách, chờ chốt.
+- Còn mở: dấu nối giữa máy kéo và tủ điều khiển trên DTP 02 — hai bộ mẫu khác nhau ("FUJI - THAILAND ĐỒNG BỘ" nối bằng dấu cách; bộ khách sạn ghi "MONTANARI/ STEP", nhãn "MÁY KÉO/ TỦ ĐIỀU KHIỂN"). Hiện nối bằng dấu cách, chờ chốt. **Đã chốt 27/10/2026 (A1):** nối bằng " / ", nhãn "MÁY KÉO / TỦ ĐIỀU KHIỂN" — làm ở P5.1.
 
 **Kết quả 5c (27/10/2026):**
 - Nút **Tải PDF** đã mở: xuất 3 trang (Bìa, DTP 01, DTP 02) thành PDF vector A3 ngang trong ~1 giây, tên `BV - <tên công trình> - <dd-mm-yyyy>.pdf`. Bị khóa khi còn lỗi (tooltip + toast nêu lý do); đang xuất thì hiện tiến độ, bấm lặp bị bỏ qua, focus ở lại nút; lỗi → toast tiếng Việt kèm "Thử lại" (lỗi lạ của thư viện chỉ ghi console).
 - PDF dựng từ đúng `<SheetSvg>` của bản xem trước. Kiểm bằng `pdfinfo`/`pdffonts`/`pdftotext`/`pdfimages`: 3 trang A3, Tinos nhúng 4 kiểu (CID Identity-H), chữ tiếng Việt đọc đúng, ảnh duy nhất là logo. Không cần phương án dự phòng `doc.text`; WebP không cần đổi sang PNG.
 - jsPDF/svg2pdf/html2canvas nằm ở chunk riêng phía client. Phía Worker chúng chỉ là chunk lazy (route `ssr: false`, không chạy trên server); gzip Worker ~1,03 MB / 3 MB. Theo dõi con số này khi thêm thư viện client lớn.
-- `sheet-verifier` (cả 2 bộ mẫu): Bìa, DTP 01, DTP 02 đều "Lệch nhẹ", không sai số liệu hay thiếu dòng. Đã sửa theo báo cáo: "Part:" trong khung tên in nghiêng như mẫu. Còn lại: khối chữ Bìa thấp hơn mẫu ~2,5 mm (chưa sửa); bảng DTP 02 theo hình học bộ Ô.Khải nên hẹp hơn bộ Chú Nghiêm ~12 mm và tên bản vẽ DTP 02 in HOA — đưa vào `docs/cau-hoi-can-chot.md` (A9, A10).
+- `sheet-verifier` (cả 2 bộ mẫu): Bìa, DTP 01, DTP 02 đều "Lệch nhẹ", không sai số liệu hay thiếu dòng. Đã sửa theo báo cáo: "Part:" trong khung tên in nghiêng như mẫu. Còn lại: khối chữ Bìa thấp hơn mẫu ~2,5 mm (chưa sửa); bảng DTP 02 theo hình học bộ Ô.Khải nên hẹp hơn bộ Chú Nghiêm ~12 mm và tên bản vẽ DTP 02 in HOA — đưa vào `docs/cau-hoi-can-chot.md` (A9, A10; PO chốt giữ như hiện tại).
 - 203 test xanh (5 test tên file/ngày, 1 test nhãn "Part:"). Lint, typecheck, build xanh. `code-reviewer`: không có mục Nghiêm trọng; mục "Nên sửa" (lỗi tiếng Anh lọt ra toast) và các gợi ý a11y/`creator` đã xử lý. Để sau: test cho `use-export-pdf`/`downloadBlob`; tùy chọn alias jsPDF sang stub cho bản build server.
 
 **Lõi vẽ**
@@ -528,7 +529,7 @@ Việc mang từ P4 sang: dùng `pageOverrides` (ngày hoàn thành, số hiệu
 
 **Khung trang `src/drawing/frame/`**
 - [x] Viền A3, bảng hiệu chỉnh 8 cột. Mẫu chỉ có **1 dòng** dữ liệu (`REVISION_TABLE_ROWS`): in lần hiệu chỉnh mới nhất, form cảnh báo khi có nhiều hơn (5a).
-- [x] Khung tên gồm (5a; hạng mục trong khung tên cố định "THANG MÁY" như mẫu):
+- [x] Khung tên gồm (5a; hạng mục trong khung tên là ô nhập riêng, mặc định "THANG MÁY" — P5.1):
   - 6 ô loại hồ sơ, ô thỏa thuận chủ đầu tư.
   - Logo DTP + thông tin công ty lấy từ `src/config/company.ts`.
   - Duyệt / Kiểm tra / Thiết kế.
@@ -539,7 +540,7 @@ Việc mang từ P4 sang: dùng `pageOverrides` (ngày hoàn thành, số hiệu
 **Trang chữ `src/drawing/sheets/`**
 - [x] `cover.ts`: bìa (5a).
 - [x] `responsibility.ts`: DTP 01, chữ có chèn số liệu từ nhóm F + ghi chú thêm (mục "IV / GHI CHÚ"); sửa chính tả thành "TRÁCH NHIỆM". Ghi chú dài thì thân chữ co đều (tối thiểu 60 %) rồi mới cắt "…" (5b).
-- [x] `spec.ts`: DTP 02, bảng 12 dòng; mã hiệu là chữ tự do; tổng chiều cao in số ("20.900 mm") hoặc "-- mm"; sửa thành "CABIN" và "Đặc tính". Giá trị dài co rồi xuống 2 dòng trong ô (5b).
+- [x] `spec.ts`: DTP 02, bảng 12 dòng; mã hiệu là chữ tự do; tổng chiều cao in số ("20900 mm", không dấu ngăn nghìn — P5.1) hoặc "-- mm"; sửa thành "CABIN" và "Đặc tính". Giá trị dài co rồi xuống 2 dòng trong ô (5b).
 
 **Ghép trang**
 - [x] `src/drawing/pages.ts`: `renderPage` theo key trang; `READY_PAGES` liệt kê trang đã vẽ được (Bìa, DTP 01, DTP 02) — vùng xem trước chỉ hiện các trang này (5b).
@@ -568,19 +569,61 @@ Việc mang từ P4 sang: dùng `pageOverrides` (ngày hoàn thành, số hiệu
 
 ---
 
+### P5.1 — Áp dụng quyết định PO (27/10/2026)
+
+PO đã trả lời 15 câu trong `docs/cau-hoi-can-chot.md` (cột "Quyết định PO"). Giữ như app đang làm: A3, A5, A6, A8, A9, A10. Để **sau MVP**: A2 (thông tin công ty + logo vector), B1–B3 (kỹ sư xác nhận). Cần sửa:
+
+- [x] **A1:** DTP 02 nối máy kéo và tủ điều khiển bằng " / " (một bên trống thì không in "/"); nhãn đổi thành "MÁY KÉO / TỦ ĐIỀU KHIỂN".
+- [x] **A4:** thêm ô "Hạng mục (khung tên)" ở mục A, mặc định "THANG MÁY" (để trống cũng in THANG MÁY), chữ dài tự co trong ô. Ô cũ đổi nhãn thành "Hạng mục (trang bìa)".
+  - Params lên **v2** (`project.titleBlockPart`, `TITLE_BLOCK_PART_DEFAULT` trong `domain/config.ts`).
+  - `migrate` nâng v1 → v2 khi đọc dự án, phiên bản đã lưu và file JSON cũ.
+- [x] **A7:** tổng chiều cao hố in "20900 mm" (bỏ `formatMm`). Số lẻ trên bản vẽ in dấu phẩy qua `formatDecimal`, ví dụ "1,5 m/phút".
+- [x] **C1:** ô số đọc theo kiểu Việt (`src/lib/number-text.ts`):
+  - "1.500" = 1500 (dấu chấm ngăn nghìn).
+  - Ô số lẻ dùng dấu phẩy ("2,5"); vẫn nhận "2.5" khi dấu chấm không thể là ngăn nghìn (phía sau không đúng 3 chữ số).
+  - Số lẻ hiện bằng dấu phẩy.
+- [x] **C2:** tài khoản Cloudflare và danh sách email → xem P6.
+
+**Tiêu chí xong:** test/lint/typecheck/build xanh; trên trình duyệt gõ "1.500" ở ô mm không lỗi, dự án cũ (v1) mở được và có "THANG MÁY"; `sheet-verifier` vẫn "OK"/"Lệch nhẹ"; `code-reviewer` đã soát.
+
+**Kết quả P5.1 (27/10/2026):**
+- Chạy trên Chrome headless (dự án thử, đã xóa đúng id):
+  - Có 2 ô "Hạng mục (trang bìa)" và "Hạng mục (khung tên)"; khung tên đổi theo ô, để trống thì in THANG MÁY.
+  - Ô mm nhận "1.500" = 1500, còn "1.5" báo lỗi. Ô móc treo nhận "2,5" và "2.5"; tải lại trang hiện "1500" / "2,5".
+  - DTP 02 in "FUJI - THAILAND / ĐỒNG BỘ" và "20900 mm".
+  - Dự án đổi về v1 trong D1 local mở được, có THANG MÁY, và lần tự lưu kế tiếp ghi lại thành v2.
+- `sheet-verifier`: 5/6 trang "OK"; DTP 02 bộ khách sạn "Lệch nhẹ" vì bảng theo cỡ bộ nhà ở (đúng quyết định A9). Không trang nào xấu đi so với 5c.
+- 251 test xanh; `test-runner` bổ sung các ca biên cho ô số và migrate. Lint, typecheck, build xanh.
+- `code-reviewer`: không có mục Nghiêm trọng. Đã sửa:
+  - "0.500" từng bị đọc thành 500; nay ô số nguyên báo lỗi, ô số lẻ đọc 0,5.
+  - Cảnh báo tốc độ in dấu phẩy.
+  - Hạng mục khung tên tính trong `derive`, cùng kiểu với `category` và địa chỉ khung tên.
+  - Thêm test đọc dòng D1 v1 (cả dự án và phiên bản đã lưu) và file JSON v1.
+  - Tài liệu agent và báo cáo gốc không còn ghi "2 email".
+- Để sau: tab còn mở code cũ sẽ tự lưu thất bại sau một lần nâng schema trên production (ghi ở P6).
+
+---
+
 ### P6 — Deploy + Cloudflare Access + sao lưu (0.5–1 ngày) → **Mốc M1**
 
-- [ ] **(Bạn làm)** chạy `npx wrangler login` trong terminal tương tác.
+**Đã chốt (C2, 27/10/2026):**
+- Deploy lên **tài khoản Cloudflare cá nhân của người phát triển** (chủ repo).
+- Email được vào app (PO và người liên quan) do chủ tài khoản tự thêm/bớt trong Cloudflare Access; không cố định số lượng, không ghi email vào repo.
+- Chi phí nếu vượt gói free: gửi bill cho PO.
+
+- [ ] **(Bạn làm)** chạy `npx wrangler login` bằng tài khoản Cloudflare của bạn, trong terminal tương tác.
 - [ ] Chạy `npx wrangler d1 create elevator-db`, điền `database_id` vào `wrangler.jsonc`.
 - [ ] Chạy `yarn db:migrate:remote`.
 - [ ] Chạy `yarn deploy` → `https://elevator.<account>.workers.dev`.
 - [ ] **(Bạn làm)** bật Cloudflare Access cho Worker trong dashboard (Workers & Pages → elevator → Settings → Domains & Routes → Enable Cloudflare Access):
-  - Chính sách: chỉ cho **2 email**, đăng nhập bằng OTP.
+  - Chính sách: chỉ các email bạn cho phép, đăng nhập bằng OTP. Thêm/bớt người sau này cũng làm ở đây, không cần sửa code.
   - Bảo vệ cả URL preview.
-- [ ] Script `yarn db:backup`: `wrangler d1 export elevator-db --remote --output backups/<ngày>.sql`. Ghi chú thêm về D1 Time Travel 7 ngày.
+- [ ] Script `yarn db:backup` (đã có trong `package.json`): chạy thử trên D1 thật; ghi chú thêm về D1 Time Travel 7 ngày.
 - [ ] Kiểm tra nhanh trên bản production: tạo dự án → tự lưu → tải PDF.
 
-**Tiêu chí xong:** người lạ không vào được; 2 email vào được; luồng chính chạy được trên production.
+**Tiêu chí xong:** người lạ không vào được; các email được phép vào được; luồng chính chạy được trên production.
+
+**Lưu ý cho các lần nâng schema sau khi đã deploy:** `saveProject` chỉ nhận đúng `CURRENT_SCHEMA_VERSION`, nên một tab còn mở code cũ sẽ tự lưu thất bại. Trước lần nâng schema đầu tiên trên production, cần báo lỗi tiếng Việt kiểu "Trang đã cũ, tải lại để lưu" (hoặc cho server chạy `migrate` khi lưu). Lần deploy đầu (P6) chưa bị ảnh hưởng.
 
 ---
 
@@ -696,7 +739,7 @@ Giao cho `symbol-extractor`.
 
 ### P13 — Bàn giao & vận hành (~0.5 ngày + thời gian dùng thử)
 
-- [ ] Deploy bản cuối, chạy migration remote, kiểm tra Access với 2 email.
+- [ ] Deploy bản cuối, chạy migration remote, kiểm tra Access với các email được phép.
 - [ ] **(Bạn làm)** dùng thử với 1–2 dự án thật, so với bản CAD; ghi lại danh sách góp ý.
 - [ ] Sửa các góp ý trong phạm vi MVP.
 - [ ] Lịch sao lưu: chạy `yarn db:backup` hằng tháng; ghi chú về Time Travel.
@@ -708,9 +751,10 @@ Giao cho `symbol-extractor`.
 
 | Khi nào | Việc |
 |---|---|
-| P6 | `npx wrangler login` (cần trình duyệt); xác nhận tài khoản Cloudflare dùng cho dự án |
-| P6 | Bật Cloudflare Access, nhập **2 email** được phép |
-| P5 | Xác nhận thông tin công ty DTP in trên khung tên (tên, địa chỉ, điện thoại) vẫn như bản vẽ mẫu |
+| P6 | `npx wrangler login` (cần trình duyệt) bằng tài khoản Cloudflare cá nhân của bạn (đã chốt C2) |
+| P6 | Bật Cloudflare Access, nhập các email được phép (bạn tự quản lý danh sách) |
+| Sau MVP | Chỉnh thông tin công ty DTP và logo vector theo PO (A2) |
+| Sau MVP | Hỏi kỹ sư: bảng PIT/OH, tường chừa lỗ chờ, khe tối thiểu 400/600 (B1–B3) |
 | P13 | Dùng thử với dự án thật và gửi góp ý |
 | Bất kỳ lúc nào | Nếu có logo E-TECH khổ lớn hơn (≥ 1200px) thì gửi để dùng cho bản in sau này |
 
@@ -731,6 +775,8 @@ Giao cho `symbol-extractor`.
 - Ký hiệu máy kéo riêng cho từng hãng.
 - Chọn logo/công ty theo dự án (DTP hoặc E-TECH).
 - Xuất DXF (hiện chưa cần).
+- Thông tin công ty và logo vector theo PO (A2 trong `docs/cau-hoi-can-chot.md`).
+- Kỹ sư xác nhận bảng PIT/OH, `minOpeningSide`, khe tối thiểu 400/600 (B1–B3), sau khi PO dùng thử MVP.
 
 ---
 

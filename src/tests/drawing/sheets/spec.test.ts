@@ -14,7 +14,9 @@ const val = (p: ElevatorParams, label: string) =>
   specRows(p, derive(p)).find((r) => r.label === label)?.value
 
 describe('specRows', () => {
-  it('house-5f ra đúng chuỗi như PDF mẫu', () => {
+  // As on the reference sheet, except the decisions confirmed by the PO (27/10/2026):
+  // machine / controller joined by " / " (A1), total height without a thousands dot (A7).
+  it('house-5f ra đúng chuỗi như PDF mẫu (theo các điểm PO đã chốt)', () => {
     const p = presetParams('house-5f')
     const rows = specRows(p, derive(p))
     expect(rows.map((r) => r.value)).toEqual([
@@ -26,8 +28,8 @@ describe('specRows', () => {
       'W 700 x H 2100',
       '05 Stops',
       '60 m/phút',
-      'FUJI - THAILAND ĐỒNG BỘ',
-      '20.900 mm',
+      'FUJI - THAILAND / ĐỒNG BỘ',
+      '20900 mm',
       '1400 / 4800 (3600 + 1200)',
     ])
   })
@@ -48,13 +50,19 @@ describe('specRows', () => {
   it('machine hoặc controller rỗng: không có khoảng trắng thừa', () => {
     const p = clone('house-5f')
     p.tech.controller = ''
-    expect(val(p, 'MÁY KÉO - TỦ ĐIỀU KHIỂN')).toBe('FUJI - THAILAND')
+    expect(val(p, 'MÁY KÉO / TỦ ĐIỀU KHIỂN')).toBe('FUJI - THAILAND')
     p.tech.machine = ''
     p.tech.controller = 'ĐỒNG BỘ'
-    expect(val(p, 'MÁY KÉO - TỦ ĐIỀU KHIỂN')).toBe('ĐỒNG BỘ')
+    expect(val(p, 'MÁY KÉO / TỦ ĐIỀU KHIỂN')).toBe('ĐỒNG BỘ')
     p.tech.machine = '  A '
     p.tech.controller = ' B  '
-    expect(val(p, 'MÁY KÉO - TỦ ĐIỀU KHIỂN')).toBe('A B')
+    expect(val(p, 'MÁY KÉO / TỦ ĐIỀU KHIỂN')).toBe('A / B')
+  })
+
+  it('tốc độ có số lẻ in dấu phẩy', () => {
+    const p = clone('house-5f')
+    p.tech.speed = 1.5
+    expect(val(p, 'TỐC ĐỘ')).toBe('1,5 m/phút')
   })
 
   it('loại thang theo liftType của preset', () => {

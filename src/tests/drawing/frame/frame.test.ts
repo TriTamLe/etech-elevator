@@ -62,12 +62,24 @@ describe('titleBlock', () => {
     expect(part?.x).toBeCloseTo(textSpan(label!)[1], 6)
   })
 
+  it('hạng mục khung tên: in giá trị đã nhập, để trống thì in THANG MÁY', () => {
+    const part = (v: string) => {
+      const p = params()
+      p.project.titleBlockPart = v
+      return texts(titleBlock(p, derive(p), page())).map((x) => x.text)
+    }
+    expect(part('THANG TẢI HÀNG')).toContain('THANG TẢI HÀNG')
+    expect(part('THANG TẢI HÀNG')).not.toContain('THANG MÁY')
+    expect(part('  ')).toContain('THANG MÁY')
+  })
+
   it('text nằm trong [TITLE.left, TITLE.right], kể cả chuỗi 300 ký tự', () => {
     const p = params()
     const long = 'Trần Văn Nguyễn '.repeat(25).slice(0, 300)
     p.project.name = long
     p.project.address = long
     p.project.shortAddress = long
+    p.project.titleBlockPart = long
     p.project.designer = long
     p.project.checker = long
     p.project.approver = long

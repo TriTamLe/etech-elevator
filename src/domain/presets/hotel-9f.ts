@@ -4,12 +4,13 @@ import { makeFloors } from '#/domain/schema'
 // Sample set 1 (9 stops, 750 kg). Technical numbers match the reference PDF;
 // project and people names are anonymised.
 export const hotel9f: ElevatorParams = {
-  schemaVersion: 1,
+  schemaVersion: 2,
   project: {
     name: 'CÔNG TRÌNH MẪU 1 – KHÁCH SẠN 9 TẦNG',
     address: 'TP ĐÀ NẴNG',
     shortAddress: '',
     category: '',
+    titleBlockPart: 'THANG MÁY',
     quantity: 1,
     issuePlace: 'Đà Nẵng',
     issueMonth: '10/2026',

@@ -10,7 +10,7 @@ import {
 } from '#/domain/config'
 
 // One JSON blob per project. Changing the shape needs a version bump + a step in migrate.ts.
-export const CURRENT_SCHEMA_VERSION = 1
+export const CURRENT_SCHEMA_VERSION = 2
 
 /** Length in mm. */
 const mm = z.number().int().positive()
@@ -53,6 +53,8 @@ export const ElevatorParams = z.object({
     shortAddress: text,
     /** Cover "hạng mục"; '' = use the suggestion from derive. */
     category: text,
+    /** Title-block "hạng mục" (v2); '' = TITLE_BLOCK_PART_DEFAULT. */
+    titleBlockPart: text,
     quantity: z.number().int().positive(),
     issuePlace: text,
     issueMonth: text,

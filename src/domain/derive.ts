@@ -4,6 +4,7 @@ import {
   LIFT_TYPE_LABELS,
   PAGE_CODE_PREFIX,
   PAGE_TITLES,
+  TITLE_BLOCK_PART_DEFAULT,
 } from '#/domain/config'
 import type { PAGE_KEYS } from '#/domain/config'
 import type { ElevatorParams, Floor, JambType } from '#/domain/schema'
@@ -171,6 +172,11 @@ export function effectiveCategory(p: ElevatorParams): string {
   return p.project.category.trim() || suggestedCategory(p)
 }
 
+/** Title-block "hạng mục": the field when filled in, else "THANG MÁY". */
+export function titleBlockPart(p: ElevatorParams): string {
+  return p.project.titleBlockPart.trim() || TITLE_BLOCK_PART_DEFAULT
+}
+
 /** Title-block address: the short one when filled in, else the full address. */
 export function titleBlockAddress(p: ElevatorParams): string {
   return p.project.shortAddress.trim() || p.project.address
@@ -199,6 +205,7 @@ export function derive(p: ElevatorParams) {
     pages: pageList(p),
     category: effectiveCategory(p),
     titleBlockAddress: titleBlockAddress(p),
+    titleBlockPart: titleBlockPart(p),
     liftTypeLabel: liftTypeLabel(p),
   }
 }

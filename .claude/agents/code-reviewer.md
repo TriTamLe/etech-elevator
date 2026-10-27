@@ -15,7 +15,7 @@ Bạn là người soát code cho dự án web tạo bản vẽ xây dựng than
 
 ## Bối cảnh dự án
 
-- **Stack:** TanStack Start (React + Vite), TanStack Router, Form và Query; Zod; Drizzle + Cloudflare D1; deploy trên Cloudflare Workers gói miễn phí; Cloudflare Access chặn truy cập (2 email).
+- **Stack:** TanStack Start (React + Vite), TanStack Router, Form và Query; Zod; Drizzle + Cloudflare D1; deploy trên Cloudflare Workers gói miễn phí; Cloudflare Access chặn truy cập (email được phép do chủ tài khoản Cloudflare quản lý, không ghi trong repo).
 - **Người dùng:** 1 người, không phân quyền.
 - **Luồng dữ liệu:**
   ```

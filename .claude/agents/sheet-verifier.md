@@ -53,7 +53,9 @@ Trong PDF của bộ Ô.Khải, các trang **không xếp theo thứ tự** (01,
 - **Các quy tắc đã chốt** (nếu bản mẫu khác thì bản web mới đúng):
   - Cao độ tầng trên mặt cắt đứng luôn ghi "THEO THỰC TẾ".
   - CPM in **giống nhau** ở mặt cắt đứng và mặt bằng phòng máy (mặc định 800×1200).
-  - Tổng chiều cao hố được tự tính (bộ Ô.Khải ra 20.900 mm). Thiếu chiều cao tầng thì in "-- mm".
+  - Tổng chiều cao hố được tự tính, in không có dấu ngăn nghìn (bộ Ô.Khải ra "20900 mm"). Thiếu chiều cao tầng thì in "-- mm".
+  - DTP 02: máy kéo và tủ điều khiển nối bằng " / ", nhãn "MÁY KÉO / TỦ ĐIỀU KHIỂN" (PO chốt).
+  - Khung tên: tên bản vẽ in HOA ở mọi trang; "Hạng mục" lấy từ ô nhập (mặc định "THANG MÁY"); bảng DTP 02 dùng một cỡ theo bộ Ô.Khải (PO chốt).
   - Gộp tầng trên mặt cắt đứng theo bộ Ô.Khải: 1F · 2F~(N−2) · N−1 · N(OH). Nếu N ≤ 4 thì vẽ đủ từng tầng.
   - Bảng chiều cao tầng gộp dòng giống hình; tầng trong nhóm cao khác nhau thì tách dòng.
   - Ghi chú bao che hẹp ghi đủ tầng trên cùng. Bộ Chú Nghiêm ghi "2F~8F" là thiếu, đúng phải là "2F~9F".

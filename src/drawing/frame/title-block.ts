@@ -24,9 +24,6 @@ const ISSUED_ROWS: Record<(typeof DOC_TYPES)[number], [string, string]> = {
   'as-built': ['HOÀN CÔNG', 'AS-BUILD'],
 }
 
-/** "Hạng mục" in the title block is the trade, not the cover's long category line. */
-export const TITLE_BLOCK_PART = 'THANG MÁY'
-
 /** Completion date and revision number for one sheet: per-page override, else the project's. */
 export function pageStamp(
   p: ElevatorParams,
@@ -201,10 +198,16 @@ export function titleBlock(
       T.large,
       { italic: true },
     ),
-    text(T.center, T.part.valueBaseline, TITLE_BLOCK_PART, T.value, {
-      anchor: 'middle',
-      italic: true,
-    }),
+    // The trade ("THANG MÁY"), not the cover's long category line.
+    ...fittedText(
+      T.center,
+      T.part.valueBaseline,
+      d.titleBlockPart,
+      maxW,
+      T.value,
+      T.minSize,
+      { anchor: 'middle', italic: true },
+    ),
   )
 
   // Tên bản vẽ / Drawing title.

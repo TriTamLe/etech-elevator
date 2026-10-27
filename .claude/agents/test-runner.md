@@ -21,7 +21,7 @@ Bạn phụ trách kiểm thử cho web tạo bản vẽ thang máy.
   - `text-metrics.ts`: đo chữ bằng bảng độ rộng Tinos sinh sẵn (`fonts/tinos-metrics.ts`, sinh bằng `yarn gen:font-metrics` qua fontkit) — `measure`, `fitSize`, `ellipsize`, `wrap`. Có thể đối chiếu với `fontkit` (devDependency) đọc `public/fonts/tinos/*.ttf`.
   - `frame/`: `layout.ts` (tọa độ đo từ PDF mẫu), `border`, `revision-table` (`printedRevisions`, in `REVISION_TABLE_ROWS` lần mới nhất), `title-block` (`pageStamp`: ghi đè theo trang thắng giá trị dự án), `framed()`.
   - `sheets/*`: hàm thuần trả `Prim[]`: `cover.ts` (Bìa), `responsibility.ts` (DTP 01: `responsibilityLines` — câu chữ theo mẫu, chèn số nhóm F, mục IV khi có ghi chú; `noteLines`), `spec.ts` (DTP 02: `specRows`/`powerRows` — chuỗi định dạng như PDF mẫu). `pages.ts`: `renderPage`, `READY_PAGES`/`readyPages` (trang đã vẽ được). Vùng vẽ của trang có khung là `SHEET_AREA` trong `frame/layout.ts`.
-  - `src/lib/format.ts` có `formatMm` (20900 → "20.900").
+  - `src/lib/format.ts` có `formatDecimal` (2.5 → "2,5"); `src/lib/number-text.ts` đọc ô số kiểu Việt ("1.500" = 1500, "2,5").
   - `render-svg.tsx`: `SheetSvg` (test bằng `renderToStaticMarkup` của `react-dom/server`): không có `<pattern`, `<use`, `<foreignObject`.
   - Bất biến chung: mọi tọa độ hữu hạn; chữ (đo bằng `measure`) không vượt khỏi ô/viền chứa nó, kể cả với tên/địa chỉ 300 ký tự.
 - `src/lib/`: `search.ts` (`foldVi`, `matchesQuery` — tìm không dấu trên tên + địa chỉ), `format.ts` (giờ cố định `Asia/Ho_Chi_Minh`, dạng "14:32 · 22/10"), `utils.ts`.
@@ -52,7 +52,7 @@ Nếu cấu trúc thực tế khác thì làm theo code thực tế và ghi chú
 - `hotel-9f` (AH 1800, OP 800): hẹp 1000, mỗi bên 400; rộng 1100, mỗi bên 350.
 
 **Tổng chiều cao hố:**
-- Bằng PIT + Σ chiều cao tầng 1…N−1 + OH + buồng trên cùng. `house-5f`: 1400 + 3900 + 3×3600 + (3600 + 1200) = 20.900.
+- Bằng PIT + Σ chiều cao tầng 1…N−1 + OH + buồng trên cùng. `house-5f`: 1400 + 3900 + 3×3600 + (3600 + 1200) = 20900 (DTP 02 in "20900 mm").
 - Thiếu chiều cao bất kỳ tầng nào trong 1…N−1 thì `shaftTotalHeight` trả `null` (trang vẽ in `-- mm`).
 
 **Móc treo:** mặc định nằm ở tâm hố (AH/2, BH/2). `house-5f` ra 750 / 950; `hotel-9f` ra 900 / 1000.

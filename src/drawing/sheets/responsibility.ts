@@ -4,6 +4,7 @@ import { RESPONSIBILITY, SHEET_AREA } from '#/drawing/frame/layout'
 import { fittedText, hline, text } from '#/drawing/prims'
 import { ellipsize, measure, wrap } from '#/drawing/text-metrics'
 import type { Prim } from '#/drawing/types'
+import { formatDecimal } from '#/lib/format'
 
 // DTP 01 — the client's responsibilities. Wording follows the reference sheets word for
 // word (spelling fixed), with group F's numbers dropped in.
@@ -17,9 +18,6 @@ export type ResponsibilityLine =
   | { kind: 'sub'; text: string }
   /** Hand-broken continuation of the line above. */
   | { kind: 'cont'; text: string }
-
-/** "2.5" → "2,5" for decimals in running Vietnamese text. */
-const num = (n: number) => String(n).replace('.', ',')
 
 /** Section IV holds the free "Ghi chú thêm"; one entry per line the user typed. */
 export function noteLines(p: ElevatorParams): Array<string> {
@@ -90,7 +88,7 @@ export function responsibilityLines(
     { kind: 'section', number: 'III / ', name: 'CUNG CẤP ĐIỆN:' },
     {
       kind: 'item',
-      text: `1. Kéo dây điện 03 phase lên đến vị trí móc treo tại khu vực phòng máy ( để thừa khoảng ${num(r.spareLength)}m ).`,
+      text: `1. Kéo dây điện 03 phase lên đến vị trí móc treo tại khu vực phòng máy ( để thừa khoảng ${formatDecimal(r.spareLength)}m ).`,
     },
     { kind: 'item', text: '2. Cung cấp điện 03 phase :' },
     { kind: 'sub', text: `- 01 CB : ${r.breaker} ( tại khu vực phòng máy ).` },

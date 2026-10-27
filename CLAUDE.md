@@ -25,7 +25,7 @@ Package manager is **yarn 1** — never run `npm install` / `pnpm` (no extra loc
 - Measure drawing text with `src/drawing/text-metrics.ts` (Tinos width table, regenerate with `yarn gen:font-metrics`), never canvas/DOM. Frame coordinates live in `src/drawing/frame/layout.ts`; company info in `src/config/company.ts`.
 - Server: `createServerFn` in `src/server/`, D1 via `getDb()` from `src/db/index.ts`. Keep requests tiny (Workers free plan: 10 ms CPU). The editor route uses `ssr: false`.
 - Project params are one JSON blob validated by Zod with `schemaVersion`; changing the shape needs a bump + `migrate` step. Deletes are soft (`deletedAt`).
-- No auth code: Cloudflare Access (2 emails) protects the Worker.
+- No auth code: Cloudflare Access protects the Worker (allowed emails are managed in the Cloudflare dashboard, not in the repo).
 - Imports use the `#/` alias; new files are kebab-case.
 - Tests are **not colocated**: they live in `src/tests/`, mirroring `src/` (e.g. `src/domain/derive.ts` → `src/tests/domain/derive.test.ts`) and import code via `#/`.
 - For the component created by shadCn, remove the "use client" because we do not use nextjs

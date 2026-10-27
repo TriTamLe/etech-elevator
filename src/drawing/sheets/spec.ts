@@ -12,7 +12,7 @@ import {
   wrap,
 } from '#/drawing/text-metrics'
 import type { Prim } from '#/drawing/types'
-import { formatMm } from '#/lib/format'
+import { formatDecimal } from '#/lib/format'
 
 export type SpecRow = { label: string; value: string }
 
@@ -40,14 +40,16 @@ export function specRows(p: ElevatorParams, d: Derived): Array<SpecRow> {
       label: 'SỐ ĐIỂM DỪNG',
       value: `${String(t.stops).padStart(2, '0')} Stops`,
     },
-    { label: 'TỐC ĐỘ', value: `${t.speed} m/phút` },
+    { label: 'TỐC ĐỘ', value: `${formatDecimal(t.speed)} m/phút` },
     {
-      label: 'MÁY KÉO - TỦ ĐIỀU KHIỂN',
-      value: [t.machine.trim(), t.controller.trim()].filter(Boolean).join(' '),
+      label: 'MÁY KÉO / TỦ ĐIỀU KHIỂN',
+      value: [t.machine.trim(), t.controller.trim()]
+        .filter(Boolean)
+        .join(' / '),
     },
     {
       label: 'TỔNG CHIỀU CAO HỐ',
-      value: total === null ? '-- mm' : `${formatMm(total)} mm`,
+      value: total === null ? '-- mm' : `${Math.round(total)} mm`,
     },
     {
       label: 'PIT/OH',

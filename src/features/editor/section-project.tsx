@@ -1,4 +1,4 @@
-import { PROJECT_TEXT_MAX } from '#/domain/config'
+import { PROJECT_TEXT_MAX, TITLE_BLOCK_PART_DEFAULT } from '#/domain/config'
 import { pageList, suggestedCategory } from '#/domain/derive'
 import { useEditor } from '#/features/editor/editor-context'
 import {
@@ -35,9 +35,15 @@ export function SectionProject() {
       />
       <TextField
         name="project.category"
-        label="Hạng mục"
+        label="Hạng mục (trang bìa)"
         placeholder={params ? suggestedCategory(params) : undefined}
         hint="Để trống thì dùng gợi ý theo tải trọng và số lượng."
+      />
+      <TextField
+        name="project.titleBlockPart"
+        label="Hạng mục (khung tên)"
+        placeholder={TITLE_BLOCK_PART_DEFAULT}
+        hint={`In trong khung tên ở mọi trang. Để trống thì in “${TITLE_BLOCK_PART_DEFAULT}”.`}
       />
       <FieldRow>
         <NumberField name="project.quantity" label="Số lượng" unit="thang" />

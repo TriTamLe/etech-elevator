@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest'
 
-import { formatDate, formatMm, formatTime, formatUpdatedAt } from '#/lib/format'
+import {
+  formatDate,
+  formatDecimal,
+  formatTime,
+  formatUpdatedAt,
+} from '#/lib/format'
 
 describe('formatUpdatedAt', () => {
   const now = new Date('2026-10-23T08:00:00Z')
@@ -36,10 +41,12 @@ describe('formatDate', () => {
   })
 })
 
-describe('formatMm', () => {
-  it('nhóm nghìn bằng dấu chấm', () => {
-    expect(formatMm(900)).toBe('900')
-    expect(formatMm(20900)).toBe('20.900')
-    expect(formatMm(1234567)).toBe('1.234.567')
+describe('formatDecimal', () => {
+  it('số lẻ dùng dấu phẩy, số nguyên giữ nguyên', () => {
+    expect(formatDecimal(2.5)).toBe('2,5')
+    expect(formatDecimal(0.75)).toBe('0,75')
+    expect(formatDecimal(90)).toBe('90')
+    expect(formatDecimal(20900)).toBe('20900')
+    expect(formatDecimal(1500.5)).toBe('1500,5')
   })
 })

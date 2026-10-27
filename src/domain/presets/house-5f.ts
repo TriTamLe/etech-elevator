@@ -3,12 +3,13 @@ import type { ElevatorParams } from '#/domain/schema'
 // Sample set 2 (5 stops, 550 kg). Technical numbers match the reference PDF/DWG;
 // project and people names are anonymised.
 export const house5f: ElevatorParams = {
-  schemaVersion: 1,
+  schemaVersion: 2,
   project: {
     name: 'CÔNG TRÌNH MẪU 2 – NHÀ Ở 5 TẦNG',
     address: 'ĐƯỜNG MẪU - TP ĐÀ NẴNG',
     shortAddress: 'ĐƯỜNG MẪU - TPĐN',
     category: '',
+    titleBlockPart: 'THANG MÁY',
     quantity: 1,
     issuePlace: 'Đà Nẵng',
     issueMonth: '10/2026',

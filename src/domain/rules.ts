@@ -6,6 +6,7 @@ import {
 } from '#/domain/config'
 import { jambsInUse, landingOpening } from '#/domain/derive'
 import type { ElevatorParams } from '#/domain/schema'
+import { formatDecimal } from '#/lib/format'
 
 // Cross-field rules on top of the Zod shape. `error` blocks PDF export; `warning` does not.
 
@@ -76,19 +77,19 @@ export function checkRules(p: ElevatorParams): Array<Issue> {
   if (!ref) {
     warning(
       'tech.speed',
-      `Tốc độ ${p.tech.speed} m/phút nằm ngoài bảng tra PIT/OH — ${ENGINEER_NOTE}.`,
+      `Tốc độ ${formatDecimal(p.tech.speed)} m/phút nằm ngoài bảng tra PIT/OH — ${ENGINEER_NOTE}.`,
     )
   } else {
     if (p.tech.pit < ref.pit) {
       warning(
         'tech.pit',
-        `PIT ${p.tech.pit} thấp hơn mức tham khảo ${ref.pit} cho ${p.tech.speed} m/phút — ${ENGINEER_NOTE}.`,
+        `PIT ${p.tech.pit} thấp hơn mức tham khảo ${ref.pit} cho ${formatDecimal(p.tech.speed)} m/phút — ${ENGINEER_NOTE}.`,
       )
     }
     if (p.tech.overhead < ref.overhead) {
       warning(
         'tech.overhead',
-        `OH ${p.tech.overhead} thấp hơn mức tham khảo ${ref.overhead} cho ${p.tech.speed} m/phút — ${ENGINEER_NOTE}.`,
+        `OH ${p.tech.overhead} thấp hơn mức tham khảo ${ref.overhead} cho ${formatDecimal(p.tech.speed)} m/phút — ${ENGINEER_NOTE}.`,
       )
     }
   }

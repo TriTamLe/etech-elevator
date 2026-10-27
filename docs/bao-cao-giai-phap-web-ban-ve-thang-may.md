@@ -3,6 +3,7 @@
 > Bộ mẫu 1: `BV CT KHÁCH SẠN TƯ NHÂN CHÚ NGHIÊM - TP ĐÀ NẴNG.pdf` (9 trang A3)
 > Bộ mẫu 2: `BV - CT NHÀ TƯ NHÂN Ô.KHẢI B.DIỄM - NHS - TP ĐN.pdf` + file `.dwg` gốc (AutoCAD 2007)
 > Phiên bản 5, 21/10/2026: đã đọc được DWG; đã chốt 14 câu hỏi về quy tắc bản vẽ (mục 6).
+> Cập nhật 27/10/2026: các quyết định PO sau P5 (dấu nối, hạng mục khung tên, cách viết số, tài khoản Cloudflare và danh sách email được vào) ghi ở `docs/cau-hoi-can-chot.md`; nơi nào báo cáo này khác thì theo file đó.
 
 ## Tóm tắt
 

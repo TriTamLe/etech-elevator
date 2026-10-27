@@ -127,5 +127,8 @@ export const PAGE_CODE_PREFIX = 'DTP'
 /** Text limits shared by the forms and the server validators. */
 export const PROJECT_TEXT_MAX = { name: 200, address: 300 } as const
 
+/** "Hạng mục" printed in the title block when the field is blank (both reference sets). */
+export const TITLE_BLOCK_PART_DEFAULT = 'THANG MÁY'
+
 /** Data rows in the revision table at the top of every framed sheet (reference DWG/PDF: 1). */
 export const REVISION_TABLE_ROWS = 1

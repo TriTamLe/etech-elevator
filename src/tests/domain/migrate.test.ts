@@ -6,9 +6,34 @@ import { presetParams } from '#/domain/presets'
 import { CURRENT_SCHEMA_VERSION } from '#/domain/schema'
 
 describe('migrate', () => {
-  it('v1 hợp lệ đi qua và giữ nguyên dữ liệu', () => {
+  it('bản hiện tại hợp lệ đi qua và giữ nguyên dữ liệu', () => {
     const p = presetParams('house-5f')
     expect(migrate(structuredClone(p))).toEqual(p)
+  })
+
+  it('v1 → v2: thêm hạng mục khung tên "THANG MÁY", giữ mọi thứ khác', () => {
+    const current = presetParams('house-5f')
+    const { titleBlockPart: _omit, ...project } = current.project
+    const v1 = { ...structuredClone(current), schemaVersion: 1, project }
+    const p = migrate(v1)
+    expect(p.schemaVersion).toBe(2)
+    expect(p.project.titleBlockPart).toBe('THANG MÁY')
+    expect(p).toEqual(current)
+  })
+
+  it('CURRENT_SCHEMA_VERSION = 2 và preset mang đúng phiên bản + hạng mục mặc định', () => {
+    expect(CURRENT_SCHEMA_VERSION).toBe(2)
+    const p = presetParams('hotel-9f')
+    expect(p.schemaVersion).toBe(2)
+    expect(typeof p.project.titleBlockPart).toBe('string')
+  })
+
+  it('v2 giữ nguyên hạng mục đã nhập (kể cả rỗng)', () => {
+    for (const v of ['THANG TẢI HÀNG', '']) {
+      const p = presetParams('house-5f')
+      p.project.titleBlockPart = v
+      expect(migrate(structuredClone(p)).project.titleBlockPart).toBe(v)
+    }
   })
 
   it('phiên bản mới hơn thì throw', () => {
@@ -53,9 +78,20 @@ describe('migrateImport', () => {
     expect(migrateImport(structuredClone(p))).toEqual(p)
   })
 
+  it('upgrades a v1 file (exported before the v2 schema)', () => {
+    const current = presetParams('hotel-9f')
+    const { titleBlockPart: _omit, ...project } = current.project
+    const file = JSON.parse(
+      JSON.stringify({ ...current, schemaVersion: 1, project }),
+    ) as unknown
+    expect(migrateImport(file)).toEqual(current)
+  })
+
   it('turns a shape error into one Vietnamese sentence with the path', () => {
     const bad = { ...presetParams('house-5f'), tech: { loadKg: 'x' } }
-    expect(() => migrateImport(bad)).toThrow(/^File không đúng cấu trúc thông số \(sai ở “tech\./)
+    expect(() => migrateImport(bad)).toThrow(
+      /^File không đúng cấu trúc thông số \(sai ở “tech\./,
+    )
   })
 
   it('keeps the version errors as they are', () => {

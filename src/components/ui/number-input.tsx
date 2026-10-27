@@ -1,11 +1,13 @@
 import * as React from 'react'
 
 import { Input } from '#/components/ui/input'
+import { formatNumberText, parseNumberText } from '#/lib/number-text'
 import { cn } from '#/lib/utils'
 
 // Number entry that keeps what the user typed (so "15" on the way to "1500" is not
 // rewritten) and reports a number upward: NaN when blank/invalid lets Zod show
 // "Nhập một số.", or null when `nullable` (blank = not entered, e.g. floor height).
+// Text is read the Vietnamese way ("1.500" = 1500, "2,5"): see lib/number-text.ts.
 // The unit ("mm", "kg") belongs to the Field label, not the input.
 
 type NumberInputProps = Omit<
@@ -16,18 +18,8 @@ type NumberInputProps = Omit<
   onValueChange: (value: number | null) => void
   /** Blank means "not entered" and reports null instead of NaN. */
   nullable?: boolean
-  /** Allow a decimal part (comma or dot), e.g. speed or hook load. */
+  /** Allow a decimal part ("2,5", or "2.5"), shown with a comma; e.g. speed or hook load. */
   decimal?: boolean
-}
-
-function format(value: number | null): string {
-  return value === null || Number.isNaN(value) ? '' : String(value)
-}
-
-function parse(text: string, decimal: boolean): number {
-  const t = text.trim().replace(',', '.')
-  const ok = decimal ? /^\d+(\.\d+)?$/.test(t) : /^\d+$/.test(t)
-  return ok ? Number(t) : Number.NaN
 }
 
 function NumberInput({
@@ -38,12 +30,13 @@ function NumberInput({
   className,
   ...props
 }: NumberInputProps) {
-  const [text, setText] = React.useState(() => format(value))
+  const [text, setText] = React.useState(() => formatNumberText(value, decimal))
   // A value we did not just emit came from outside (reset, restored version): show it.
   const [seen, setSeen] = React.useState(value)
   if (!Object.is(value, seen)) {
     setSeen(value)
-    if (!Object.is(value, parse(text, decimal))) setText(format(value))
+    if (!Object.is(value, parseNumberText(text, decimal)))
+      setText(formatNumberText(value, decimal))
   }
 
   return (
@@ -57,7 +50,9 @@ function NumberInput({
         const next = e.target.value
         setText(next)
         onValueChange(
-          nullable && next.trim() === '' ? null : parse(next, decimal),
+          nullable && next.trim() === ''
+            ? null
+            : parseNumberText(next, decimal),
         )
       }}
       className={cn('font-mono', className)}

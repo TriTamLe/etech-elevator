@@ -1,11 +1,22 @@
 import { z } from 'zod'
 
+import { TITLE_BLOCK_PART_DEFAULT } from '#/domain/config'
 import { CURRENT_SCHEMA_VERSION, ElevatorParams } from '#/domain/schema'
 
 // Upgrade step from version v to v + 1. Add one entry per schema bump, e.g.
 // `1: (old) => ({ ...old, schemaVersion: 2, newField: default })`.
 type Step = (old: Record<string, unknown>) => Record<string, unknown>
-const steps: Partial<Record<number, Step>> = {}
+const steps: Partial<Record<number, Step>> = {
+  // v2: the title block's "hạng mục" became a field (it was always "THANG MÁY").
+  1: (old) => ({
+    ...old,
+    schemaVersion: 2,
+    project: {
+      ...(old.project as Record<string, unknown>),
+      titleBlockPart: TITLE_BLOCK_PART_DEFAULT,
+    },
+  }),
+}
 
 /** Bring stored / imported params (D1 row or JSON file) up to the current schema, then validate. */
 export function migrate(raw: unknown): ElevatorParams {
