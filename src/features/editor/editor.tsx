@@ -37,6 +37,7 @@ import { SectionTech } from '#/features/editor/section-tech'
 import { SectionTopRoom } from '#/features/editor/section-top-room'
 import { useAutosave } from '#/features/editor/use-autosave'
 import { VersionsSheet } from '#/features/editor/versions-sheet'
+import type { PageKey } from '#/domain/derive'
 import type { ElevatorParams } from '#/domain/schema'
 import { Icons } from '#/components/app/icons'
 import { cn } from '#/lib/utils'
@@ -113,6 +114,7 @@ export function Editor({ project }: { project: ProjectDetail }) {
   const lastValid = useLastValid(issues.params)
   const [open, setOpen] = useOpenSections(project.id)
   const [tab, setTab] = React.useState('form')
+  const [previewPage, setPreviewPage] = React.useState<PageKey>('cover')
   const [versionsOpen, setVersionsOpen] = React.useState(false)
   const isDesktop = useIsDesktop()
 
@@ -217,7 +219,13 @@ export function Editor({ project }: { project: ProjectDetail }) {
               {formPane}
             </aside>
             <section aria-label="Xem trước" className="min-h-0 overflow-hidden">
-              <SheetPreview params={lastValid} stale={!issues.params} />
+              <SheetPreview
+                params={lastValid}
+                stale={!issues.params}
+                page={previewPage}
+                onPageChange={setPreviewPage}
+                layout="side"
+              />
             </section>
           </div>
         ) : (
@@ -240,7 +248,13 @@ export function Editor({ project }: { project: ProjectDetail }) {
               value="preview"
               className="min-h-0 flex-1 overflow-hidden"
             >
-              <SheetPreview params={lastValid} stale={!issues.params} />
+              <SheetPreview
+                params={lastValid}
+                stale={!issues.params}
+                page={previewPage}
+                onPageChange={setPreviewPage}
+                layout="stacked"
+              />
             </TabsContent>
           </Tabs>
         )}

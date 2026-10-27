@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { formatDate, formatTime, formatUpdatedAt } from '#/lib/format'
+import { formatDate, formatMm, formatTime, formatUpdatedAt } from '#/lib/format'
 
 describe('formatUpdatedAt', () => {
   const now = new Date('2026-10-23T08:00:00Z')
@@ -33,5 +33,13 @@ describe('formatTime', () => {
 describe('formatDate', () => {
   it('prints dd/mm/yyyy in Vietnam time', () => {
     expect(formatDate(new Date('2026-10-22T17:05:00Z'))).toBe('23/10/2026')
+  })
+})
+
+describe('formatMm', () => {
+  it('nhóm nghìn bằng dấu chấm', () => {
+    expect(formatMm(900)).toBe('900')
+    expect(formatMm(20900)).toBe('20.900')
+    expect(formatMm(1234567)).toBe('1.234.567')
   })
 })

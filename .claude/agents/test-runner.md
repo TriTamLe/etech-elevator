@@ -20,7 +20,8 @@ Bạn phụ trách kiểm thử cho web tạo bản vẽ thang máy.
   - `types.ts`: `Prim` hiện có line, rect, circle, text (y là baseline, `size` là cỡ chữ mm), image; dim/leader/hatch/symbol thêm ở P8.
   - `text-metrics.ts`: đo chữ bằng bảng độ rộng Tinos sinh sẵn (`fonts/tinos-metrics.ts`, sinh bằng `yarn gen:font-metrics` qua fontkit) — `measure`, `fitSize`, `ellipsize`, `wrap`. Có thể đối chiếu với `fontkit` (devDependency) đọc `public/fonts/tinos/*.ttf`.
   - `frame/`: `layout.ts` (tọa độ đo từ PDF mẫu), `border`, `revision-table` (`printedRevisions`, in `REVISION_TABLE_ROWS` lần mới nhất), `title-block` (`pageStamp`: ghi đè theo trang thắng giá trị dự án), `framed()`.
-  - `sheets/*`: hàm thuần `(params, derive, page) → Prim[]` (`cover.ts` đã có; DTP 01/02 ở P5b). `pages.ts`: `renderPage`.
+  - `sheets/*`: hàm thuần trả `Prim[]`: `cover.ts` (Bìa), `responsibility.ts` (DTP 01: `responsibilityLines` — câu chữ theo mẫu, chèn số nhóm F, mục IV khi có ghi chú; `noteLines`), `spec.ts` (DTP 02: `specRows`/`powerRows` — chuỗi định dạng như PDF mẫu). `pages.ts`: `renderPage`, `READY_PAGES`/`readyPages` (trang đã vẽ được). Vùng vẽ của trang có khung là `SHEET_AREA` trong `frame/layout.ts`.
+  - `src/lib/format.ts` có `formatMm` (20900 → "20.900").
   - `render-svg.tsx`: `SheetSvg` (test bằng `renderToStaticMarkup` của `react-dom/server`): không có `<pattern`, `<use`, `<foreignObject`.
   - Bất biến chung: mọi tọa độ hữu hạn; chữ (đo bằng `measure`) không vượt khỏi ô/viền chứa nó, kể cả với tên/địa chỉ 300 ký tự.
 - `src/lib/`: `search.ts` (`foldVi`, `matchesQuery` — tìm không dấu trên tên + địa chỉ), `format.ts` (giờ cố định `Asia/Ho_Chi_Minh`, dạng "14:32 · 22/10"), `utils.ts`.

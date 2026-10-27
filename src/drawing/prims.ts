@@ -31,7 +31,7 @@ export function vline(
 
 export function rect(
   r: { x: number; y: number; w: number; h: number },
-  opts: Pick<RectPrim, 'weight' | 'fill'> = {},
+  opts: Pick<RectPrim, 'weight' | 'fill' | 'r'> = {},
 ): RectPrim {
   return { kind: 'rect', ...r, ...opts }
 }

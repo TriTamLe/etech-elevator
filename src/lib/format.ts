@@ -40,3 +40,8 @@ export function formatDate(date: Date): string {
   const p = pick(date)
   return `${p.day}/${p.month}/${p.year}`
 }
+
+/** "20900" → "20.900" (Vietnamese thousands separator), for lengths printed on sheets. */
+export function formatMm(mm: number): string {
+  return String(Math.round(mm)).replace(/\B(?=(\d{3})+(?!\d))/g, '.')
+}

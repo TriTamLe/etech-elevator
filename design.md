@@ -62,6 +62,12 @@ to it. Amend intentionally — the file is the rule.
 ## Editor form
 - Each parameter group is a bordered card (`--radius-card`, `--color-rule`); its header (paper-2, bold base size, mono letter chip, issue badges) is sticky within the card while its fields scroll. No footer status bar: issues show at the field, on the group header and in the save status.
 
+## Sheet preview (graphite light box)
+- Only finished sheets are listed; a footer line says how many of the set exist ("3 / 9 trang"). The drawing is always black on white, never themed.
+- Page strip: real buttons with the sheet thumbnail and its code, `aria-current="page"` on the open one, arrow keys move (↑↓ in the desktop column, ←→ in the narrow-screen row, which scrolls sideways inside itself).
+- Toolbar: previous / next page, zoom out / level / in, fit, "1:1" (paper size). Ctrl/⌘ + wheel and pinch zoom, drag pans. A page opens fitted and stays fitted as the viewport resizes until the user zooms by hand.
+- Drawn from a deferred copy of the last valid params; while the form has errors the footer says the preview shows the last valid version.
+
 ## Interaction details
 - Every clickable element shows the pointer cursor (one base rule in `styles.css`); disabled = `not-allowed`, loading = `progress`.
 - Tooltips open after 200 ms; moving to a neighbouring control shows its tooltip at once.

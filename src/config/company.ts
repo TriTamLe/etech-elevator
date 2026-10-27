@@ -4,8 +4,10 @@
 export const COMPANY = {
   /** Cover heading, one entry per printed line. */
   nameLines: ['CÔNG TY TNHH EDUCATION SOLUTIONS', 'VIỆT NAM'],
-  /** Used in running text (DTP 01). */
+  /** DTP 01 heading. */
   shortName: 'CÔNG TY TNHH EDUCATION SOLUTION VN',
+  /** Mid-sentence form (DTP 01: "…theo bản vẽ do Công ty … cung cấp"). */
+  nameInSentence: 'Công ty TNHH EDUCATION SOLUTION VN',
   address:
     'Trụ sở : Tầng 1, Tòa Nhà Vietphone Building, Số 64 Nguyễn Đình Chiểu, P. Đa Kao, Quận 1, TP. HCM',
   phone: 'Điện thoại: (028) 3845 6604',

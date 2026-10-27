@@ -28,6 +28,8 @@ export type RectPrim = {
   weight?: Weight
   /** 'ink' fills solid black (ticked box); default is outline only. */
   fill?: 'none' | 'ink'
+  /** Corner radius (mm) for a rounded box. */
+  r?: number
 }
 
 export type CirclePrim = {

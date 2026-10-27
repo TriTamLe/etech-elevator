@@ -46,6 +46,26 @@ function stress(base: ElevatorParams): ElevatorParams {
   return p
 }
 
+function withNote(base: ElevatorParams): ElevatorParams {
+  const p = structuredClone(base)
+  p.responsibility.note = Array.from(
+    { length: 15 },
+    (_, i) =>
+      `${i + 1}. Ghi chú thêm số ${i + 1}: chủ đầu tư chuẩn bị mặt bằng tập kết vật tư và nguồn điện thi công tạm trước ngày lắp đặt.`,
+  ).join('\n')
+  return p
+}
+
+function longSpec(base: ElevatorParams): ElevatorParams {
+  const p = structuredClone(base)
+  p.floors[1].height = null
+  p.tech.machine = 'MONTANARI GIOVANNI M83 – ITALY (KÈM BIẾN TẦN)'
+  p.tech.controller = 'STEP AS380 – BẢN ĐẦY ĐỦ'
+  p.tech.mainPower =
+    'AC : 380V : 50Hz : 3Phase – có dây tiếp địa riêng cho tủ điều khiển'
+  return p
+}
+
 type Sample = {
   title: string
   params: ElevatorParams
@@ -60,18 +80,33 @@ const SAMPLES: Array<Sample> = [
       page: (ps) => ps[0],
     },
     {
-      title: `${preset.label} · DTP 01 (khung)`,
+      title: `${preset.label} · DTP 01`,
       params: preset.params,
       page: (ps) => ps[1],
     },
+    {
+      title: `${preset.label} · DTP 02`,
+      params: preset.params,
+      page: (ps) => ps[2],
+    },
   ]),
+  {
+    title: 'Ghi chú 15 dòng · DTP 01',
+    params: withNote(PRESETS[1].params),
+    page: (ps) => ps[1],
+  },
+  {
+    title: 'Thiếu chiều cao tầng, giá trị dài · DTP 02',
+    params: longSpec(PRESETS[1].params),
+    page: (ps) => ps[2],
+  },
   {
     title: 'Chữ dài · Bìa',
     params: stress(PRESETS[0].params),
     page: (ps) => ps[0],
   },
   {
-    title: 'Chữ dài · DTP 01 (khung)',
+    title: 'Chữ dài · DTP 01',
     params: stress(PRESETS[0].params),
     page: (ps) => ps[1],
   },

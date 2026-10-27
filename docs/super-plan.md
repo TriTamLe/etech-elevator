@@ -495,6 +495,14 @@ Việc mang từ P4 sang: dùng `pageOverrides` (ngày hoàn thành, số hiệu
 - 172 test xanh, gồm 56 test mới trong `src/tests/drawing/`. Lint, typecheck, build xanh. `code-reviewer` đã soát; mọi mục "Nghiêm trọng" và "Nên sửa" đã xử lý.
 - Để lại cho 5c: xác nhận svg2pdf vẽ đúng `fontWeight="bold"` với Tinos Bold đã đăng ký, và logo WebP.
 
+**Kết quả 5b (27/10/2026):**
+- Xem đủ 3 trang Bìa, DTP 01, DTP 02 trong màn soạn; đặt cạnh trang 2–3 PDF mẫu thì khớp gần như hoàn toàn (đã sửa chính tả "TRÁCH NHIỆM", "CABIN", "Đặc tính"). Số đo trong `frame/layout.ts` (`SHEET_AREA`, `RESPONSIBILITY`, `SPEC`).
+- DTP 01: số nhóm F chèn vào câu chữ mẫu; có ghi chú thì thêm mục "IV / GHI CHÚ". Thân chữ co đều (tìm nhị phân tỷ lệ lớn nhất còn vừa, tối thiểu 60 %) rồi mới cắt "…". DTP 02: giá trị dài co rồi xuống 2 dòng trong ô.
+- Trình xem: thumbnail (cột trên máy tính, dải ngang trên điện thoại, phím mũi tên), trang trước/sau, thu nhỏ/phóng to/vừa khung/1:1, Ctrl + lăn chuột, chụm 2 ngón, kéo chuột và phím mũi tên để di chuyển khi phóng to. Vừa khung tự tính từ kích thước vùng xem (hàm của thư viện tính sai khi vùng xem đang đổi cỡ) và tự canh lại khi đổi trang/đổi cỡ cho tới khi người dùng zoom tay. Nút 44 px trên màn hẹp; nút ở trang đầu/cuối dùng `aria-disabled` để không mất focus.
+- Gõ tải trọng → DTP 02 đổi sau ~36 ms. Không cuộn ngang ở 1280/768/375/320 px.
+- 197 test xanh (25 test mới cho DTP 01/02, `formatMm`, hồi quy co chữ). `code-reviewer` đã soát: 4 mục "Nên sửa" và các gợi ý a11y đã xử lý.
+- Còn mở: dấu nối giữa máy kéo và tủ điều khiển trên DTP 02 — hai bộ mẫu khác nhau ("FUJI - THAILAND ĐỒNG BỘ" nối bằng dấu cách; bộ khách sạn ghi "MONTANARI/ STEP", nhãn "MÁY KÉO/ TỦ ĐIỀU KHIỂN"). Hiện nối bằng dấu cách, chờ chốt.
+
 **Lõi vẽ**
 - [x] `src/drawing/types.ts`: `Pt`, `Prim`, `STROKE` 3 cỡ nét 0.13 / 0.25 / 0.5 mm. 5a có line, rect, circle, text, image; dim, leader, break, symbol, hatch thêm ở P8 cùng renderer (5a).
 - [x] `src/drawing/render-svg.tsx`: biến `Prim[]` thành phần tử SVG với `viewBox="0 0 420 297"` (đơn vị mm). Màu mực cố định đen trên trắng, không theo token giao diện (5a).
@@ -521,15 +529,15 @@ Việc mang từ P4 sang: dùng `pageOverrides` (ngày hoàn thành, số hiệu
 
 **Trang chữ `src/drawing/sheets/`**
 - [x] `cover.ts`: bìa (5a).
-- [ ] `responsibility.tsx`: DTP 01, chữ có chèn số liệu từ nhóm F + ghi chú thêm; sửa chính tả thành "TRÁCH NHIỆM".
-- [ ] `spec.tsx`: DTP 02, bảng 12 dòng; mã hiệu là chữ tự do; tổng chiều cao in số hoặc "-- mm"; sửa thành "CABIN" và "Đặc tính".
+- [x] `responsibility.ts`: DTP 01, chữ có chèn số liệu từ nhóm F + ghi chú thêm (mục "IV / GHI CHÚ"); sửa chính tả thành "TRÁCH NHIỆM". Ghi chú dài thì thân chữ co đều (tối thiểu 60 %) rồi mới cắt "…" (5b).
+- [x] `spec.ts`: DTP 02, bảng 12 dòng; mã hiệu là chữ tự do; tổng chiều cao in số ("20.900 mm") hoặc "-- mm"; sửa thành "CABIN" và "Đặc tính". Giá trị dài co rồi xuống 2 dòng trong ô (5b).
 
 **Ghép trang**
-- [ ] `src/drawing/pages.ts`: từ danh sách trang đã tính, tạo ra component tương ứng kèm số trang. 5a: `renderPage` có Bìa thật, các trang khác là khung trống.
+- [x] `src/drawing/pages.ts`: `renderPage` theo key trang; `READY_PAGES` liệt kê trang đã vẽ được (Bìa, DTP 01, DTP 02) — vùng xem trước chỉ hiện các trang này (5b).
 
 **Giao diện xem trước** (hộp đèn graphite, mục 3.5)
-- [ ] Cột thumbnail các trang và vùng xem chính có `react-zoom-pan-pinch` (vừa chiều rộng / 100% / kéo).
-- [ ] Dùng `useDeferredValue` để gõ không giật.
+- [x] Cột thumbnail các trang (dải ngang trên màn hẹp) và vùng xem chính có `react-zoom-pan-pinch` 4.2 (vừa khung / 1:1 / phóng to / thu nhỏ / kéo / Ctrl + lăn chuột). Tỷ lệ vừa khung tự tính từ kích thước viewport (5b).
+- [x] Dùng `useDeferredValue` để gõ không giật: gõ tải trọng → DTP 02 đổi sau ~36 ms (5b).
 
 **Xuất PDF `src/pdf/export-pdf.ts`**
 - [ ] Nạp jsPDF + svg2pdf.js bằng dynamic import để không làm nặng bundle.

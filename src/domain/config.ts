@@ -60,6 +60,12 @@ export const LIFT_TYPE_LABELS: Record<(typeof LIFT_TYPES)[number], string> = {
   'machine-room': 'Tải khách có phòng máy',
 }
 
+/** Lift type as printed in the DTP 02 table (wording of the reference sheets). */
+export const LIFT_TYPE_PRINT: Record<(typeof LIFT_TYPES)[number], string> = {
+  mrl: 'Tải khách không có phòng máy',
+  'machine-room': 'Tải khách có phòng máy',
+}
+
 export const DOOR_TYPES = ['CO', '2S'] as const
 
 export const DOOR_TYPE_LABELS: Record<(typeof DOOR_TYPES)[number], string> = {

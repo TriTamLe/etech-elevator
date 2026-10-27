@@ -2,10 +2,12 @@ import { describe, expect, it } from 'vitest'
 
 import { derive } from '#/domain/derive'
 import { presetParams } from '#/domain/presets'
-import { COVER, TITLE } from '#/drawing/frame/layout'
+import { COVER, RESPONSIBILITY, SPEC, TITLE } from '#/drawing/frame/layout'
 import { titleBlock } from '#/drawing/frame/title-block'
 import { fittedText } from '#/drawing/prims'
 import { coverSheet } from '#/drawing/sheets/cover'
+import { responsibilitySheet } from '#/drawing/sheets/responsibility'
+import { specSheet } from '#/drawing/sheets/spec'
 import { fitSize } from '#/drawing/text-metrics'
 import { textSpan, texts } from '#/tests/drawing/helpers'
 
@@ -108,5 +110,43 @@ describe('cover rows', () => {
     expect(name.at(-1)?.text.endsWith('…')).toBe(true)
     for (const t of name)
       expect(textSpan(t)[1]).toBeLessThanOrEqual(COVER.rows.right + EPS)
+  })
+})
+
+describe('DTP 01 body scale', () => {
+  const note = (n: number) =>
+    Array.from(
+      { length: n },
+      (_, i) =>
+        `${i + 1}. Ghi chú thêm số ${i + 1}: chủ đầu tư chuẩn bị mặt bằng tập kết vật tư và nguồn điện thi công tạm trước ngày lắp đặt.`,
+    ).join('\n')
+
+  it.each([5, 10, 15])(
+    'a %i-line note that fits at some scale ≥ minScale is never cut',
+    (n) => {
+      const p = presetParams('house-5f')
+      p.responsibility.note = note(n)
+      const body = texts(responsibilitySheet(p)).filter(
+        (t) => t.y >= RESPONSIBILITY.firstBaseline - EPS,
+      )
+      expect(body.some((t) => t.text.endsWith('…'))).toBe(false)
+      expect(body.some((t) => t.text.startsWith(`${n}. Ghi chú`))).toBe(true)
+      for (const t of body)
+        expect(t.y).toBeLessThanOrEqual(RESPONSIBILITY.maxBaseline + EPS)
+    },
+  )
+})
+
+describe('DTP 02 unbreakable value', () => {
+  it('one long word shrinks on one line inside the value cell', () => {
+    const p = presetParams('house-5f')
+    p.tech.modelCode = 'X'.repeat(90)
+    const d = derive(p)
+    const row = texts(specSheet(p, d)).filter((t) => t.text.startsWith('XXX'))
+    expect(row.length).toBe(1)
+    const [x0, x1] = textSpan(row[0])
+    expect(x0).toBeGreaterThanOrEqual(SPEC.split)
+    expect(x1).toBeLessThanOrEqual(SPEC.right + EPS)
+    expect(row[0].size).toBeGreaterThanOrEqual(SPEC.minSize - EPS)
   })
 })

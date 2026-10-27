@@ -130,3 +130,68 @@ export const COVER = {
 
 /** Horizontal centre of the drawing border. */
 export const SHEET_CENTER = BORDER.inner.x + BORDER.inner.w / 2
+
+/** Drawing area of a framed sheet: below the revision table, left of the title block. */
+export const SHEET_AREA = {
+  left: BORDER.inner.x,
+  top: REVISION.headerBottom + REVISION.rowHeight,
+  right: TITLE.left,
+  bottom: INNER_BOTTOM,
+} as const
+
+/** DTP 01 — Hạng mục trách nhiệm (reference sheet 01). */
+export const RESPONSIBILITY = {
+  center: 189.35,
+  titleSize: 7.49,
+  /** Baselines of the 2-line heading and the 2-line request in brackets. */
+  titleBaselines: [43.4, 53.3, 63.4, 73.5],
+  size: 6.81,
+  x: 27.4,
+  /** Extra indent of "- …" points, and of a wrapped continuation line. */
+  subIndent: 1.9,
+  contIndent: 3.6,
+  firstBaseline: 78.3,
+  lineStep: 9.0,
+  /** Underline sits this far below the baseline of a section name. */
+  underlineDrop: 0.1,
+  /** Last baseline allowed (keeps descenders inside the border). */
+  maxBaseline: 286.5,
+  /** Body may shrink to this share of its size before lines are dropped. */
+  minScale: 0.6,
+} as const
+
+/** DTP 02 — Đặc tính kỹ thuật (reference sheet 02). */
+export const SPEC = {
+  left: 66.5,
+  right: 299.4,
+  split: 182.9,
+  top: 38.2,
+  titleBottom: 64.0,
+  rowHeight: 15.53,
+  title: {
+    x: 118.19,
+    y: 44.05,
+    w: 129.42,
+    h: 15.54,
+    r: 3.24,
+    size: 7.35,
+    baseline: 55.85,
+  },
+  size: 6.44,
+  minSize: 3.5,
+  /** A value shrinks on one line down to this size, then wraps onto two. */
+  wrapSize: 5,
+  lineGap: 1.15,
+  labelX: 86.3,
+  valueX: 202.7,
+  /** Text baseline below a row's top rule. */
+  baselineDown: 10.9,
+  /** "NGUỒN ĐIỆN" spans both sub-rows; its baseline sits just below their dividing rule. */
+  power: {
+    labelSplit: 118.2,
+    labelSize: 7.36,
+    labelBelowSplit: 4.2,
+    subX: 137.9,
+  },
+  pad: 1,
+} as const

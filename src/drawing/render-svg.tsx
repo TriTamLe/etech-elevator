@@ -1,3 +1,5 @@
+import * as React from 'react'
+
 import { SHEET, STROKE } from '#/drawing/types'
 import type { Prim, Weight } from '#/drawing/types'
 
@@ -36,6 +38,8 @@ function PrimElement({ prim }: { prim: Prim }) {
           y={prim.y}
           width={prim.w}
           height={prim.h}
+          rx={prim.r}
+          ry={prim.r}
           fill={prim.fill === 'ink' ? INK : 'none'}
           stroke={INK}
           strokeWidth={sw(prim.weight)}
@@ -81,15 +85,21 @@ function PrimElement({ prim }: { prim: Prim }) {
   }
 }
 
-/** One A3 sheet, 420 × 297 mm user units. Size it with CSS (it scales to its box). */
-export function SheetSvg({
+/**
+ * One A3 sheet, 420 × 297 mm user units; at CSS scale 1 it is paper size (1 mm = 1 mm).
+ * Size it with CSS to scale it. Memoised: prim arrays are rebuilt only when params change.
+ */
+export const SheetSvg = React.memo(function SheetSvg({
   prims,
   label,
   className,
 }: {
   prims: ReadonlyArray<Prim>
-  /** Accessible name, e.g. "Bìa" or "DTP 01 – Hạng mục trách nhiệm". */
-  label: string
+  /**
+   * Accessible name, e.g. "Bìa" or "DTP 01 · Hạng mục trách nhiệm". `null` hides the
+   * drawing from assistive tech (a thumbnail inside an already-labelled button).
+   */
+  label: string | null
   className?: string
 }) {
   return (
@@ -98,8 +108,9 @@ export function SheetSvg({
       viewBox={`0 0 ${SHEET.width} ${SHEET.height}`}
       width={`${SHEET.width}mm`}
       height={`${SHEET.height}mm`}
-      role="img"
-      aria-label={label}
+      {...(label === null
+        ? { 'aria-hidden': true }
+        : { role: 'img', 'aria-label': label })}
       fontFamily={DRAWING_FONT}
       // text-metrics ignores kerning (and so does jsPDF): keep the preview identical.
       style={{ fontKerning: 'none' }}
@@ -118,4 +129,4 @@ export function SheetSvg({
       ))}
     </svg>
   )
-}
+})
