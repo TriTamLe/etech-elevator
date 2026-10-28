@@ -66,7 +66,7 @@
 | **P4** | Form soạn thông số + tự lưu + phiên bản | 3–4 | P3 | |
 | **P5** | Lõi vẽ, khung trang A3, trang chữ, xem trước, xuất PDF | 6.5–8.5 | P4 | |
 | **P5.1** | Áp dụng quyết định PO (A1, A4, A7, C1) | 0.5 | P5 | |
-| **P6** | Deploy + Cloudflare Access + sao lưu | 0.5–1 | P5.1 | **M1: dùng được online** (bìa, 01, 02) |
+| **P6** | Deploy + Cloudflare Access + sao lưu | 0.5–1 | P5.1 | **M1: dùng được online** (bìa, 01, 02) — đạt 28/10/2026 |
 | **P7** | Thư viện ký hiệu từ DWG | 3–4 | P0 (chạy song song được với P1–P6) | |
 | **P8** | Bộ phần tử vẽ cơ bản | 3–4 | P5 | |
 | **P9** | Mặt cắt ngang, pit, phòng máy | 4–6 | P7, P8 | **M2: có hình mặt bằng** |
@@ -611,17 +611,26 @@ PO đã trả lời 15 câu trong `docs/cau-hoi-can-chot.md` (cột "Quyết đ�
 - Email được vào app (PO và người liên quan) do chủ tài khoản tự thêm/bớt trong Cloudflare Access; không cố định số lượng, không ghi email vào repo.
 - Chi phí nếu vượt gói free: gửi bill cho PO.
 
-- [ ] **(Bạn làm)** chạy `npx wrangler login` bằng tài khoản Cloudflare của bạn, trong terminal tương tác.
-- [ ] Chạy `npx wrangler d1 create elevator-db`, điền `database_id` vào `wrangler.jsonc`.
-- [ ] Chạy `yarn db:migrate:remote`.
-- [ ] Chạy `yarn deploy` → `https://elevator.<account>.workers.dev`.
-- [ ] **(Bạn làm)** bật Cloudflare Access cho Worker trong dashboard (Workers & Pages → elevator → Settings → Domains & Routes → Enable Cloudflare Access):
-  - Chính sách: chỉ các email bạn cho phép, đăng nhập bằng OTP. Thêm/bớt người sau này cũng làm ở đây, không cần sửa code.
-  - Bảo vệ cả URL preview.
-- [ ] Script `yarn db:backup` (đã có trong `package.json`): chạy thử trên D1 thật; ghi chú thêm về D1 Time Travel 7 ngày.
-- [ ] Kiểm tra nhanh trên bản production: tạo dự án → tự lưu → tải PDF.
+- [x] **(Bạn làm)** chạy `npx wrangler login` bằng tài khoản Cloudflare của bạn, trong terminal tương tác.
+- [x] Chạy `npx wrangler d1 create elevator-db` (vùng APAC), điền `database_id` vào `wrangler.jsonc`.
+- [x] Chạy `yarn db:migrate:remote` (0000, 0001).
+- [x] Chạy `yarn deploy` → `https://elevator.<subdomain>.workers.dev`. `wrangler.jsonc` bật `observability` và tắt `preview_urls`.
+- [x] **(Bạn làm)** bật Cloudflare Access. Giao diện thực tế khác dự kiến, cách làm đúng ghi ở `docs/van-hanh.md`:
+  - Worker → tab Access → "Protect this Worker behind Access", Scope All traffic.
+  - Policy **Allow + Include → Emails** tạo ở Zero Trust → Access controls → Policies. Mẫu "Email domain" của hộp thoại không dùng được cho một email cụ thể.
+  - One-time PIN thêm ở Zero Trust → Integrations → Identity providers.
+- [x] Script `yarn db:backup` chạy trên D1 thật. Sao lưu, khôi phục (Time Travel 7 ngày, file `.sql`) ghi ở `docs/van-hanh.md`.
+- [x] Kiểm tra nhanh trên bản production: tạo dự án → tự lưu → phiên bản → tải PDF.
 
 **Tiêu chí xong:** người lạ không vào được; các email được phép vào được; luồng chính chạy được trên production.
+
+**Kết quả P6 (28/10/2026) → Mốc M1 đạt:**
+- Người lạ bị chuyển sang trang đăng nhập Access (kiểm bằng curl: `/`, `/projects/…`, font, logo đều 302 sang `<team>.cloudflareaccess.com`). Bạn đăng nhập được bằng One-time PIN.
+- Luồng chính chạy trên bản thật. `wrangler tail` ghi 21 request, tất cả 200, không có exception.
+  - CPU trung vị 3 ms; cao nhất 14 ms ở request đầu tiên sau khi Worker khởi động lạnh, vẫn thành công.
+  - Cần theo dõi lỗi 1102 trong Observability. Nếu thường xuyên vượt 10 ms thì xem lại request lưu hoặc tạo dự án.
+- Worker gzip khoảng 1 MB / 3 MB, khởi động 13 ms. Bản sao lưu đầu tiên `backups/elevator-db-2026-10-28.sql` (không commit).
+- Sổ tay vận hành: `docs/van-hanh.md` (deploy, rollback, người được vào, sao lưu, khôi phục, log). Repo không ghi email, account id hay subdomain thật.
 
 **Lưu ý cho các lần nâng schema sau khi đã deploy:** `saveProject` chỉ nhận đúng `CURRENT_SCHEMA_VERSION`, nên một tab còn mở code cũ sẽ tự lưu thất bại. Trước lần nâng schema đầu tiên trên production, cần báo lỗi tiếng Việt kiểu "Trang đã cũ, tải lại để lưu" (hoặc cho server chạy `migrate` khi lưu). Lần deploy đầu (P6) chưa bị ảnh hưởng.
 
@@ -742,7 +751,7 @@ Giao cho `symbol-extractor`.
 - [ ] Deploy bản cuối, chạy migration remote, kiểm tra Access với các email được phép.
 - [ ] **(Bạn làm)** dùng thử với 1–2 dự án thật, so với bản CAD; ghi lại danh sách góp ý.
 - [ ] Sửa các góp ý trong phạm vi MVP.
-- [ ] Lịch sao lưu: chạy `yarn db:backup` hằng tháng; ghi chú về Time Travel.
+- [ ] Lịch sao lưu: chạy `yarn db:backup` hằng tháng (cách làm và Time Travel: `docs/van-hanh.md`).
 - [ ] Gắn tag `v1.0.0`.
 
 ---

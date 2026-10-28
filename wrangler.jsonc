@@ -4,12 +4,17 @@
   "compatibility_date": "2026-10-01",
   "compatibility_flags": ["nodejs_compat"],
   "main": "@tanstack/react-start/server-entry",
+  // One live deployment on *.workers.dev, protected by Cloudflare Access (docs/van-hanh.md).
+  // No per-version preview URLs: one fewer address to protect.
+  "workers_dev": true,
+  "preview_urls": false,
+  // Workers Logs (free plan): errors and CPU time per request.
+  "observability": { "enabled": true },
   "d1_databases": [
     {
       "binding": "DB",
       "database_name": "elevator-db",
-      // Replace with the real id from `wrangler d1 create elevator-db` (super-plan P6).
-      "database_id": "00000000-0000-0000-0000-000000000000",
+      "database_id": "451451c7-1c02-4fb5-8151-e13a49e5bdfd",
       "migrations_dir": "drizzle"
     }
   ]

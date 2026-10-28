@@ -13,6 +13,7 @@ Package manager is **yarn 1** — never run `npm install` / `pnpm` (no extra loc
 - `yarn dev` (local D1 via the Cloudflare vite plugin) · `yarn build`
 - `yarn typecheck` · `yarn lint` · `yarn test` — all must pass before a commit
 - `yarn export:preset [hotel-9f|house-5f|all]` → `.verify/<preset>.pdf` via the running dev server's `/dev/export` and the local Chrome (playwright-core, no browser download); `EXPORT_BASE_URL` overrides `http://localhost:3000`
+- Production (Workers + D1 + Access): deploy, migrate remote, backup/restore, who can sign in → `docs/van-hanh.md`
 - `yarn db:generate` after editing `src/db/schema.ts`, then `yarn db:migrate:local`
 - `yarn cf-typegen` after editing `wrangler.jsonc`
 - shadcn components: `npx shadcn@latest add <name>`
