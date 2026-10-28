@@ -71,6 +71,17 @@ URL preview theo từng version đã tắt (`"preview_urls": false` trong `wrang
   5. `yarn db:migrate:remote`: chỉ chạy các migration còn thiếu nếu file backup cũ hơn migration mới nhất. Bảng `d1_migrations` có sẵn trong file.
   6. `yarn deploy`.
 
+## D1 local khi đổi `database_id`
+
+`yarn dev` lưu D1 local thành file sqlite trong `.wrangler/state/v3/d1/miniflare-D1DatabaseObject/`. Tên file tính từ `database_id`, nên khi đổi `database_id` trong `wrangler.jsonc` (ví dụ lúc khôi phục sang database mới), dev server sẽ mở một file **mới và rỗng**. Danh sách dự án lúc đó báo lỗi "Failed query".
+
+Dữ liệu cũ vẫn nằm ở file cũ. Muốn giữ dữ liệu cũ:
+1. Tắt `yarn dev`.
+2. Chép file `.sqlite` cũ (file lớn hơn, có bảng `projects`) đè lên file mới; nên cất file mới sang `.bak` trước.
+3. Chạy `yarn db:migrate:local`, rồi chạy lại `yarn dev`.
+
+Không cần dữ liệu cũ thì chỉ cần chạy `yarn db:migrate:local`.
+
 ## Xem log và CPU
 
 - Log trực tiếp: `npx wrangler tail`, rồi thao tác trên app.
