@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { createFileRoute, useNavigate } from '@tanstack/react-router'
+import { Link, createFileRoute, useNavigate } from '@tanstack/react-router'
 import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { z } from 'zod'
 
@@ -60,6 +60,12 @@ function ProjectsPage() {
         <h1 className="mt-6 text-(length:--text-xl) font-semibold text-balance sm:text-(length:--text-2xl)">
           Công cụ tự động sinh báo cáo thiết kế thang máy
         </h1>
+        <Button variant="ghost" size="sm" asChild className="mt-3">
+          <Link to="/symbols">
+            <Icons.symbols aria-hidden="true" />
+            Thư viện ký hiệu
+          </Link>
+        </Button>
       </header>
 
       <section
@@ -128,7 +134,11 @@ function ProjectsPage() {
             </Button>
           </div>
         ) : (
-          <ProjectTable rows={list.data} query={debounced} onClearQuery={clear} />
+          <ProjectTable
+            rows={list.data}
+            query={debounced}
+            onClearQuery={clear}
+          />
         )}
       </section>
     </main>

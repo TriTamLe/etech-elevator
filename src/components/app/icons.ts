@@ -23,6 +23,7 @@ import {
   RotateCcwIcon,
   ScanIcon,
   SearchIcon,
+  ShapesIcon,
   Trash2Icon,
   TriangleAlertIcon,
   Undo2Icon,
@@ -61,6 +62,7 @@ export const Icons = {
   success: CheckIcon,
   warning: TriangleAlertIcon,
   loading: Loader2Icon,
+  symbols: ShapesIcon,
 } satisfies Record<string, LucideIcon>
 
 export type IconName = keyof typeof Icons
@@ -94,4 +96,5 @@ export const ICON_MEANINGS: Record<IconName, string> = {
   success: 'Thành công',
   warning: 'Cảnh báo',
   loading: 'Đang xử lý',
+  symbols: 'Thư viện ký hiệu',
 }

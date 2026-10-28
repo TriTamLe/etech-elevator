@@ -1,7 +1,7 @@
 import * as React from 'react'
 
 import { SHEET, STROKE } from '#/drawing/types'
-import type { Prim, Weight } from '#/drawing/types'
+import type { ArcPrim, Prim, Weight } from '#/drawing/types'
 
 // Prim[] → SVG for the preview, and (P5c) the same element for svg2pdf. Only plain
 // elements: no <pattern>, <use>, <foreignObject> or filters, which svg2pdf mishandles.
@@ -16,6 +16,24 @@ export const DRAWING_FONT = 'Tinos'
 
 const DEFAULT_WEIGHT: Weight = 'medium'
 const sw = (w: Weight | undefined) => STROKE[w ?? DEFAULT_WEIGHT]
+
+/** SVG path for an arc; sweep-flag 1 = increasing angle (clockwise on screen, y down). */
+export function arcPath({ c, r, start, end }: ArcPrim): string {
+  const rad = (deg: number) => (deg * Math.PI) / 180
+  const sweep = end - start
+  const x0 = c.x + r * Math.cos(rad(start))
+  const y0 = c.y + r * Math.sin(rad(start))
+  // SVG drops an arc whose ends coincide: draw a full turn as two half arcs.
+  if (sweep >= 360) {
+    const xm = c.x + r * Math.cos(rad(start + 180))
+    const ym = c.y + r * Math.sin(rad(start + 180))
+    return `M ${x0} ${y0} A ${r} ${r} 0 0 1 ${xm} ${ym} A ${r} ${r} 0 0 1 ${x0} ${y0}`
+  }
+  const x1 = c.x + r * Math.cos(rad(end))
+  const y1 = c.y + r * Math.sin(rad(end))
+  const large = sweep > 180 ? 1 : 0
+  return `M ${x0} ${y0} A ${r} ${r} 0 ${large} 1 ${x1} ${y1}`
+}
 
 function PrimElement({ prim }: { prim: Prim }) {
   switch (prim.kind) {
@@ -54,6 +72,30 @@ function PrimElement({ prim }: { prim: Prim }) {
           fill="none"
           stroke={INK}
           strokeWidth={sw(prim.weight)}
+        />
+      )
+    case 'polyline': {
+      const points = prim.pts.map((p) => `${p.x},${p.y}`).join(' ')
+      const Tag = prim.closed ? 'polygon' : 'polyline'
+      return (
+        <Tag
+          points={points}
+          fill="none"
+          stroke={INK}
+          strokeWidth={sw(prim.weight)}
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      )
+    }
+    case 'arc':
+      return (
+        <path
+          d={arcPath(prim)}
+          fill="none"
+          stroke={INK}
+          strokeWidth={sw(prim.weight)}
+          strokeLinecap="round"
         />
       )
     case 'text':

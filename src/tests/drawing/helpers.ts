@@ -10,6 +10,10 @@ export function numbersOf(p: Prim): Array<number> {
       return [p.x, p.y, p.w, p.h]
     case 'circle':
       return [p.c.x, p.c.y, p.r]
+    case 'polyline':
+      return p.pts.flatMap((q) => [q.x, q.y])
+    case 'arc':
+      return [p.c.x, p.c.y, p.r, p.start, p.end]
     case 'text':
       return [p.x, p.y, p.size]
     case 'image':
@@ -31,10 +35,14 @@ export function pointsOf(p: Prim): Array<[number, number]> {
         [p.x + p.w, p.y + p.h],
       ]
     case 'circle':
+    case 'arc':
+      // Whole circle: a safe outer bound for the arc.
       return [
         [p.c.x - p.r, p.c.y - p.r],
         [p.c.x + p.r, p.c.y + p.r],
       ]
+    case 'polyline':
+      return p.pts.map((q) => [q.x, q.y])
     case 'text':
       return [[p.x, p.y]]
   }

@@ -1,0 +1,330 @@
+{
+  "_doc": "Tọa độ region/exclude/origin là tọa độ DXF trong block nguồn (mm, y hướng lên). region: chỉ giữ nét nằm trọn trong hộp [x0,y0,x1,y1]; exclude: bỏ nét nằm trọn trong hộp; origin: {anchor: c|bc|tc|...} theo bbox sau khi lọc hoặc {xy:[x,y]} (null = tâm bbox theo trục đó); stretch: tọa độ sau khi đã dời gốc và lật y (y hướng xuống).",
+  "dwg": "*.dwg",
+  "symbols": [
+    {
+      "id": "car-side",
+      "label": "Cụm cabin nhìn hông",
+      "block": "5",
+      "origin": {
+        "anchor": "bc"
+      },
+      "stretch": [
+        {
+          "axis": "y",
+          "at": -1500,
+          "dir": -1
+        }
+      ]
+    },
+    {
+      "id": "landing-door-side",
+      "label": "Cánh cửa tầng nhìn hông",
+      "block": "89",
+      "origin": {
+        "anchor": "bc"
+      },
+      "stretch": []
+    },
+    {
+      "id": "machine",
+      "label": "Máy kéo",
+      "block": "GTW7-41P0-a",
+      "origin": {
+        "anchor": "c"
+      },
+      "stretch": []
+    },
+    {
+      "id": "rope-hitch",
+      "label": "Cụm ty cáp có lò xo",
+      "block": "WWWWWW",
+      "origin": {
+        "anchor": "tc"
+      },
+      "stretch": []
+    },
+    {
+      "id": "buffer-a",
+      "label": "Giảm chấn loại 1",
+      "block": "F",
+      "origin": {
+        "anchor": "bc"
+      },
+      "stretch": []
+    },
+    {
+      "id": "buffer-b",
+      "label": "Giảm chấn loại 2",
+      "block": "U",
+      "origin": {
+        "anchor": "bc"
+      },
+      "stretch": []
+    },
+    {
+      "id": "pit-ladder",
+      "label": "Thang xuống pit",
+      "block": "56",
+      "origin": {
+        "anchor": "bc"
+      },
+      "stretch": []
+    },
+    {
+      "id": "rail-t-plan",
+      "label": "Ray T nhìn mặt bằng",
+      "block": "1.",
+      "region": [
+        108425,
+        -106445,
+        108490,
+        -106362
+      ],
+      "origin": {
+        "anchor": "c"
+      },
+      "stretch": []
+    },
+    {
+      "id": "counterweight-plan",
+      "label": "Khung đối trọng nhìn mặt bằng",
+      "block": "1.",
+      "region": [
+        108510,
+        -105685,
+        109666,
+        -105464
+      ],
+      "exclude": [
+        [
+          108570,
+          -105645,
+          108630,
+          -105566
+        ],
+        [
+          109546,
+          -105645,
+          109606,
+          -105566
+        ]
+      ],
+      "origin": {
+        "anchor": "c"
+      },
+      "stretch": []
+    },
+    {
+      "id": "door-co-plan",
+      "label": "Cửa mở giữa và ngưỡng cửa nhìn mặt bằng",
+      "block": "1.",
+      "region": [
+        108420,
+        -107410,
+        109835,
+        -107175
+      ],
+      "exclude": [
+        [
+          109450,
+          -107370,
+          109456,
+          -107178
+        ]
+      ],
+      "origin": {
+        "xy": [
+          null,
+          -107366
+        ]
+      },
+      "stretch": [
+        {
+          "axis": "x",
+          "at": 0,
+          "dir": 1
+        }
+      ]
+    },
+    {
+      "id": "door-front",
+      "label": "Cánh cửa nhìn trước",
+      "block": "M6",
+      "region": [
+        108380,
+        -161700,
+        109135,
+        -159590
+      ],
+      "exclude": [
+        [
+          108460,
+          -160675,
+          109055,
+          -160610
+        ]
+      ],
+      "origin": {
+        "anchor": "bc"
+      },
+      "stretch": [
+        {
+          "axis": "x",
+          "at": 0,
+          "dir": 1
+        },
+        {
+          "axis": "y",
+          "at": -1000,
+          "dir": -1
+        }
+      ]
+    },
+    {
+      "id": "jamb-wide-jd320",
+      "label": "Khung bao che rộng JD320",
+      "block": "M6",
+      "region": [
+        108255,
+        -161700,
+        109260,
+        -159385
+      ],
+      "exclude": [
+        [
+          108380,
+          -161700,
+          109135,
+          -159590
+        ],
+        [
+          108550,
+          -159550,
+          108965,
+          -159435
+        ]
+      ],
+      "origin": {
+        "anchor": "bc"
+      },
+      "stretch": [
+        {
+          "axis": "x",
+          "at": 0,
+          "dir": 1
+        },
+        {
+          "axis": "y",
+          "at": -1000,
+          "dir": -1
+        }
+      ]
+    },
+    {
+      "id": "jamb-narrow-35x50",
+      "label": "Khung bao che hẹp 35x50",
+      "block": "M5",
+      "region": [
+        108370,
+        -155360,
+        109226,
+        -153200
+      ],
+      "exclude": [
+        [
+          108420,
+          -155360,
+          109176,
+          -153255
+        ]
+      ],
+      "origin": {
+        "anchor": "bc"
+      },
+      "stretch": [
+        {
+          "axis": "x",
+          "at": 0,
+          "dir": 1
+        },
+        {
+          "axis": "y",
+          "at": -1000,
+          "dir": -1
+        }
+      ]
+    },
+    {
+      "id": "call-box",
+      "label": "Hộp nút gọi",
+      "block": "M6",
+      "region": [
+        109300,
+        -160600,
+        109415,
+        -160185
+      ],
+      "origin": {
+        "anchor": "c"
+      },
+      "stretch": []
+    },
+    {
+      "id": "floor-indicator",
+      "label": "Hộp hiển thị tầng",
+      "block": "M6",
+      "region": [
+        108550,
+        -159550,
+        108965,
+        -159435
+      ],
+      "origin": {
+        "anchor": "c"
+      },
+      "stretch": []
+    },
+    {
+      "id": "hook-plan",
+      "label": "Móc treo nhìn mặt bằng",
+      "block": "1..",
+      "region": [
+        130125,
+        -107505,
+        130355,
+        -107282
+      ],
+      "origin": {
+        "anchor": "c"
+      },
+      "stretch": []
+    },
+    {
+      "id": "hook-detail",
+      "label": "Chi tiết móc palăng Ø18",
+      "block": "M7",
+      "region": [
+        187750,
+        -147110,
+        191900,
+        -146200
+      ],
+      "exclude": [
+        [
+          190240,
+          -146960,
+          191630,
+          -146890
+        ]
+      ],
+      "origin": {
+        "xy": [
+          189809,
+          -146852
+        ]
+      },
+      "stretch": []
+    }
+  ]
+}

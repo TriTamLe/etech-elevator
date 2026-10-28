@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as SymbolsRouteImport } from './routes/symbols'
 import { Route as DevExportRouteImport } from './routes/dev.export'
 import { Route as DevSheetsRouteImport } from './routes/dev.sheets'
 import { Route as DevUiRouteImport } from './routes/dev.ui'
@@ -18,6 +19,11 @@ import { Route as ProjectsIdRouteImport } from './routes/projects.$id'
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SymbolsRoute = SymbolsRouteImport.update({
+  id: '/symbols',
+  path: '/symbols',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DevExportRoute = DevExportRouteImport.update({
@@ -43,6 +49,7 @@ const ProjectsIdRoute = ProjectsIdRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/symbols': typeof SymbolsRoute
   '/dev/export': typeof DevExportRoute
   '/dev/sheets': typeof DevSheetsRoute
   '/dev/ui': typeof DevUiRoute
@@ -50,6 +57,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/symbols': typeof SymbolsRoute
   '/dev/export': typeof DevExportRoute
   '/dev/sheets': typeof DevSheetsRoute
   '/dev/ui': typeof DevUiRoute
@@ -58,6 +66,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/symbols': typeof SymbolsRoute
   '/dev/export': typeof DevExportRoute
   '/dev/sheets': typeof DevSheetsRoute
   '/dev/ui': typeof DevUiRoute
@@ -65,12 +74,25 @@ export interface FileRoutesById {
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/dev/export' | '/dev/sheets' | '/dev/ui' | '/projects/$id'
+  fullPaths:
+    | '/'
+    | '/symbols'
+    | '/dev/export'
+    | '/dev/sheets'
+    | '/dev/ui'
+    | '/projects/$id'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/dev/export' | '/dev/sheets' | '/dev/ui' | '/projects/$id'
+  to:
+    | '/'
+    | '/symbols'
+    | '/dev/export'
+    | '/dev/sheets'
+    | '/dev/ui'
+    | '/projects/$id'
   id:
     | '__root__'
     | '/'
+    | '/symbols'
     | '/dev/export'
     | '/dev/sheets'
     | '/dev/ui'
@@ -79,6 +101,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  SymbolsRoute: typeof SymbolsRoute
   DevExportRoute: typeof DevExportRoute
   DevSheetsRoute: typeof DevSheetsRoute
   DevUiRoute: typeof DevUiRoute
@@ -92,6 +115,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/symbols': {
+      id: '/symbols'
+      path: '/symbols'
+      fullPath: '/symbols'
+      preLoaderRoute: typeof SymbolsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/dev/export': {
@@ -127,6 +157,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  SymbolsRoute: SymbolsRoute,
   DevExportRoute: DevExportRoute,
   DevSheetsRoute: DevSheetsRoute,
   DevUiRoute: DevUiRoute,

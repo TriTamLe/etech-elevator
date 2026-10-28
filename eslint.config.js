@@ -38,6 +38,10 @@ export default [
       'prettier.config.js',
       'worker-configuration.d.ts',
       'src/routeTree.gen.ts',
+      // Local tool output and the extractor's Python venv (git-ignored).
+      '.verify/**',
+      'tools/extract-symbols/.venv/**',
+      'tools/extract-symbols/.out/**',
     ],
   },
 ]

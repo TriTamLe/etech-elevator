@@ -24,7 +24,8 @@
     "db:migrate:remote": "wrangler d1 migrations apply elevator-db --remote",
     "db:backup": "mkdir -p backups && wrangler d1 export elevator-db --remote --output backups/elevator-db-$(date +%Y-%m-%d).sql",
     "gen:font-metrics": "tsx scripts/gen-font-metrics.ts",
-    "export:preset": "tsx scripts/export-preset.ts"
+    "export:preset": "tsx scripts/export-preset.ts",
+    "gen:symbols": "tools/extract-symbols/.venv/bin/python tools/extract-symbols/extract.py"
   },
   "dependencies": {
     "@fontsource-variable/jetbrains-mono": "^5.3.0",

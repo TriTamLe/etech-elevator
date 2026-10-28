@@ -14,6 +14,7 @@ Package manager is **yarn 1** — never run `npm install` / `pnpm` (no extra loc
 - `yarn typecheck` · `yarn lint` · `yarn test` — all must pass before a commit
 - `yarn export:preset [hotel-9f|house-5f|all]` → `.verify/<preset>.pdf` via the running dev server's `/dev/export` and the local Chrome (playwright-core, no browser download); `EXPORT_BASE_URL` overrides `http://localhost:3000`
 - Production (Workers + D1 + Access): deploy, migrate remote, backup/restore, who can sign in → `docs/van-hanh.md`
+- `yarn gen:symbols` regenerates `src/drawing/symbols/data/` from the reference DWG (`tools/extract-symbols/`, Python venv; see its README). Never hand-edit the generated files
 - `yarn db:generate` after editing `src/db/schema.ts`, then `yarn db:migrate:local`
 - `yarn cf-typegen` after editing `wrangler.jsonc`
 - shadcn components: `npx shadcn@latest add <name>`
@@ -22,6 +23,7 @@ Package manager is **yarn 1** — never run `npm install` / `pnpm` (no extra loc
 
 - Data flow: form params → `src/domain/derive.ts` → `src/drawing/sheets/*` (pure `params → Prim[]`) → `render-svg` → preview **and** PDF (jsPDF + svg2pdf.js, in the browser). Never add a PDF-only drawing path.
 - Sheet functions are pure: no React, DOM, fetch, `Date.now()` or randomness (seeded only). Units are mm; never hard-code sample-project numbers.
+- Symbols from the DWG (car, machine, doors, jambs…): `placeSymbol(symbol(id), { at, scale, rotate, mirrorX, stretch })` from `#/drawing/symbols`; never redraw them by hand.
 - SVG for drawings: no `<pattern>` (hatch = real lines + `clipPath`), no `<use>`/`<foreignObject>`; drawing text uses Tinos.
 - Measure drawing text with `src/drawing/text-metrics.ts` (Tinos width table, regenerate with `yarn gen:font-metrics`), never canvas/DOM. Frame coordinates live in `src/drawing/frame/layout.ts`; company info in `src/config/company.ts`.
 - Server: `createServerFn` in `src/server/`, D1 via `getDb()` from `src/db/index.ts`. Keep requests tiny (Workers free plan: 10 ms CPU). The editor route uses `ssr: false`.

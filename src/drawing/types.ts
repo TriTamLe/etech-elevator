@@ -39,6 +39,28 @@ export type CirclePrim = {
   weight?: Weight
 }
 
+/** Open (or `closed`) chain of straight segments: symbol outlines from the DWG. */
+export type PolylinePrim = {
+  kind: 'polyline'
+  pts: Array<Pt>
+  closed?: boolean
+  weight?: Weight
+}
+
+/**
+ * Circular arc. Angles in degrees on the sheet (y down, so 0° points right and 90°
+ * points down); the arc runs from `start` to `end` with the angle increasing, which on
+ * screen is clockwise. `end` may exceed 360 so the arc never wraps through `start`.
+ */
+export type ArcPrim = {
+  kind: 'arc'
+  c: Pt
+  r: number
+  start: number
+  end: number
+  weight?: Weight
+}
+
 export type TextPrim = {
   kind: 'text'
   /** Anchor point; `y` is the baseline. */
@@ -61,7 +83,14 @@ export type ImagePrim = {
   h: number
 }
 
-export type Prim = LinePrim | RectPrim | CirclePrim | TextPrim | ImagePrim
+export type Prim =
+  | LinePrim
+  | RectPrim
+  | CirclePrim
+  | PolylinePrim
+  | ArcPrim
+  | TextPrim
+  | ImagePrim
 
 /** A sheet function: pure, params in, primitives out. */
 export type SheetFn = (p: ElevatorParams, d: Derived, page: Page) => Array<Prim>

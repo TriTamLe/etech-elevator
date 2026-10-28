@@ -638,19 +638,45 @@ PO đã trả lời 15 câu trong `docs/cau-hoi-can-chot.md` (cột "Quyết đ�
 
 ### P7 — Thư viện ký hiệu từ DWG (3–4 ngày, có thể làm song song từ sau P0)
 
-Giao cho `symbol-extractor`.
+Giao cho `symbol-extractor`; phần app do phiên chính làm.
 
-- [ ] `tools/extract-symbols/`: `requirements.txt` (ezdxf, matplotlib), `extract.py`, `symbols.config.json` (block nguồn, vùng cắt, điểm chèn, trục kéo giãn), `README.md`.
-- [ ] Đổi `.external/*.dwg` sang DXF bằng `dwg2dxf` vào `.out/`.
-- [ ] Xuất **7 block** có sẵn: `car-side`, `landing-door-side`, `machine`, `rope-hitch`, `buffer-a`, `buffer-b`, `pit-ladder`.
-- [ ] Cắt **~10 ký hiệu nét rời**: `rail-t-plan`, `counterweight-plan`, `door-co-plan`, `door-front`, `jamb-wide-jd320`, `jamb-narrow-35x50`, `call-box`, `floor-indicator`, `hook-plan`, `hook-detail`.
-- [ ] Mỗi SVG: `viewBox` theo mm, gốc ở điểm chèn, chỉ có nét, không chữ và không kích thước.
-- [ ] `src/drawing/symbols/index.ts`: danh mục ký hiệu, nạp SVG qua `?raw`, gồm kích thước, điểm chèn và trục kéo giãn.
-- [ ] Route `/dev/symbols`: hiển thị toàn bộ ký hiệu kèm khung kích thước để kiểm tra bằng mắt.
+**Đổi so với kế hoạch cũ (28/10/2026):** ký hiệu lưu thành **dữ liệu hình học TS**, không dùng file SVG nạp bằng `?raw`. Lý do:
+- hàm vẽ phải thuần, trả `Prim[]`, nên không parse SVG được;
+- `render-svg` cấm `<use>`;
+- dữ liệu TS thì đặt, co giãn, xoay và kéo giãn được bằng hàm thuần, và preview với PDF vẫn đi chung một đường vẽ.
 
-**Tiêu chí xong:** đủ khoảng 17 ký hiệu; kích thước khớp bản vẽ (ví dụ cửa nhìn hông khớp HH 2100); `/dev/symbols` hiển thị sạch.
+- [x] `tools/extract-symbols/`:
+  - `requirements.txt` (ezdxf 1.4.5, matplotlib 3.11.2), `extract.py`, `symbols.config.json` (block nguồn, vùng cắt, nét loại trừ, điểm chèn, đường kéo giãn, nhãn), `README.md`;
+  - venv và `.out/` không commit.
+- [x] Đổi DWG sang DXF bằng `dwg2dxf` vào `.out/`; lệnh `yarn gen:symbols` chạy lại được toàn bộ.
+- [x] Xuất **7 block**: `car-side`, `landing-door-side`, `machine`, `rope-hitch`, `buffer-a`, `buffer-b`, `pit-ladder` (bung cả block lồng nhau như `doorlock`).
+- [x] Cắt **10 ký hiệu nét rời**: `rail-t-plan`, `counterweight-plan`, `door-co-plan`, `door-front`, `jamb-wide-jd320`, `jamb-narrow-35x50`, `call-box`, `floor-indicator`, `hook-plan`, `hook-detail`.
+- [x] Mỗi ký hiệu là một file `src/drawing/symbols/data/<id>.ts`, sinh tự động:
+  - đơn vị mm, gốc tại điểm chèn, trục y hướng xuống;
+  - chỉ có nét (polyline, cung, tròn), không chữ, không kích thước;
+  - kèm `bbox` và đường kéo giãn `{ axis, at, dir }`.
+- [x] Prim mới `polyline` và `arc`, render thành `<polyline>`/`<polygon>`/`<path A>`; svg2pdf vẽ đúng, PDF vẫn toàn vector.
+- [x] `src/drawing/symbols/`:
+  - `place.ts`: `placeSymbol` theo thứ tự kéo giãn (mm thật) → lật → xoay 90° → scale → dời; kèm `stretchedBox`, `placedBox`;
+  - `index.ts`: `SYMBOL_IDS` và `symbol(id)`.
+- [x] Route **`/symbols`** ("Thư viện ký hiệu", chạy cả trên production theo yêu cầu 28/10/2026; lối vào ở trang danh sách):
+  - mỗi ký hiệu trên một trang A3, kèm khung bbox, điểm chèn và kích thước thật; thêm 5 ví dụ kéo giãn;
+  - `ssr: false`, nên Worker chỉ trả khung trang, việc vẽ chạy trên trình duyệt.
 
----
+**Tiêu chí xong:** đủ 17 ký hiệu; kích thước khớp bản vẽ (ví dụ cửa nhìn trước cao 2100); `/symbols` hiển thị sạch.
+
+**Kết quả P7 (28/10/2026):**
+- Đủ 17 ký hiệu, xem trên `/symbols` sạch: không dính nét lạ, không lật. Kích thước: `car-side` 1186 × 3932, `machine` 662 × 503, `door-front` cao 2100.
+- Cả thư viện khoảng 193 KB mã nguồn, **34,7 KB gzip**. Hiện chỉ route `/symbols` dùng tới (chunk riêng); P9–P11 dùng thì nằm trong chunk của trang vẽ.
+- Kéo giãn: cửa và khung giãn về bên phải từ tim (x = 0, dir +1); muốn giãn đều hai bên thì dời điểm chèn sang trái nửa lượng giãn. Chiều cao giãn lên trên (dir −1), đáy đứng yên.
+- Ghép khi dùng ở P9–P10:
+  - `counterweight-plan` không có 2 ray T, phải đặt thêm `rail-t-plan` ở khoảng ±517 so với tâm (bên phải dùng `mirrorX`);
+  - khung bao che không có mép trên cánh cửa, phải đặt `door-front` cùng với khung.
+- Cần xem lại khi vẽ trang thật: `landing-door-side` (phụ kiện ở đầu cửa làm bbox cao 2465) và chi tiết `car-side`.
+- Kiểm tra:
+  - test `src/tests/drawing/symbols/` (`placeSymbol`, kéo giãn 2 chiều, dữ liệu cả thư viện) xanh;
+  - `/symbols` xem trên Chrome headless (1280 và 375 px, không cuộn ngang; vào từ trang danh sách và quay về được);
+  - xuất thử 5 trang qua svg2pdf: cung tròn đúng, 0 ảnh.
 
 ### P8 — Bộ phần tử vẽ cơ bản (3–4 ngày)
 
@@ -774,7 +800,7 @@ Giao cho `symbol-extractor`.
 | svg2pdf hiển thị khác trình duyệt (font, clipPath, ảnh WebP) | Thử sớm ở P5; không dùng `<pattern>` và `<use>`; nếu WebP lỗi thì đổi sang PNG bằng canvas |
 | Đo chữ ở trình duyệt khác với PDF | Đo bằng bảng độ rộng sinh từ chính file Tinos dùng cho cả xem trước và PDF (không phụ thuộc trình duyệt) |
 | Mặt cắt đứng phức tạp, ghi chú chồng nhau | Làm cuối (P11) khi đã có đủ phần tử; quy tắc đặt ghi chú cố định; test với N = 20 |
-| Ký hiệu nét rời cắt ra bị thiếu hoặc thừa nét | Cấu hình vùng cắt trong JSON; xem lại ở `/dev/symbols`; dọn tay nếu cần |
+| Ký hiệu nét rời cắt ra bị thiếu hoặc thừa nét | Cấu hình vùng cắt trong JSON; xem lại ở `/symbols`; dọn tay nếu cần |
 | CPU của Worker vượt 10 ms | `ssr: false` ở màn soạn; server chỉ đọc/ghi JSON; kiểm bằng `wrangler tail` |
 | Dấu tiếng Việt bị cắt | Line-height theo mục 3.4; kiểm tra chữ có dấu chồng ở mọi cỡ |
 
@@ -793,7 +819,7 @@ Giao cho `symbol-extractor`.
 
 ```
 src/
-  routes/          __root.tsx · index.tsx (danh sách) · projects.$id.tsx (màn soạn, ssr:false) · dev.ui.tsx, dev.symbols.tsx… (route phẳng, chỉ DEV)
+  routes/          __root.tsx · index.tsx (danh sách) · projects.$id.tsx (màn soạn, ssr:false) · symbols.tsx (thư viện ký hiệu, ssr:false) · dev.ui.tsx, dev.sheets.tsx, dev.export.tsx (route phẳng, chỉ DEV)
   db/              schema.ts · index.ts (drizzle-orm/d1)
   server/          projects.ts (createServerFn) · project-repo.ts (truy vấn drizzle, test được ngoài Worker)
   domain/          schema.ts · presets/ · derive.ts · rules.ts · migrate.ts

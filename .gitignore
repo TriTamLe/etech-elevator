@@ -21,3 +21,4 @@ backups
 tools/extract-symbols/.venv
 tools/extract-symbols/.out
 .claude/settings.local.json
+__pycache__/
