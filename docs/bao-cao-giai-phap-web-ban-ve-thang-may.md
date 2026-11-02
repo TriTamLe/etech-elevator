@@ -44,7 +44,7 @@
 | Khổ giấy | A3 ngang, 420 × 297 mm (1191 × 842 pt) |
 | Dạng nội dung | Vector (in A3 vẫn nét, chọn được chữ) |
 | Font | Serif có đủ dấu tiếng Việt. Gợi ý **Tinos**: số đo chữ khớp Times New Roman, giống font trong bản gốc, giấy phép mở |
-| Đơn vị vẽ | mm. Mỗi hình tự chọn tỷ lệ chuẩn (1:20, 1:25, 1:50, 1:100…) sao cho vừa vùng vẽ |
+| Đơn vị vẽ | mm. Mỗi hình tự chọn tỷ lệ lớn nhất trong danh sách 1:10, 15, 20, 25, 30, 40, 50, 60, 75, 100, 125, 150, 200 mà vẫn vừa vùng vẽ (PO chốt 02/11/2026; bản mẫu không in tỷ lệ) |
 | Đánh số | Ký hiệu `DTP` + số thứ tự **liền mạch**, tự đánh lại khi thêm hoặc bớt trang |
 
 ### 1.2 Khung trang dùng chung (mọi trang trừ bìa)
@@ -273,12 +273,12 @@ Một bộ phần tử cơ bản dùng chung cho mọi trang:
 | Phần tử | Dùng để vẽ |
 |---|---|
 | `Dimension` | Đường kích thước: đường gióng, gạch chéo hoặc mũi tên, chữ. Chữ ghi theo kiểu bộ 2, ví dụ "Chiều rộng = 1500", "LỖ CHỜ = 900" |
-| `HatchRegion` | Tường gạch, bê tông chấm. Hatch được sinh thành nét vẽ thật và cắt theo `clipPath`, không dùng `<pattern>`, để svg2pdf xử lý ổn định |
+| `HatchRegion` | Tường gạch, bê tông chấm. Hatch chép đúng mẫu AutoCAD trong DWG mẫu, sinh thành nét vẽ thật đã cắt sẵn theo vùng bằng hình học (không dùng `<pattern>` hay `clipPath`), để svg2pdf xử lý ổn định |
 | `Leader` | Ghi chú có đường dẫn, ví dụ "*Dầm bê tông 200×300 kiềng quanh hố thang" |
 | `BreakLine` | Đường ngắt ở chỗ gộp tầng |
 | `DoorArrow`, `SectionMark` | Mũi tên "Hướng cửa vào thang máy", ký hiệu mặt cắt A/B/C |
 | `Table` | Bảng chiều cao tầng, bảng đặc tính |
-| `fitScale` | Chọn tỷ lệ chuẩn lớn nhất mà hình vẫn vừa vùng vẽ |
+| `fitScale` | Chọn tỷ lệ lớn nhất trong danh sách tỷ lệ dày (1:10 … 1:200) mà hình vẫn vừa vùng vẽ |
 
 ### 3.3 Thư viện ký hiệu (lấy từ DWG)
 

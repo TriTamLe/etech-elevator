@@ -12,10 +12,12 @@ export function numbersOf(p: Prim): Array<number> {
       return [p.c.x, p.c.y, p.r]
     case 'polyline':
       return p.pts.flatMap((q) => [q.x, q.y])
+    case 'lines':
+      return p.segs
     case 'arc':
       return [p.c.x, p.c.y, p.r, p.start, p.end]
     case 'text':
-      return [p.x, p.y, p.size]
+      return [p.x, p.y, p.size, p.rotate ?? 0]
     case 'image':
       return [p.x, p.y, p.w, p.h]
   }
@@ -43,6 +45,12 @@ export function pointsOf(p: Prim): Array<[number, number]> {
       ]
     case 'polyline':
       return p.pts.map((q) => [q.x, q.y])
+    case 'lines': {
+      const pts: Array<[number, number]> = []
+      for (let i = 0; i + 1 < p.segs.length; i += 2)
+        pts.push([p.segs[i], p.segs[i + 1]])
+      return pts
+    }
     case 'text':
       return [[p.x, p.y]]
   }

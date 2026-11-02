@@ -1,7 +1,7 @@
 import * as React from 'react'
 
 import { SHEET, STROKE } from '#/drawing/types'
-import type { ArcPrim, Prim, Weight } from '#/drawing/types'
+import type { ArcPrim, LinesPrim, Prim, Weight } from '#/drawing/types'
 
 // Prim[] → SVG for the preview, and (P5c) the same element for svg2pdf. Only plain
 // elements: no <pattern>, <use>, <foreignObject> or filters, which svg2pdf mishandles.
@@ -33,6 +33,28 @@ export function arcPath({ c, r, start, end }: ArcPrim): string {
   const y1 = c.y + r * Math.sin(rad(end))
   const large = sweep > 180 ? 1 : 0
   return `M ${x0} ${y0} A ${r} ${r} 0 ${large} 1 ${x1} ${y1}`
+}
+
+/** Coordinates in a path string: 0.01 mm is far below what prints. */
+const round = (v: number) => Math.round(v * 100) / 100
+
+/**
+ * Length given to a zero-length segment. A zero-length subpath with round caps should
+ * draw a dot, but renderers (and PDF converters) disagree on it; a tiny real segment
+ * draws the same dot everywhere.
+ */
+const DOT = 0.02
+
+/** One SVG path for many separate segments ("M x1 y1 L x2 y2 M …"). */
+export function linesPath({ segs }: LinesPrim): string {
+  const parts: Array<string> = []
+  for (let i = 0; i + 3 < segs.length; i += 4) {
+    const [x1, y1, x2, y2] = segs.slice(i, i + 4).map(round)
+    // Checked after rounding: a stroke shorter than the rounding step is a dot too.
+    const x2d = x1 === x2 && y1 === y2 ? round(x2 + DOT) : x2
+    parts.push(`M${x1} ${y1}L${x2d} ${y2}`)
+  }
+  return parts.join('')
 }
 
 function PrimElement({ prim }: { prim: Prim }) {
@@ -80,7 +102,7 @@ function PrimElement({ prim }: { prim: Prim }) {
       return (
         <Tag
           points={points}
-          fill="none"
+          fill={prim.fill === 'ink' ? INK : 'none'}
           stroke={INK}
           strokeWidth={sw(prim.weight)}
           strokeLinecap="round"
@@ -88,6 +110,16 @@ function PrimElement({ prim }: { prim: Prim }) {
         />
       )
     }
+    case 'lines':
+      return (
+        <path
+          d={linesPath(prim)}
+          fill="none"
+          stroke={INK}
+          strokeWidth={sw(prim.weight)}
+          strokeLinecap="round"
+        />
+      )
     case 'arc':
       return (
         <path
@@ -107,6 +139,11 @@ function PrimElement({ prim }: { prim: Prim }) {
           fontWeight={prim.bold ? 'bold' : 'normal'}
           fontStyle={prim.italic ? 'italic' : 'normal'}
           textAnchor={prim.anchor ?? 'start'}
+          transform={
+            prim.rotate
+              ? `rotate(${prim.rotate} ${prim.x} ${prim.y})`
+              : undefined
+          }
           fill={INK}
           xmlSpace="preserve"
         >

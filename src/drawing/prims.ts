@@ -1,4 +1,4 @@
-import { ellipsize, fitSize } from '#/drawing/text-metrics'
+import { ellipsize, fitSize, measure } from '#/drawing/text-metrics'
 import type { FontStyle } from '#/drawing/text-metrics'
 import type {
   ImagePrim,
@@ -36,7 +36,7 @@ export function rect(
   return { kind: 'rect', ...r, ...opts }
 }
 
-type TextOpts = FontStyle & Pick<TextPrim, 'anchor'>
+type TextOpts = FontStyle & Pick<TextPrim, 'anchor' | 'rotate'>
 
 export function text(
   x: number,
@@ -65,6 +65,31 @@ export function fittedText(
   if (!v) return []
   const s = fitSize(v, maxW, size, minSize, opts)
   return [text(x, y, ellipsize(v, maxW, s, opts), s, opts)]
+}
+
+/** Underline drop below the baseline, per em (clears the baseline, crosses descenders). */
+export const UNDERLINE_DROP = 0.15
+
+/**
+ * Text with a drawn underline (titles like "MẶT CẮT C-C", "Ghi chú :", leader notes):
+ * a real line measured with the Tinos widths, since svg2pdf may drop text-decoration.
+ */
+export function underlinedText(
+  x: number,
+  y: number,
+  value: string,
+  size: number,
+  // Horizontal only: the underline is a horizontal line.
+  opts: Omit<TextOpts, 'rotate'> & { weight?: Weight } = {},
+): Array<Prim> {
+  const { weight = 'thin', ...style } = opts
+  const w = measure(value, size, style)
+  const a = style.anchor ?? 'start'
+  const x0 = a === 'start' ? x : a === 'middle' ? x - w / 2 : x - w
+  return [
+    text(x, y, value, size, style),
+    hline(y + UNDERLINE_DROP * size, x0, x0 + w, weight),
+  ]
 }
 
 /** Image scaled to fit inside `box` keeping its aspect ratio, centred. */

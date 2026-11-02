@@ -60,12 +60,20 @@ function ProjectsPage() {
         <h1 className="mt-6 text-(length:--text-xl) font-semibold text-balance sm:text-(length:--text-2xl)">
           Công cụ tự động sinh báo cáo thiết kế thang máy
         </h1>
-        <Button variant="ghost" size="sm" asChild className="mt-3">
-          <Link to="/symbols">
-            <Icons.symbols aria-hidden="true" />
-            Thư viện ký hiệu
-          </Link>
-        </Button>
+        <div className="mt-3 flex flex-wrap justify-center gap-1">
+          <Button variant="ghost" size="sm" asChild>
+            <Link to="/symbols">
+              <Icons.symbols aria-hidden="true" />
+              Thư viện ký hiệu
+            </Link>
+          </Button>
+          <Button variant="ghost" size="sm" asChild>
+            <Link to="/primitives">
+              <Icons.primitives aria-hidden="true" />
+              Phần tử vẽ
+            </Link>
+          </Button>
+        </div>
       </header>
 
       <section

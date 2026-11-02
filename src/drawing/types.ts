@@ -45,6 +45,18 @@ export type PolylinePrim = {
   pts: Array<Pt>
   closed?: boolean
   weight?: Weight
+  /** 'ink' fills the (closed) shape solid black: arrowheads. Default is outline only. */
+  fill?: 'none' | 'ink'
+}
+
+/**
+ * Many separate straight segments drawn as one path: a hatch region. `segs` is flat,
+ * `x1, y1, x2, y2, …`; a zero-length segment draws a dot (round caps).
+ */
+export type LinesPrim = {
+  kind: 'lines'
+  segs: Array<number>
+  weight?: Weight
 }
 
 /**
@@ -72,6 +84,11 @@ export type TextPrim = {
   anchor?: 'start' | 'middle' | 'end'
   bold?: boolean
   italic?: boolean
+  /**
+   * Rotation in degrees about the anchor, clockwise on the sheet (y down): -90 is
+   * vertical text reading bottom to top, as on vertical dimensions.
+   */
+  rotate?: number
 }
 
 export type ImagePrim = {
@@ -88,6 +105,7 @@ export type Prim =
   | RectPrim
   | CirclePrim
   | PolylinePrim
+  | LinesPrim
   | ArcPrim
   | TextPrim
   | ImagePrim

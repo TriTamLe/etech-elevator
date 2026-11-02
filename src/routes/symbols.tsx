@@ -2,6 +2,8 @@ import * as React from 'react'
 import { Link, createFileRoute } from '@tanstack/react-router'
 
 import { Icons } from '#/components/app/icons'
+import { SheetGallery } from '#/components/app/sheet-gallery'
+import type { Sample } from '#/components/app/sheet-gallery'
 import { Button } from '#/components/ui/button'
 import {
   Tooltip,
@@ -9,11 +11,9 @@ import {
   TooltipTrigger,
 } from '#/components/ui/tooltip'
 import { hline, rect, text, vline } from '#/drawing/prims'
-import { SheetSvg } from '#/drawing/render-svg'
 import { SYMBOL_IDS, placeSymbol, placedBox, symbol } from '#/drawing/symbols'
 import type { PlaceOpts, SymbolData, SymbolId } from '#/drawing/symbols'
 import { SHEET } from '#/drawing/types'
-import type { Prim } from '#/drawing/types'
 
 // The symbol library taken from the reference DWG: each symbol on its own A3 sheet with
 // its bounds, insertion point (+) and real size, then a few stretch examples. Drawn
@@ -39,14 +39,6 @@ function fitScale(sym: SymbolData, stretch: PlaceOpts['stretch']): number {
     if (b.w <= AREA.w && b.h <= AREA.h) return n
   }
   return SCALES[SCALES.length - 1]
-}
-
-type Sample = {
-  key: string
-  title: string
-  /** "1:20 · 1186 × 3932 mm". */
-  caption: string
-  prims: Array<Prim>
 }
 
 function sample(
@@ -143,66 +135,12 @@ function SymbolsPage() {
         </div>
       </header>
 
-      <Gallery title="Ký hiệu" samples={library} />
-      <Gallery
+      <SheetGallery title="Ký hiệu" samples={library} />
+      <SheetGallery
         title="Kéo giãn theo thông số"
         description="Cửa và khung bao che giãn theo lỗ chờ (OP) và chiều cao (HH); cabin giãn theo chiều cao."
         samples={stretched}
       />
     </main>
-  )
-}
-
-function Gallery({
-  title,
-  description,
-  samples,
-}: {
-  title: string
-  description?: string
-  samples: Array<Sample>
-}) {
-  const id = React.useId()
-  return (
-    <section aria-labelledby={id} className="grid gap-4">
-      <div className="grid gap-1">
-        <h2
-          id={id}
-          className="text-(length:--text-lg) font-semibold text-(--color-ink)"
-        >
-          {title}
-        </h2>
-        {description && (
-          <p className="text-(length:--text-sm) text-(--color-ink-2)">
-            {description}
-          </p>
-        )}
-      </div>
-      <ul className="grid gap-4 md:grid-cols-2">
-        {samples.map((s) => (
-          <li
-            key={s.key}
-            className="grid min-w-0 gap-2 rounded-(--radius-card) border border-(--color-rule) bg-(--color-paper) p-3"
-          >
-            <div className="flex min-w-0 flex-wrap items-baseline justify-between gap-x-3">
-              <h3
-                className="truncate text-(length:--text-sm) font-medium text-(--color-ink)"
-                title={s.title}
-              >
-                {s.title}
-              </h3>
-              <p className="font-mono text-(length:--text-xs) text-(--color-ink-3) tabular-nums">
-                {s.caption}
-              </p>
-            </div>
-            <SheetSvg
-              prims={s.prims}
-              label={`${s.title} · ${s.caption}`}
-              className="h-auto w-full rounded-sm border border-(--color-rule)"
-            />
-          </li>
-        ))}
-      </ul>
-    </section>
   )
 }

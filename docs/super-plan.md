@@ -517,7 +517,7 @@ Việc mang từ P4 sang: dùng `pageOverrides` (ngày hoàn thành, số hiệu
 - [x] `src/drawing/types.ts`: `Pt`, `Prim`, `STROKE` 3 cỡ nét 0.13 / 0.25 / 0.5 mm. 5a có line, rect, circle, text, image; dim, leader, break, symbol, hatch thêm ở P8 cùng renderer (5a).
 - [x] `src/drawing/render-svg.tsx`: biến `Prim[]` thành phần tử SVG với `viewBox="0 0 420 297"` (đơn vị mm). Màu mực cố định đen trên trắng, không theo token giao diện (5a).
   - Ký hiệu chèn thẳng thành `<g transform>`, không dùng `<use>`, để svg2pdf xử lý chắc chắn.
-  - Hatch là nét thật cắt theo `clipPath`, không dùng `<pattern>`.
+  - Hatch là nét thật đã cắt sẵn theo vùng bằng hình học (từ P8), không dùng `<pattern>` hay `clipPath`.
 
 **Font bản vẽ**
 - [x] Tinos TTF (Regular, Bold, Italic, BoldItalic) đặt trong `public/fonts/tinos/`, lấy từ `google/fonts` `ofl/tinos` (giấy phép SIL OFL, kèm `OFL.txt`) (5a).
@@ -680,19 +680,55 @@ Giao cho `symbol-extractor`; phần app do phiên chính làm.
 
 ### P8 — Bộ phần tử vẽ cơ bản (3–4 ngày)
 
-- [ ] `dimension.ts`: kích thước ngang / dọc / chuỗi; đầu kiểu gạch chéo hoặc mũi tên; chữ kiểu bộ 2 ("Chiều rộng = 1500", "LỖ CHỜ = 900"); chữ dọc xoay 90°.
-- [ ] `hatch.ts`: hatch gạch (các hàng gạch so le) và bê tông (chấm + tam giác, sinh ngẫu nhiên có seed nên ra kết quả ổn định); cắt theo vùng.
-- [ ] Các phần tử khác:
-  - `leader.ts`: ghi chú nhiều dòng, có dấu `*`.
+**Đổi so với kế hoạch cũ (02/11/2026):**
+- **Hatch:** chép đúng mẫu AutoCAD trong DWG mẫu, thay cho kiểu chấm và tam giác ngẫu nhiên có seed. Các mẫu là `AR-CONC`, `AR-BRSTD`, `ANSI31/32/34`, `BRSTONE`, `AR-B816C`. Cách này giống bản mẫu hơn và mỗi lần vẽ ra cùng một kết quả.
+- **Cắt hatch theo vùng bằng hình học** trong hàm thuần, không dùng `clipPath`.
+- **Tỷ lệ:** bản mẫu không in tỷ lệ và phóng hình gần kín trang (mặt bằng khoảng 1:15). PO chốt dùng **danh sách tỷ lệ dày**: 1:10, 15, 20, 25, 30, 40, 50, 60, 75, 100, 125, 150, 200.
+- **Trang bộ sưu tập chạy trên production** ở `/primitives`, có lối vào từ trang danh sách, để PO xem.
+
+- [x] Lõi vẽ:
+  - `TextPrim.rotate` cho chữ dọc;
+  - `PolylinePrim.fill` cho mũi tên tô đặc;
+  - prim mới `lines`: nhiều nét rời trong **một** `<path>`, nét dài 0 vẽ thành chấm;
+  - `underlinedText()`, gạch chân vẽ bằng một nét thật.
+- [x] `view.ts` + `fit-scale.ts`: phép đổi mm thật sang mm giấy (`View`), và chọn tỷ lệ lớn nhất còn vừa vùng vẽ (đã trừ phần chừa cho kích thước).
+- [x] `dimension.ts`: kích thước ngang/dọc/chuỗi.
+  - Mũi tên kín tô đặc, hoặc đầu gạch chéo.
+  - Chữ nằm trên đường; chữ dọc xoay −90°.
+  - Nhãn kiểu bộ 2 ("Chiều rộng = 1500", "LỖ CHỜ = 900") hoặc chữ thay số ("THEO THỰC TẾ").
+  - Đoạn ngắn thì mũi tên quay ra ngoài.
+  - Kích thước phụ tính theo cỡ chữ, lấy từ dimstyle trong DWG.
+- [x] `hatch.ts` + `hatch-patterns.ts`:
+  - nhiều vòng thì lấy chẵn–lẻ, nên vùng có lỗ được;
+  - gốc mẫu ở (0, 0) thật, nên các vùng kề nhau nối liền nét;
+  - có chặn quá tải `MAX_HATCH_SEGS` và khoảng cách tối thiểu `MIN_HATCH_GAP` giữa các nét liền.
+- [x] Các phần tử khác:
+  - `leader.ts`: ghi chú nhiều dòng, dấu `*`, gạch chân dòng đầu.
   - `break-line.ts`: đường ngắt.
-  - `door-arrow.ts`: mũi tên chữ V kép + "Hướng cửa vào thang máy".
+  - `door-arrow.ts`: mũi tên 2 tam giác lồng nhau kèm "Hướng cửa vào thang máy".
   - `section-mark.ts`: ký hiệu A/B/C.
-  - `table.ts`: bảng.
-- [ ] `fit-scale.ts`: chọn tỷ lệ trong [1:10, 1:20, 1:25, 1:50, 1:75, 1:100] sao cho vừa vùng vẽ; trả về phép biến đổi.
-- [ ] Route `/dev/primitives`: bộ sưu tập phần tử.
-- [ ] Test: kết quả ổn định giữa các lần chạy, tọa độ hữu hạn, chữ kích thước đúng.
+  - `table.ts`: bảng có ô gộp cột.
+- [x] Route **`/primitives`** ("Phần tử vẽ", production). Dùng chung `SheetGallery` với `/symbols`.
+- [x] Test: kết quả ổn định giữa các lần chạy, tọa độ hữu hạn, chữ kích thước đúng.
 
 **Tiêu chí xong:** bộ sưu tập hiển thị đúng; test xanh.
+
+**Kết quả P8 (02/11/2026):**
+- **So với bản mẫu:**
+  - Kích thước: mũi tên 0,34 em, khe chữ 0,17 em, đường gióng thò 0,3 em. Số đo này lấy từ dimstyle thật trong DWG (`DIMTXT 100`, `DIMASZ 40`, `DIMGAP 20`, `DIMEXE 35`) và đối chiếu trên PDF mẫu ở 400 dpi.
+  - Ví dụ ghép trên `/primitives` (tường gạch, cột bê tông, kích thước bao, cửa từ thư viện, mũi tên cửa) gần như trùng trang mặt bằng của bộ 2.
+  - Bê tông khớp hình học với bản mẫu. Bản mẫu in nét dày hơn, nên `AR-CONC` mặc định dùng nét `medium`.
+- **Cỡ chữ đo trên PDF mẫu (mm giấy):** mặt bằng khoảng 8, phòng máy 9,7, pit 7,1, cửa tầng 2,4–4,9, mặt cắt đứng 1,85–2,3. Từ P9, mỗi trang tự truyền cỡ chữ của mình.
+- **Mặt cắt đứng:** truyền `y = −cao độ`. Chuỗi kích thước tự tìm đầu tự do thật, nên chạy theo chiều nào cũng được.
+- **Giới hạn hatch:**
+  - `MAX_HATCH_SEGS` (20.000 nét mỗi vùng) và `MIN_HATCH_GAP` (0,3 mm, chỉ xét các họ đường liền nét) có thể tự tăng tỷ lệ mẫu. Việc này tính riêng từng vùng: vùng rất lớn có thể thưa hơn vùng nhỏ bên cạnh.
+  - Vùng AR-CONC 2110 × 17000 mm ở 1:75 có khoảng 8.000 nét, chạy khoảng 14 ms.
+- **Kiểm tra:**
+  - 867 test xanh (thêm 424 test ở `src/tests/drawing/primitives/`, `prims.test.ts`, `render-svg.test.tsx`); lint, typecheck và build xanh.
+  - Qua svg2pdf, 11 trang mẫu: 0 ảnh, Tinos nhúng, chữ xoay −90° đúng, mũi tên tô đặc, chấm hiện ra.
+  - `/primitives` không cuộn ngang ở 1280, 375 và 320 px; đi qua lại với trang danh sách và `/symbols` đều được.
+  - Chunk `/primitives` 7,8 KB gzip.
+  - `code-reviewer`: không có mục nghiêm trọng; các mục nên sửa đã xử lý.
 
 ---
 
@@ -819,7 +855,7 @@ Giao cho `symbol-extractor`; phần app do phiên chính làm.
 
 ```
 src/
-  routes/          __root.tsx · index.tsx (danh sách) · projects.$id.tsx (màn soạn, ssr:false) · symbols.tsx (thư viện ký hiệu, ssr:false) · dev.ui.tsx, dev.sheets.tsx, dev.export.tsx (route phẳng, chỉ DEV)
+  routes/          __root.tsx · index.tsx (danh sách) · projects.$id.tsx (màn soạn, ssr:false) · symbols.tsx (thư viện ký hiệu, ssr:false) · primitives.tsx (phần tử vẽ, ssr:false) · dev.ui.tsx, dev.sheets.tsx, dev.export.tsx (route phẳng, chỉ DEV)
   db/              schema.ts · index.ts (drizzle-orm/d1)
   server/          projects.ts (createServerFn) · project-repo.ts (truy vấn drizzle, test được ngoài Worker)
   domain/          schema.ts · presets/ · derive.ts · rules.ts · migrate.ts

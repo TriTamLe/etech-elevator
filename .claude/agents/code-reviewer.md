@@ -33,7 +33,7 @@ Bạn là người soát code cho dự án web tạo bản vẽ xây dựng than
 - Ký hiệu lấy từ `src/drawing/symbols/` qua id. Không chép nét SVG vào trong hàm vẽ.
 
 ### SVG và PDF
-- Không dùng `<pattern>` cho hatch. Hatch phải là nét thật, cắt theo `clipPath`.
+- Không dùng `<pattern>` hay `clipPath` cho hatch. Hatch phải là nét thật đã cắt sẵn theo vùng bằng hình học (`hatch()` trong `#/drawing/primitives`).
 - Không dùng `<foreignObject>`, CSS filter, hay text cần font của hệ thống.
 - Font **Tinos** phải được đăng ký cho jsPDF. Chữ tiếng Việt có dấu phải hiển thị đúng.
 - Khổ giấy A3 ngang (420 × 297 mm), xuất dạng vector. Không chụp ảnh raster rồi nhét vào PDF.
