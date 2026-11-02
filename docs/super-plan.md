@@ -864,23 +864,39 @@ Giao cho `symbol-extractor`; phần app do phiên chính làm.
 
 ### P11 — Mặt cắt đứng + biến thể (6–9 ngày) → **Mốc M3**
 
-- [ ] **Bố cục dọc:** các mức tầng theo nhóm hiển thị; tỷ lệ dọc riêng; đường ngắt ở chỗ gộp; ký hiệu mặt cắt A/B/C.
-- [ ] **Mỗi mức tầng:**
-  - Sàn, dầm kiềng (cỡ của các tầng), dầm đầu cửa 200×200.
-  - Lỗ chờ 2300 / HH 2100.
-  - Đà giữa tầng (cách 1500 ở tầng trên cùng, 1600 ở tầng khác).
-  - Nhãn "THEO THỰC TẾ" và tên tầng.
-- [ ] **Buồng trên cùng** (luôn vẽ):
-  - Tên lấy từ form, chiều cao buồng.
-  - Dầm kiềng mái, CPM, móc treo 2 tấn, ký hiệu máy kéo.
-  - Kiểu đỡ máy: sàn đặt máy 200×200 hoặc vị trí đặt máy + dầm.
-- [ ] **Pit:** giảm chấn, thang xuống pit.
-- [ ] **Hình nhìn hông (BH):** cụm cabin ở tầng trên cùng, cánh cửa nhìn hông ở các tầng.
-- [ ] **Hình nhìn trước (AH):** cánh cửa nhìn trước, hộp nút; tầng 1F có khung bao che rộng.
-- [ ] **Phía phải trang:** bảng chiều cao tầng (gộp theo câu 14) và chi tiết móc palăng Ø18.
-- [ ] Đặt leader ghi chú sao cho không chồng lên nhau.
-- [ ] Biến thể của bộ 2: dầm kiềng 2 cỡ, dầm đặt máy, bảng có số.
-- [ ] Kiểm tra với N = 3, 4, 5, 9, 20 và cả 2 bộ mẫu (`sheet-verifier`).
+**Đo trên DWG** (khối `M7`, 02/11/2026):
+- Cỡ chữ (mm thật): ghi chú, tên tầng và chữ kích thước 100; chữ A/B/C 400; bảng và chi tiết móc 180.
+- M7 là **sơ đồ**, không vẽ đúng số: tầng vẽ 3400/3000 và ghi "THEO THỰC TẾ"; OH 3600 vẽ 3000; buồng trên 1200 vẽ 1300; BH/AH vẽ 1610/1710; chi tiết móc ghi 1500 nhưng vẽ 4055.
+- Ký hiệu `pit-ladder` (block 56) thật ra là **đối trọng nhìn hông**, treo trên dây cáp đối trọng. M7 không có thang xuống pit.
+
+**PO chốt (02/11/2026):**
+- mỗi tầng hoặc nhóm tầng vẽ cao cố định `SECTION.slot` = 3400 và ghi "THEO THỰC TẾ"; OH, buồng trên, PIT, lỗ chờ, HH, dầm và đà vẽ đúng số. Trang luôn vừa A3, vì tối đa 4 ô tầng;
+- chi tiết móc palăng giữ hình cố định của DWG, các số Ø, a, b in theo form;
+- làm và commit theo 3 phần P11a, P11b, P11c.
+
+**P11a — Khung tầng, tường, cửa:**
+- [x] `sheets/section.ts`: `sectionLevels` (ô tầng từ `floorGroups`, đà giữa tầng mỗi `spacing` tính từ sàn, loại cửa của nhóm) và `sectionSheet`.
+- [x] Hình nhìn hông: tường trước có sàn sảnh vát, dầm kiềng, lỗ chờ, dầm đầu cửa, cánh cửa nhìn hông; tường sau có dầm kiềng, đà và dầm kiềng mái; dải dầm/đà nhìn qua hố; sàn mái; pit.
+- [x] Hình nhìn trước: 2 vách, cửa ở mỗi tầng có cửa qua `landingDoorFront` (tách từ trang cửa tầng, dùng chung).
+- [x] Tên tầng có đường cao độ; kích thước PIT, "THEO THỰC TẾ", OH + buồng trên, "OH = …", 150, 2300/2100, BH, AH; ký hiệu A/B/C; đường ngắt ở nhóm gộp.
+- [x] Thư viện thêm `hook-hang` (móc nhỏ treo dưới sàn mái, dùng ở P11b).
+
+**Kết quả P11a (02/11/2026):**
+- `sheet-verifier`: OK ở cả 2 bộ, phần khung (lệch nhẹ). Đã sửa sau lần kiểm: ký hiệu A/B/C thêm nét đứng chỉ hướng nhìn có mũi tên (`sectionMark`, mặc định bật).
+- Cỡ chữ theo M7: tên tầng 150 (MTEXT 100 có `\H1.5x`); kích thước dùng dimstyle `Standard-40` (chữ 70, mũi tên 40, khe 20), nhỏ hơn các trang hình khác như trên mẫu. Gạch `AR-B816C` vẽ ở tỷ lệ 7,5 thay vì 5, để hàng gạch in cách khoảng 0,8 mm như mẫu.
+- Lệch còn lại, chấp nhận: bộ 1 ghi "PM = 1500" cho buồng trên (web theo bộ 2: số trơn); tầng OH có 2 đà (1500/1500/600) vì đà đặt mỗi `spacingTop` từ sàn, mẫu vẽ 1 đà 1800/1800.
+- 1227 test xanh; lint, typecheck và build xanh.
+
+**P11b — Buồng trên và pit:**
+- [ ] Tường trước buồng trên và CPM (chữ "CPM w X h" ở hình hông, ô gạch chéo ở hình trước); móc `hook-hang`.
+- [ ] Máy kéo (`mirrorX`, tâm puly cao hơn sàn mái 500), kiểu đỡ máy (dầm hoặc sàn 200 × 200), ty cáp (scale 0,5) và giá đỡ, dây cáp, cụm cabin ở tầng OH.
+- [ ] Pit: giảm chấn F/U, đối trọng nhìn hông (đổi tên `pit-ladder` → `counterweight-side`).
+
+**P11c — Ghi chú, bảng, chi tiết, biến thể:**
+- [ ] Ghi chú dẫn không chồng nhau (`stackNotes`): dầm đầu cửa, dầm kiềng, đà, móc treo, vị trí/sàn đặt máy.
+- [ ] Chi tiết móc palăng Ø18 và bảng "CHIỀU CAO TẦNG THỰC TẾ".
+- [ ] Biến thể bộ 2: dầm kiềng 2 cỡ, kiểu đỡ máy, bảng có số hoặc ".......".
+- [ ] Kiểm tra với N = 2, 3, 4, 5, 9, 20 và cả 2 bộ mẫu (`sheet-verifier`), `code-reviewer`.
 
 **Tiêu chí xong:** đủ 9 trang khớp cả 2 bộ mẫu; với 20 tầng vẫn vừa khổ A3.
 

@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 
 import { derive } from '#/domain/derive'
 import { presetParams } from '#/domain/presets'
+import { framed } from '#/drawing/frame'
 import { renderPage } from '#/drawing/pages'
 import { LANDING_TITLE } from '#/drawing/sheets/landing-door'
 import { numbersOf, texts } from '#/tests/drawing/helpers'
@@ -44,7 +45,7 @@ describe('renderPage', () => {
     (id) => {
       const p = presetParams(id)
       const d = derive(p)
-      for (const key of ['plan', 'pit', 'machine-room'] as const) {
+      for (const key of ['plan', 'pit', 'section', 'machine-room'] as const) {
         const page = d.pages.find((x) => x.key === key)!
         renderPage(p, d, page) // làm nóng
         const t0 = performance.now()
@@ -59,10 +60,11 @@ describe('renderPage', () => {
     (id) => {
       const p = presetParams(id)
       const d = derive(p)
-      const empty = renderPage(
+      const empty = framed(
         p,
         d,
-        d.pages.find((x) => x.key === 'section')!, // chưa vẽ: khung trống
+        d.pages.find((x) => x.key === 'section')!,
+        [], // khung trống, không hình
       )
       for (const key of ['landing-wide', 'landing-narrow'] as const) {
         const page = d.pages.find((x) => x.key === key)!
@@ -75,6 +77,22 @@ describe('renderPage', () => {
           for (const n of numbersOf(q))
             expect(Number.isFinite(n), key).toBe(true)
       }
+    },
+  )
+
+  it.each(['hotel-9f', 'house-5f'] as const)(
+    '%s: trang mặt cắt đứng (DTP 05) có hình lớn hơn khung trống, chữ tầng và PIT/OH',
+    (id) => {
+      const p = presetParams(id)
+      const d = derive(p)
+      const page = d.pages.find((x) => x.key === 'section')!
+      const empty = framed(p, d, page, [])
+      const out = renderPage(p, d, page)
+      const t = texts(out).map((x) => x.text)
+      expect(out.length).toBeGreaterThan(empty.length + 200)
+      expect(t).toContain('TẦNG 1F')
+      expect(t).toContain(`PIT = ${p.tech.pit}`)
+      expect(t).toContain(`OH = ${p.tech.overhead + p.tech.topRoomHeight}`)
     },
   )
 

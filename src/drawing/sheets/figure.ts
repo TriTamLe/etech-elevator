@@ -1,9 +1,9 @@
-import type { ElevatorParams } from '#/domain/schema'
+import type { ElevatorParams, JambType } from '#/domain/schema'
 import { SHEET_AREA } from '#/drawing/frame/layout'
 import { text, underlinedText } from '#/drawing/prims'
 import { doorArrow, fitScale, hatch, toSheet, view } from '#/drawing/primitives'
 import type { HatchName, View } from '#/drawing/primitives'
-import { CAD_TEXT } from '#/drawing/sheets/figure-layout'
+import { CAD_TEXT, LANDING } from '#/drawing/sheets/figure-layout'
 import type { CaptionGeometry } from '#/drawing/sheets/figure-layout'
 import { placeSymbol, symbol } from '#/drawing/symbols'
 import { ascent, descent, measure } from '#/drawing/text-metrics'
@@ -245,4 +245,75 @@ export function callBoxPlan(
       stretch: { x: w - b.w },
     }),
   }
+}
+
+/**
+ * A finished landing door seen from the front, in a frame with x from the left wall's
+ * inner face and y = −height above the landing floor, centred on `cx`: the jamb and the
+ * door leaves stretched to OP × HH (the symbols are drawn for OP 700 / HH 2100), each
+ * leaf's opening arrow, the call box in its hole and, with the wide jamb, the floor
+ * indicator over the door.
+ */
+export function landingDoorFront(
+  v: View,
+  jamb: JambType,
+  OP: number,
+  HH: number,
+  hole: CallBoxHole | null,
+  cx: number,
+): Array<Prim> {
+  const dOp = OP - LANDING.baseOp
+  const dHh = HH - LANDING.baseHh
+  const out: Array<Prim> = [
+    // Jamb: one stretch line at its centre, so insert half the stretch to the left.
+    ...placeSymbol(
+      symbol(jamb === 'wide' ? 'jamb-wide-jd320' : 'jamb-narrow-35x50'),
+      {
+        at: toSheet(v, { x: cx - dOp / 2, y: 0 }),
+        scale: v.scale,
+        stretch: { x: dOp, y: dHh },
+      },
+    ),
+    ...placeSymbol(symbol('door-front'), {
+      at: toSheet(v, { x: cx, y: 0 }),
+      scale: v.scale,
+      stretch: { x: dOp / 2, y: dHh },
+    }),
+  ]
+  const arrow = symbol('door-open-arrow')
+  for (const s of [-1, 1])
+    out.push(
+      ...placeSymbol(arrow, {
+        at: toSheet(v, { x: cx + (s * OP) / 4, y: -HH / 2 }),
+        scale: v.scale,
+        mirrorX: s > 0,
+      }),
+    )
+  if (hole)
+    out.push(
+      ...placeSymbol(symbol('call-box'), {
+        at: toSheet(v, {
+          x: (hole.x0 + hole.x1) / 2,
+          y: (hole.y0 + hole.y1) / 2,
+        }),
+        scale: v.scale,
+      }),
+    )
+  if (jamb === 'wide') {
+    const y = -(HH + LANDING.indicator.up)
+    const win = LANDING.indicator.window
+    out.push(
+      ...hatch(
+        v,
+        [box(cx - win.w / 2, y - win.h / 2, win.w, win.h)],
+        'ANSI34',
+        { scale: LANDING.hatch.indicator },
+      ),
+      ...placeSymbol(symbol('floor-indicator'), {
+        at: toSheet(v, { x: cx, y }),
+        scale: v.scale,
+      }),
+    )
+  }
+  return out
 }

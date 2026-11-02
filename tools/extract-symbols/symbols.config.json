@@ -394,6 +394,16 @@
         "anchor": "c"
       },
       "stretch": [{ "axis": "x", "at": 0, "dir": 1 }]
+    },
+    {
+      "id": "hook-hang",
+      "label": "Móc treo nhìn đứng",
+      "block": "M7",
+      "region": [178280, -140900, 178430, -140684],
+      "origin": {
+        "anchor": "tc"
+      },
+      "stretch": []
     }
   ]
 }

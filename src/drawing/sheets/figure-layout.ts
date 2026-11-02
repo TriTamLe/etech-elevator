@@ -271,3 +271,74 @@ export const LANDING = {
     pitch: 133,
   },
 } as const
+
+/**
+ * Vertical section (DTP 05), measured in block `M7` of set 2. M7 is a diagram: floors are
+ * drawn 3400 / 3000 high and labelled "THEO THỰC TẾ", OH 3600 is drawn 3000, BH and AH
+ * are not to their numbers. PO 02/11/2026: every floor (or collapsed group) gets the
+ * same drawn height `slot`; OH, the top room, PIT, openings and beams are drawn to the
+ * real numbers.
+ *
+ * Coordinates: elevation y = −height above the 1F landing floor. Side view (BH) x from
+ * the front (door) wall's inner face towards the back wall; front view (AH) x from the
+ * left wall's inner face, placed right of the side view.
+ */
+export const SECTION = {
+  text: {
+    /** Leader notes. */
+    note: 100,
+    /** Floor names (MTEXT 100 with `\\H1.5x`). */
+    level: 150,
+    /** Dimension text: dimstyle Standard-40, DIMTXT 70 (not 100 as on the other sheets). */
+    dim: 70,
+    /** Section letters A / B / C. */
+    mark: 400,
+  },
+  /** Standard-40's DIMASZ and DIMGAP (real mm). */
+  dimArrow: 40,
+  dimGap: 20,
+  /** Drawn height of a floor or a collapsed group (M7 1F and 2F~3F). */
+  slot: 3400,
+  /** Landing slab in front of the door wall: reach, thickness, bevel under its tip. */
+  landing: { reach: 754, thick: 150, bevel: 150 },
+  /**
+   * `landing-door-side` insertion: this far into the shaft from the door wall's inner
+   * face (its left edge sits in the wall) and this far below the landing floor.
+   */
+  doorSide: { x: 24.2, down: 25 },
+  /** Roof slab over the top room and its reach in front of the door wall. */
+  roof: { thick: 150, reach: 1000 },
+  /** Pit slab under the pit (as on the pit sheet). */
+  pitSlab: 200,
+  /**
+   * Floor names: text top above the floor, ending `gap` left of the outermost dimension
+   * line (M7 starts them 2424 left of the door wall; long names would reach the line).
+   */
+  level: { top: 278, gap: 150 },
+  /** Dimension lines left of the door wall's outer face (side view). */
+  sideDims: { door: 371, opening: 699, chain: 1300, total: 1700 },
+  /** Dimension lines left of the left wall's outer face (front view). */
+  frontDims: { chain: 405, oh: 741, total: 1267 },
+  /** "BH" / "AH" below the pit slab. */
+  bottomDim: 282,
+  /** Side view's back wall outer face to the front view's left wall outer face. */
+  viewGap: 4591,
+  /**
+   * Section marks: left of the side view / right of the front view (to the letter);
+   * cut lines B above the top room floor, A above the top floor, C a share of PIT down.
+   */
+  marks: { left: 2752, right: 1041, length: 900, b: 550, a: 1230, c: 0.855 },
+  /** Break line across a collapsed group, this far under the floor above it. */
+  breakBelow: 520,
+  /** Break lines run past the walls (side view: past the dims and notes). */
+  breakOver: { side: 1400, front: 500 },
+  hatch: {
+    concrete: 10,
+    /**
+     * Brick walls: AR-B816C. M7 uses 5, but its rows then print 0.5 mm apart at this
+     * sheet's scale and the double lines fill in; 7.5 gives the reference's printed
+     * ~0.8 mm rows.
+     */
+    brick: 7.5,
+  },
+} as const

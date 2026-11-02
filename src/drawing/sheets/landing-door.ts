@@ -21,6 +21,7 @@ import {
   cadSize,
   callBoxHole,
   callBoxPlan,
+  landingDoorFront,
   cadText,
   fitFigure,
   walls,
@@ -379,7 +380,6 @@ function drawFinished(v: View, pv: View, g: Geo): Array<Prim> {
   const L = LANDING.hatch
   const frame = JAMB.frame[g.jamb]
   const dOp = OP - LANDING.baseOp
-  const dHh = HH - LANDING.baseHh
   const st = dimStyle(cadSize(v, LANDING.text.dim))
   const out: Array<Prim> = [...elevationWalls(v, g)]
 
@@ -406,41 +406,10 @@ function drawFinished(v: View, pv: View, g: Geo): Array<Prim> {
       'ANSI32',
       { scale: L.frame, outline: 'thin' },
     ),
-    // Jamb: one stretch line at its centre, so insert half the stretch to the left.
-    ...placeSymbol(
-      symbol(g.jamb === 'wide' ? 'jamb-wide-jd320' : 'jamb-narrow-35x50'),
-      {
-        at: toSheet(v, { x: cx - dOp / 2, y: 0 }),
-        scale: v.scale,
-        stretch: { x: dOp, y: dHh },
-      },
-    ),
-    ...placeSymbol(symbol('door-front'), {
-      at: toSheet(v, { x: cx, y: 0 }),
-      scale: v.scale,
-      stretch: { x: dOp / 2, y: dHh },
-    }),
   )
-  const arrow = symbol('door-open-arrow')
-  for (const s of [-1, 1])
-    out.push(
-      ...placeSymbol(arrow, {
-        at: toSheet(v, { x: cx + (s * OP) / 4, y: -HH / 2 }),
-        scale: v.scale,
-        mirrorX: s > 0,
-      }),
-    )
+  out.push(...landingDoorFront(v, g.jamb, OP, HH, g.hole, cx))
   const hole = g.hole
   if (hole) {
-    out.push(
-      ...placeSymbol(symbol('call-box'), {
-        at: toSheet(v, {
-          x: (hole.x0 + hole.x1) / 2,
-          y: (hole.y0 + hole.y1) / 2,
-        }),
-        scale: v.scale,
-      }),
-    )
     // The narrow sheet repeats the hole's width and height here (M5; M6 does not).
     if (g.jamb === 'narrow')
       out.push(
@@ -466,22 +435,6 @@ function drawFinished(v: View, pv: View, g: Geo): Array<Prim> {
           },
         ),
       )
-  }
-  if (g.jamb === 'wide') {
-    const y = -(HH + LANDING.indicator.up)
-    const win = LANDING.indicator.window
-    out.push(
-      ...hatch(
-        v,
-        [box(cx - win.w / 2, y - win.h / 2, win.w, win.h)],
-        'ANSI34',
-        { scale: L.indicator },
-      ),
-      ...placeSymbol(symbol('floor-indicator'), {
-        at: toSheet(v, { x: cx, y }),
-        scale: v.scale,
-      }),
-    )
   }
 
   // Elevation dimensions: HH (+ the wide jamb's head), rough height, OP at the floor,

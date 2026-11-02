@@ -7,6 +7,7 @@ import { machineRoomSheet } from '#/drawing/sheets/machine-room'
 import { pitSheet } from '#/drawing/sheets/pit'
 import { planSheet } from '#/drawing/sheets/plan'
 import { responsibilitySheet } from '#/drawing/sheets/responsibility'
+import { sectionSheet } from '#/drawing/sheets/section'
 import { specSheet } from '#/drawing/sheets/spec'
 import type { Prim } from '#/drawing/types'
 
@@ -20,6 +21,7 @@ export const READY_PAGES: ReadonlyArray<PageKey> = [
   'spec',
   'plan',
   'pit',
+  'section',
   'landing-wide',
   'landing-narrow',
   'machine-room',
@@ -46,6 +48,8 @@ export function renderPage(
       return framed(p, d, page, planSheet(p, d))
     case 'pit':
       return framed(p, d, page, pitSheet(p, d))
+    case 'section':
+      return framed(p, d, page, sectionSheet(p, d))
     case 'landing-wide':
       return framed(p, d, page, landingSheet(p, d, 'wide'))
     case 'landing-narrow':
