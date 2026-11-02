@@ -285,3 +285,182 @@ describe('cảnh báo bảng hiệu chỉnh', () => {
     expect(warnAt(0)).toHaveLength(0)
   })
 })
+
+describe('cảnh báo cửa tầng (khung bao che, hộp gọi)', () => {
+  const warnAt = (p: ReturnType<typeof presetParams>, path: string) =>
+    checkRules(p).filter((i) => i.level === 'warning' && i.path === path)
+  const allNarrow = (p: ReturnType<typeof presetParams>) => {
+    for (const f of p.floors) f.jamb = 'narrow'
+  }
+  const noDoors = (p: ReturnType<typeof presetParams>) => {
+    for (const f of p.floors) f.hasDoor = false
+  }
+
+  describe('tech.door.width: khung rộng OP + 290 > lỗ chờ 1100', () => {
+    it.each(['hotel-9f', 'house-5f'] as const)('%s: bộ mẫu không báo', (id) => {
+      expect(warnAt(presetParams(id), 'tech.door.width')).toEqual([])
+    })
+
+    it('OP 811 bao che rộng báo; OP 810 (khung = lỗ chờ) và OP 800 không báo', () => {
+      const p = presetParams('house-5f')
+      p.tech.door.width = 811
+      const w = warnAt(p, 'tech.door.width')
+      expect(w).toHaveLength(1)
+      expect(w[0].message).toContain('1101')
+      expect(w[0].message).toContain('1100')
+      p.tech.door.width = 810
+      expect(warnAt(p, 'tech.door.width')).toHaveLength(0)
+      p.tech.door.width = 800
+      expect(warnAt(p, 'tech.door.width')).toHaveLength(0)
+    })
+
+    it('không chặn xuất bản vẽ (chỉ là cảnh báo)', () => {
+      const p = presetParams('house-5f')
+      p.tech.door.width = 850
+      expect(hasBlockingErrors(checkRules(p))).toBe(false)
+    })
+
+    it('chỉ dùng bao che hẹp với OP 850 thì không báo (lỗ chờ = OP + 200)', () => {
+      const p = presetParams('house-5f')
+      allNarrow(p)
+      p.tech.door.width = 850
+      expect(warnAt(p, 'tech.door.width')).toHaveLength(0)
+    })
+
+    it('không tầng nào có cửa thì không báo', () => {
+      const p = presetParams('house-5f')
+      noDoors(p)
+      p.tech.door.width = 850
+      expect(warnAt(p, 'tech.door.width')).toHaveLength(0)
+    })
+  })
+
+  describe('tech.door.width: OP > lỗ chờ chỉ là lỗi, không kèm cảnh báo khung', () => {
+    it('OP 1150 bao che rộng: đúng 1 lỗi và 0 cảnh báo ở tech.door.width', () => {
+      const p = presetParams('house-5f')
+      p.tech.door.width = 1150 // rộng 1100 < 1150; khung 1440 cũng vượt
+      const issues = checkRules(p)
+      expect(errorsAt(issues, 'tech.door.width')).toHaveLength(1)
+      expect(warnAt(p, 'tech.door.width')).toHaveLength(0)
+      expect(issues.filter((i) => i.path === 'tech.door.width')).toHaveLength(1)
+    })
+  })
+
+  describe('tech.door.height: HH < lỗ chờ thô nhưng HH + đầu khung > lỗ chờ thô', () => {
+    it('bộ mẫu (HH 2100, thô 2300) không báo', () => {
+      for (const id of ['hotel-9f', 'house-5f'] as const) {
+        const p = presetParams(id)
+        expect(warnAt(p, 'tech.door.height')).toEqual([])
+      }
+    })
+
+    it('bao che rộng (đầu 200): HH 2100 không báo, HH 2101 báo', () => {
+      const p = presetParams('house-5f')
+      p.tech.door.height = 2100
+      expect(warnAt(p, 'tech.door.height')).toHaveLength(0)
+      p.tech.door.height = 2101
+      const w = warnAt(p, 'tech.door.height')
+      expect(w).toHaveLength(1)
+      expect(w[0].message).toContain('2301')
+    })
+
+    it('bao che hẹp (đầu 50): HH 2250 không báo, HH 2251 báo', () => {
+      const p = presetParams('house-5f')
+      allNarrow(p)
+      p.tech.door.height = 2250
+      expect(warnAt(p, 'tech.door.height')).toHaveLength(0)
+      p.tech.door.height = 2251
+      expect(warnAt(p, 'tech.door.height')).toHaveLength(1)
+    })
+
+    it('chỉ dùng bao che hẹp: HH 2101 (rộng sẽ báo) thì không báo', () => {
+      const p = presetParams('house-5f')
+      allNarrow(p)
+      p.tech.door.height = 2101
+      expect(warnAt(p, 'tech.door.height')).toHaveLength(0)
+    })
+
+    it('HH ≥ lỗ chờ thô chỉ là lỗi, không thêm cảnh báo', () => {
+      const p = presetParams('house-5f')
+      p.tech.door.height = 2300
+      expect(warnAt(p, 'tech.door.height')).toHaveLength(0)
+      expect(errorsAt(checkRules(p), 'tech.door.height')).toHaveLength(1)
+    })
+
+    it('không tầng nào có cửa thì không báo', () => {
+      const p = presetParams('house-5f')
+      noDoors(p)
+      p.tech.door.height = 2101
+      expect(warnAt(p, 'tech.door.height')).toHaveLength(0)
+    })
+  })
+
+  describe('structure.callBox.w: hộp gọi rộng hơn đoạn tường hai bên nhỏ nhất', () => {
+    it('bộ mẫu (hộp 100) không báo', () => {
+      for (const id of ['hotel-9f', 'house-5f'] as const)
+        expect(warnAt(presetParams(id), 'structure.callBox.w')).toEqual([])
+    })
+
+    it('house-5f dùng cả rộng (tường 200) và hẹp (300): 201 báo, 200 không', () => {
+      const p = presetParams('house-5f')
+      p.structure.callBox.w = 201
+      const w = warnAt(p, 'structure.callBox.w')
+      expect(w).toHaveLength(1)
+      expect(w[0].message).toContain('200')
+      p.structure.callBox.w = 200
+      expect(warnAt(p, 'structure.callBox.w')).toHaveLength(0)
+    })
+
+    it('chỉ dùng bao che hẹp (tường 300): 250 không báo, 301 báo', () => {
+      const p = presetParams('house-5f')
+      allNarrow(p)
+      p.structure.callBox.w = 250
+      expect(warnAt(p, 'structure.callBox.w')).toHaveLength(0)
+      p.structure.callBox.w = 301
+      expect(warnAt(p, 'structure.callBox.w')).toHaveLength(1)
+    })
+
+    it('đoạn tường lẻ nửa mm in dấu phẩy kiểu Việt (300,5), không phải 300.5', () => {
+      const p = presetParams('house-5f')
+      allNarrow(p)
+      p.tech.shaft.width = 1501 // (1501 − 900) / 2 = 300,5
+      p.structure.callBox.w = 301
+      const w = warnAt(p, 'structure.callBox.w')
+      expect(w).toHaveLength(1)
+      expect(w[0].message).toContain('300,5')
+      expect(w[0].message).not.toContain('300.5')
+    })
+
+    it('không tầng nào có cửa thì không báo dù hộp rất rộng', () => {
+      const p = presetParams('house-5f')
+      noDoors(p)
+      p.structure.callBox.w = 5000
+      expect(warnAt(p, 'structure.callBox.w')).toHaveLength(0)
+    })
+  })
+
+  describe('structure.callBox.h: bottom + h > lỗ chờ thô', () => {
+    it('bộ mẫu (1100 + 400) không báo', () => {
+      for (const id of ['hotel-9f', 'house-5f'] as const)
+        expect(warnAt(presetParams(id), 'structure.callBox.h')).toEqual([])
+    })
+
+    it('1900 + 400 = 2300 không báo; 1901 + 400 báo', () => {
+      const p = presetParams('house-5f')
+      p.structure.callBox.bottom = 1900
+      expect(warnAt(p, 'structure.callBox.h')).toHaveLength(0)
+      p.structure.callBox.bottom = 1901
+      const w = warnAt(p, 'structure.callBox.h')
+      expect(w).toHaveLength(1)
+      expect(w[0].message).toContain('2301')
+      expect(hasBlockingErrors(checkRules(p))).toBe(false)
+    })
+
+    it('không tầng nào có cửa thì không báo', () => {
+      const p = presetParams('house-5f')
+      noDoors(p)
+      p.structure.callBox.bottom = 3000
+      expect(warnAt(p, 'structure.callBox.h')).toHaveLength(0)
+    })
+  })
+})

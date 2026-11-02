@@ -319,3 +319,102 @@ describe('planSheet: trường hợp biên', () => {
     expectInside(out, SHEET_AREA)
   })
 })
+
+describe('planSheet: ô ⊠ lỗ hộp nút gọi (call-box-plan 100 × 90)', () => {
+  type Seg = { x0: number; y0: number; x1: number; y1: number }
+  const segsOf = (out: Array<Prim>): Array<Seg> =>
+    out.flatMap((q): Array<Seg> => {
+      if (q.kind === 'line')
+        return [{ x0: q.a.x, y0: q.a.y, x1: q.b.x, y1: q.b.y }]
+      if (q.kind === 'polyline')
+        return q.pts.slice(1).map((b, i) => ({
+          x0: q.pts[i].x,
+          y0: q.pts[i].y,
+          x1: b.x,
+          y1: b.y,
+        }))
+      return []
+    })
+
+  /** Các đường chéo 100k × 90k (k = giấy / thật) của ô ⊠. */
+  function crosses(p: ElevatorParams, w = 100) {
+    const out = draw(p)
+    const g = sideWalls(out, p.tech.shaft.width)
+    const diag = segsOf(out).filter(
+      (s) =>
+        Math.abs(Math.abs(s.x1 - s.x0) - w * g.k) < 1e-6 &&
+        Math.abs(Math.abs(s.y1 - s.y0) - 90 * g.k) < 1e-6,
+    )
+    return { diag, ...g }
+  }
+
+  it.each(['house-5f', 'hotel-9f'] as const)(
+    '%s: đúng 2 đường chéo cắt nhau, ô nằm sát mép phải lỗ chờ',
+    (id) => {
+      const p = clone(id)
+      const side = (p.tech.shaft.width - EXPECT[id].hole) / 2
+      const { diag, innerR, k } = crosses(p)
+      expect(diag).toHaveLength(2)
+      // Một chéo lên, một chéo xuống (dấu dx·dy trái nhau).
+      const sign = diag.map((s) => Math.sign((s.x1 - s.x0) * (s.y1 - s.y0)))
+      expect(sign[0] * sign[1]).toBe(-1)
+      // Hai chéo cùng một ô: cùng hộp bao.
+      const box = (s: Seg) => [
+        Math.min(s.x0, s.x1),
+        Math.min(s.y0, s.y1),
+        Math.max(s.x0, s.x1),
+        Math.max(s.y0, s.y1),
+      ]
+      for (let i = 0; i < 4; i++)
+        expect(box(diag[0])[i]).toBeCloseTo(box(diag[1])[i], 6)
+      // Mép trái ô = mép phải lỗ chờ = mặt trong tường phải − đoạn tường bên.
+      expect(box(diag[0])[0]).toBeCloseTo(innerR - side * k, 6)
+      expect(box(diag[0])[2]).toBeCloseTo(innerR - side * k + 100 * k, 6)
+    },
+  )
+
+  it('ô nằm trong đoạn tường bên phải (trong SHEET_AREA), cả khi AH rộng 2200', () => {
+    const p = clone('house-5f')
+    p.tech.shaft.width = 2200
+    const { diag } = crosses(p)
+    expect(diag).toHaveLength(2)
+    expectInside(draw(p), SHEET_AREA)
+  })
+
+  it('hộp gọi 150 rộng: ô ⊠ rộng 150·k, mép trái vẫn ở mép phải lỗ chờ', () => {
+    const p = clone('house-5f')
+    p.structure.callBox.w = 150
+    const { diag, innerR, k } = crosses(p, 150)
+    expect(diag).toHaveLength(2)
+    const left = Math.min(...diag.flatMap((s) => [s.x0, s.x1]))
+    const right = Math.max(...diag.flatMap((s) => [s.x0, s.x1]))
+    expect(right - left).toBeCloseTo(150 * k, 6)
+    expect(left).toBeCloseTo(innerR - 300 * k, 6)
+  })
+
+  it('hộp gọi rộng hơn tường bên (600): ô rộng bằng tường bên', () => {
+    const p = clone('house-5f')
+    p.structure.callBox.w = 600
+    const { diag, k } = crosses(p, 300)
+    expect(diag).toHaveLength(2)
+    const xs = diag.flatMap((s) => [s.x0, s.x1])
+    expect(Math.max(...xs) - Math.min(...xs)).toBeCloseTo(300 * k, 6)
+  })
+
+  it('callBox.bottom 2400 ≥ lỗ chờ thô 2300: không có ô ⊠', () => {
+    const p = clone('house-5f')
+    p.structure.callBox = { w: 100, h: 400, bottom: 2400 }
+    expect(crosses(p).diag).toHaveLength(0)
+    p.structure.callBox.bottom = 2300
+    expect(crosses(p).diag).toHaveLength(0)
+    p.structure.callBox.bottom = 2299
+    expect(crosses(p).diag).toHaveLength(2)
+  })
+
+  it('lỗ chờ = AH (đoạn tường 0): không có ô', () => {
+    const p = clone('house-5f')
+    p.tech.shaft.width = 1100
+    for (const f of p.floors) f.jamb = 'wide'
+    expect(crosses(p).diag).toHaveLength(0)
+  })
+})

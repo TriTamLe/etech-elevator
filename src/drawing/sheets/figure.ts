@@ -1,9 +1,11 @@
+import type { ElevatorParams } from '#/domain/schema'
 import { SHEET_AREA } from '#/drawing/frame/layout'
 import { text, underlinedText } from '#/drawing/prims'
 import { doorArrow, fitScale, hatch, toSheet, view } from '#/drawing/primitives'
 import type { HatchName, View } from '#/drawing/primitives'
 import { CAD_TEXT } from '#/drawing/sheets/figure-layout'
 import type { CaptionGeometry } from '#/drawing/sheets/figure-layout'
+import { placeSymbol, symbol } from '#/drawing/symbols'
 import { ascent, descent, measure } from '#/drawing/text-metrics'
 import type { FontStyle } from '#/drawing/text-metrics'
 import type { Prim, Pt } from '#/drawing/types'
@@ -198,4 +200,49 @@ export function caption(
       }),
     )
   return out
+}
+
+/** Call box hole (real mm): across x0…x1, elevation y0 (bottom) … y1 (top, = −height). */
+export type CallBoxHole = { x0: number; x1: number; y0: number; y1: number }
+
+/**
+ * The call box hole beside a landing opening whose wall pieces are `side` wide: flush with
+ * the opening's right edge, kept inside the right piece and below the rough opening's
+ * top. Null when nothing is left of it (no wall piece, no size, or above the opening).
+ */
+export function callBoxHole(
+  p: ElevatorParams,
+  side: number,
+): CallBoxHole | null {
+  const AH = p.tech.shaft.width
+  const H = p.structure.roughOpeningHeight
+  const cb = p.structure.callBox
+  const x0 = AH - Math.max(0, side)
+  const x1 = Math.min(x0 + cb.w, AH)
+  const y0 = -Math.min(cb.bottom, H)
+  const y1 = -Math.min(cb.bottom + cb.h, H)
+  return x1 > x0 && y0 > y1 ? { x0, x1, y0, y1 } : null
+}
+
+/**
+ * The hole in plan: `call-box-plan` (⊠) stretched to the hole's width, open to the
+ * landing (flush with the front wall's outer face, real y `front`). `ring` is its
+ * outline, to leave out of the wall's hatch.
+ */
+export function callBoxPlan(
+  v: View,
+  hole: CallBoxHole,
+  front: number,
+): { ring: Array<Pt>; prims: Array<Prim> } {
+  const sym = symbol('call-box-plan')
+  const b = sym.bbox
+  const w = hole.x1 - hole.x0
+  return {
+    ring: box(hole.x0, front - b.h, w, b.h),
+    prims: placeSymbol(sym, {
+      at: toSheet(v, { x: hole.x0 - b.x, y: front - (b.y + b.h) }),
+      scale: v.scale,
+      stretch: { x: w - b.w },
+    }),
+  }
 }

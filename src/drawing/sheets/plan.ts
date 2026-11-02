@@ -6,6 +6,7 @@ import {
   dim,
   dimChain,
   dimStyle,
+  hatch,
   leader,
   prefixLabel,
   toSheet,
@@ -16,6 +17,8 @@ import {
   box,
   cadSize,
   cadText,
+  callBoxHole,
+  callBoxPlan,
   caption,
   fitFigure,
   walls,
@@ -103,6 +106,8 @@ function drawPlan(p: ElevatorParams, d: Derived, v: View): Array<Prim> {
   const cx = AH / 2
   const st = dimStyle(cadSize(v, CAD_TEXT.dim))
   const out: Array<Prim> = []
+  const hole = callBoxHole(p, side)
+  const boxHole = hole && callBoxPlan(v, hole, front)
 
   // Walls: brick sides, back and the two front pieces; concrete corner columns.
   out.push(
@@ -113,10 +118,16 @@ function drawPlan(p: ElevatorParams, d: Derived, v: View): Array<Prim> {
         box(-W, 0, W, BH),
         box(AH, 0, W, BH),
         box(0, BH, openL, W),
-        box(openR, BH, AH - openR, W),
       ],
       'AR-BRSTD',
       HATCH_SCALE.brick,
+    ),
+    // Right front piece: the call box hole (open to the landing) stays unhatched.
+    ...hatch(
+      v,
+      [box(openR, BH, AH - openR, W), ...(boxHole ? [boxHole.ring] : [])],
+      'AR-BRSTD',
+      { scale: HATCH_SCALE.brick, outline: 'medium' },
     ),
     ...walls(
       v,
@@ -196,6 +207,8 @@ function drawPlan(p: ElevatorParams, d: Derived, v: View): Array<Prim> {
       stretch: { x: (OP - PLAN.doorBaseOp) / 2 },
     }),
   )
+  // Call box hole in the right front wall piece (as on the landing door sheets).
+  if (boxHole) out.push(...boxHole.prims)
 
   // Dimensions.
   out.push(

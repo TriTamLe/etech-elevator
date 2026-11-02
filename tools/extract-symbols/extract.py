@@ -235,6 +235,69 @@ def inside(p: Prim, box, tol=0.5) -> bool:
     return all(x0 - tol <= x <= x1 + tol and y0 - tol <= y <= y1 + tol for x, y in prim_points(p))
 
 
+def clip_seg(a, b, box):
+    """Liang-Barsky: phần đoạn a-b nằm trong box, hoặc None."""
+    x0, y0, x1, y1 = box
+    dx, dy = b[0] - a[0], b[1] - a[1]
+    t0, t1 = 0.0, 1.0
+    for pp, qq in ((-dx, a[0] - x0), (dx, x1 - a[0]), (-dy, a[1] - y0), (dy, y1 - a[1])):
+        if abs(pp) < 1e-12:
+            if qq < 0:
+                return None
+            continue
+        t = qq / pp
+        if pp < 0:
+            if t > t1:
+                return None
+            t0 = max(t0, t)
+        else:
+            if t < t0:
+                return None
+            t1 = min(t1, t)
+    if t1 - t0 < 1e-9:
+        return None
+    return (a[0] + t0 * dx, a[1] + t0 * dy), (a[0] + t1 * dx, a[1] + t1 * dy), t0 > 1e-9, t1 < 1 - 1e-9
+
+
+def clip_prims(prims: list[Prim], box, cap: bool = False) -> list[Prim]:
+    """Cắt nét theo hộp: LINE/polyline bị cắt tại mép hộp; cung và đường tròn giữ nguyên nếu nằm trọn trong hộp,
+    còn không thì bỏ. cap=True: nối hai đầu mới tạo ở mép hộp (khép kín phần cắt)."""
+    out: list[Prim] = []
+    for p in prims:
+        if p[0] != "l":
+            if inside(p, box, 0.5):
+                out.append(p)
+            else:
+                xs, ys = zip(*prim_points(p))
+                x0, y0, x1, y1 = box
+                if min(xs) < x1 and max(xs) > x0 and min(ys) < y1 and max(ys) > y0:
+                    print(f"  ! clip: bỏ cung/đường tròn vắt qua mép hộp tại ({min(xs):.0f}, {min(ys):.0f})", file=sys.stderr)
+            continue
+        pts = p[1]
+        n = len(pts)
+        for i in range(n if p[2] and n > 2 else n - 1):
+            r = clip_seg(pts[i], pts[(i + 1) % n], box)
+            if r is None:
+                continue
+            a, b = r[0], r[1]
+            out.append(("l", [a, b], False))
+    if cap:
+        # nối hai đầu hở của phần còn lại (đầu mút bậc 1)
+        deg: dict[tuple, int] = defaultdict(int)
+        pos: dict[tuple, tuple] = {}
+        for q in out:
+            if q[0] == "l":
+                for pt in (q[1][0], q[1][-1]):
+                    k = (round(pt[0], 2), round(pt[1], 2))
+                    deg[k] += 1
+                    pos[k] = pt
+        ends = [pos[k] for k, d in deg.items() if d == 1]
+        if len(ends) != 2:
+            raise RuntimeError(f"clip.cap cần đúng 2 đầu hở, thấy {len(ends)}")
+        out.append(("l", [ends[0], ends[1]], False))
+    return out
+
+
 # ---------------------------------------------------------------- làm gọn
 
 
@@ -528,6 +591,9 @@ def build(doc, sym: dict) -> list[Prim]:
         prims = [p for p in prims if inside(p, sym["region"], sym.get("tol", 0.5))]
     for box in sym.get("exclude", []):
         prims = [p for p in prims if not inside(p, box, 0.5)]
+    # clip: cắt nét tại mép hộp (sau region/exclude), vd lấy một nửa polyline
+    for c in sym.get("clip", []):
+        prims = clip_prims(prims, c["box"], c.get("cap", False))
     prims = clean(prims)
     if not prims:
         raise RuntimeError("không còn nét nào")

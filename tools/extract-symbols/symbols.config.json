@@ -335,6 +335,65 @@
         ]
       },
       "stretch": []
+    },
+    {
+      "id": "door-open-arrow",
+      "label": "Mũi tên mở cửa",
+      "block": "M6",
+      "region": [
+        108460,
+        -160675,
+        108690,
+        -160610
+      ],
+      "origin": {
+        "anchor": "c"
+      },
+      "stretch": []
+    },
+    {
+      "id": "jamb-wide-plan",
+      "label": "Khung bao che rộng nhìn mặt bằng",
+      "block": "M6",
+      "region": [
+        108270,
+        -162610,
+        108410,
+        -162318
+      ],
+      "clip": [
+        {
+          "box": [
+            108200,
+            -162700,
+            108500,
+            -162390.4
+          ],
+          "cap": true
+        }
+      ],
+      "origin": {
+        "xy": [
+          108407.5,
+          -162390.4
+        ]
+      },
+      "stretch": []
+    },
+    {
+      "id": "call-box-plan",
+      "label": "Lỗ hộp nút gọi nhìn mặt bằng",
+      "block": "M6",
+      "region": [
+        109357,
+        -162546,
+        109458,
+        -162454
+      ],
+      "origin": {
+        "anchor": "c"
+      },
+      "stretch": [{ "axis": "x", "at": 0, "dir": 1 }]
     }
   ]
 }

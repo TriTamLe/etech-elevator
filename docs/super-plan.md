@@ -651,6 +651,7 @@ Giao cho `symbol-extractor`; phần app do phiên chính làm.
 - [x] Đổi DWG sang DXF bằng `dwg2dxf` vào `.out/`; lệnh `yarn gen:symbols` chạy lại được toàn bộ.
 - [x] Xuất **7 block**: `car-side`, `landing-door-side`, `machine`, `rope-hitch`, `buffer-a`, `buffer-b`, `pit-ladder` (bung cả block lồng nhau như `doorlock`).
 - [x] Cắt **10 ký hiệu nét rời**: `rail-t-plan`, `counterweight-plan`, `door-co-plan`, `door-front`, `jamb-wide-jd320`, `jamb-narrow-35x50`, `call-box`, `floor-indicator`, `hook-plan`, `hook-detail`.
+- [x] P10 thêm **3 ký hiệu** cho trang cửa tầng: `door-open-arrow` (mũi tên mở cửa), `jamb-wide-plan` (tấm khung bao che rộng nhìn mặt bằng, cắt khỏi polyline chung bằng khóa `clip` mới của `extract.py`), `call-box-plan` (ô ⊠ 100 × 90). Thư viện có 20 ký hiệu.
 - [x] Mỗi ký hiệu là một file `src/drawing/symbols/data/<id>.ts`, sinh tự động:
   - đơn vị mm, gốc tại điểm chèn, trục y hướng xuống;
   - chỉ có nét (polyline, cung, tròn), không chữ, không kích thước;
@@ -786,7 +787,7 @@ Giao cho `symbol-extractor`; phần app do phiên chính làm.
   - **Lệch đã chốt:**
     - tỷ lệ 1:15–1:20, mẫu khoảng 1:12–1:17;
     - tiêu đề "MẶT CẮT CỬA TẦNG";
-    - chưa vẽ hộp nút gọi ⊠ (bộ 1 có);
+    - ô ⊠ lỗ hộp nút: P10 đã vẽ thêm (bộ 1 có, bộ 2 không);
     - đối trọng canh giữa;
     - pit vẽ đúng số;
     - móc treo đo tới tường phải và tường trước.
@@ -798,20 +799,66 @@ Giao cho `symbol-extractor`; phần app do phiên chính làm.
 - **Kiểm tra:**
   - 1018 test xanh; lint, typecheck và build xanh;
   - mỗi trang vẽ khoảng 7–11 ms (Node), đã gồm 2 lần vẽ của `fitFigure`;
-  - xem trước và PDF có Bìa, 01, 02, 03, 04, 08. Các trang 05–07 sẽ có ở P10–P11.
+  - xem trước và PDF có Bìa, 01, 02, 03, 04, 08. Các trang 05–07 sẽ có ở P10–P11 (P10 xong thêm 06, 07).
 
 ---
 
 ### P10 — Cửa tầng (2–3 ngày)
 
-- [ ] **`sheets/landing-door.tsx`**, một component nhận tham số loại bao che:
-  - Mặt đứng chừa thô: lỗ chờ, hai bên, cao 2300, lanh tô 200, lỗ hộp nút 100×400 @1100.
-  - Mặt đứng hoàn thiện: HH, OP, khung bao che, hộp nút, hộp hiển thị tầng (bao che rộng).
-  - 2 mặt bằng tương ứng.
-  - Tiêu đề "Tầng 1F : bao che rộng" / "Tầng 2F ~ 5F : bao che hẹp" sinh từ danh sách tầng.
-- [ ] Mỗi loại bao che đang dùng một trang; số trang dồn đúng.
+**Đo trên DWG** (khối `M6` = bao che rộng, `M5` = bao che hẹp, 02/11/2026):
+- Chữ (mm thật): kích thước và ghi chú 60, chữ "Wide jamb GF (JD320)" 90, 2 dòng tiêu đề 80.
+- Hatch: bê tông `AR-CONC` 20, gạch `AR-BRSTD` 20 (mặt bằng bao che hẹp dùng `BRSTONE` 80), dải khung `ANSI32` 100, cửa sổ hộp hiển thị tầng `ANSI34` 50.
+- DWG **không vẽ đúng số** (M6 ghi 2300 nhưng vẽ 2400, OP 700 vẽ 750, AH 1500 vẽ 1600). Vì vậy chỉ lấy khoảng chừa và vị trí chữ từ DWG; hình vẽ theo số thật. Hằng số nằm trong `LANDING` (`figure-layout.ts`), kích thước khung trong `JAMB.frame` (`config.ts`).
 
-**Tiêu chí xong:** trang 06 và 07 khớp cả 2 bộ; trường hợp chỉ có bao che hẹp thì ra 1 trang.
+**PO chốt (02/11/2026):**
+- mọi chữ kích thước cùng cỡ lớn như bộ 1;
+- khung bao che rộng không vừa lỗ chờ (OP + 290 > 1100 hoặc HH + 200 > lỗ chờ thô): cảnh báo vàng, vẫn vẽ;
+- ô ⊠ lỗ hộp nút vẽ ở trang cửa tầng và cả DTP 03.
+
+- [x] **`sheets/landing-door.ts`**: `landingSheet(p, d, jamb)`, một hàm cho cả 2 loại bao che.
+  - **Cột chừa thô:**
+    - mặt đứng: cột bê tông, gạch hai bên lỗ, lỗ hộp nút khoét theo form, lanh tô, đường ngắt zigzag, chữ loại khung, nét tim, 2 dòng chữ dọc;
+    - kích thước: 2300 + 200, 1100 + 400, số 100 đặt ngoài bên trái lỗ, chuỗi hai bên | lỗ | hai bên;
+    - mặt bằng: tường trước, tường hông cắt ngang, ô ⊠, ghi chú có mũi tên, "LỖ CHỜ = …" và "Hoistway Width AH …".
+  - **Cột hoàn thiện:**
+    - khung `jamb-*` kéo giãn theo OP/HH, dải hatch giữa lỗ chờ và khung;
+    - `door-front` giãn mỗi lá, 2 mũi tên mở cửa, hộp nút giữa lỗ;
+    - bao che rộng có thêm hộp hiển thị tầng và 2 tấm khung xiên trên mặt bằng;
+    - kích thước HH (+ 200 đầu khung rộng), 2300, OP, chuỗi đáy, AH.
+  - Dưới cùng: mũi tên cửa, "CHỪA THÔ & HOÀN THIỆN CỬA TẦNG" và dòng tầng lấy từ danh sách tầng.
+- [x] Mỗi loại bao che đang dùng có một trang; số trang dồn đúng (chỉ bao che hẹp thì cửa tầng là DTP 06, phòng máy là DTP 07).
+- [x] Phần tử mới `zigzagBreak` (đường ngắt một nét có chữ Z), trong `primitives/break-line.ts`.
+- [x] Luật mới: cảnh báo khung bao che rộng hơn hoặc cao hơn lỗ chờ; cảnh báo hộp gọi rộng hơn đoạn tường cạnh lỗ, hoặc cao vượt lỗ chờ thô.
+- [x] DTP 03 vẽ thêm ô ⊠ ở đoạn tường trước bên phải.
+
+**Tiêu chí xong:** trang 06 và 07 khớp cả 2 bộ; trường hợp chỉ có bao che hẹp thì ra 1 trang. ✅
+
+**Kết quả P10 (02/11/2026):**
+- **`sheet-verifier`:**
+
+  | Trang | Bộ 1 (Chú Nghiêm) | Bộ 2 (Ô.Khải) |
+  |---|---|---|
+  | DTP 03 (thêm ô ⊠) | lệch nhẹ | lệch nhẹ |
+  | DTP 06 bao che rộng | lệch nhẹ | OK |
+  | DTP 07 bao che hẹp | lệch nhẹ | lệch nhẹ |
+
+  - **Đã sửa sau lần kiểm:** mặt đứng hoàn thiện bao che hẹp thiếu 2 kích thước 100/400 của lỗ hộp nút (M5 có, M6 không). Chữ "100" đặt ngoài lỗ: bên trái ở bản chừa thô, bên phải ở bản hoàn thiện để khỏi đè khung.
+  - **Lệch còn lại, đã chốt hoặc chấp nhận:**
+    - DTP 03: ô ⊠ đặt sát mép lỗ chờ, giống trang cửa tầng. Bộ 1 vẽ ô nhỏ hơn, lùi vào khoảng 125; bộ 2 không có ô.
+    - Cửa tầng bộ 1: thêm 2300/200 và AH ở mặt đứng hoàn thiện, cùng "LỖ CHỜ = …", vì theo DWG bộ 2. Chữ kích thước cỡ 60, khoảng 3,9 mm ở 1:20; bộ 1 in to hơn nhiều.
+    - Bao che rộng: không có dải hatch ở đỉnh khung, vì hình vẽ đúng số. Mặt bằng bao che hẹp dùng gạch BRSTONE 80 như DWG, nhìn dày hơn bộ 1.
+    - Khung tên in tên bản vẽ một dòng, như các trang khác.
+- **Sau `code-reviewer`** (không có mục nghiêm trọng):
+  - ô ⊠ rộng theo hộp gọi trong form: `call-box-plan` có đường kéo giãn, dùng chung `callBoxHole`/`callBoxPlan` trong `figure.ts`. Ô không vẽ khi lỗ nằm trên lỗ chờ thô;
+  - hatch gạch trên mặt bằng chừa ô ⊠ ra, như lỗ ở mặt đứng;
+  - cảnh báo khung không còn đi kèm lỗi "OP lớn hơn lỗ chờ";
+  - `shiftView` chuyển vào `primitives/view.ts` để P11 dùng lại;
+  - `extract.py` cảnh báo khi `clip` bỏ cung vắt qua mép hộp.
+- **Thông số lạ** (AH 2200, OP 900 hẹp, OP 850 rộng, HH 2200, hộp gọi 150 × 500 @1200, mọi tầng hẹp, tầng không cửa): hình hợp lý, chữ không chồng. Khung rộng vượt lỗ thì vẽ đè lên tường và có cảnh báo.
+- **Kiểm tra:**
+  - 1157 test xanh (thêm 139); lint, typecheck và build xanh;
+  - mỗi trang cửa tầng vẽ khoảng 4–17 ms (Node), đã gồm 2 lần vẽ của `fitFigure`;
+  - xem trước và PDF có Bìa, 01–04, 06–08. Trang 05 (mặt cắt đứng) làm ở P11.
 
 ---
 

@@ -1,19 +1,23 @@
 import { describe, expect, it } from 'vitest'
 
 import { SHEET_AREA } from '#/drawing/frame/layout'
-import { view } from '#/drawing/primitives'
+import { toSheet, view } from '#/drawing/primitives'
 import type { View } from '#/drawing/primitives'
 import {
   box,
   cadSize,
   cadText,
+  callBoxHole,
+  callBoxPlan,
   fitFigure,
   primsBounds,
 } from '#/drawing/sheets/figure'
 import { CAD_TEXT } from '#/drawing/sheets/figure-layout'
+import { presetParams } from '#/domain/presets'
+import type { ElevatorParams } from '#/domain/schema'
 import { ascent, descent, measure } from '#/drawing/text-metrics'
 import type { Prim } from '#/drawing/types'
-import { EPS, texts } from '#/tests/drawing/helpers'
+import { EPS, numbersOf, texts } from '#/tests/drawing/helpers'
 
 const line = (x0: number, y0: number, x1: number, y1: number): Prim => ({
   kind: 'line',
@@ -208,5 +212,130 @@ describe('box', () => {
       { x: 11, y: 22 },
       { x: 1, y: 22 },
     ])
+  })
+})
+
+describe('callBoxHole', () => {
+  const clone = (id: 'house-5f' | 'hotel-9f' = 'house-5f') =>
+    structuredClone<ElevatorParams>(presetParams(id))
+
+  it('bộ mẫu house-5f (AH 1500, bên 200): sát mép phải lỗ chờ, 100 × 400 @ 1100', () => {
+    const p = clone()
+    const AH = p.tech.shaft.width
+    expect(callBoxHole(p, 200)).toEqual({
+      x0: AH - 200,
+      x1: AH - 200 + 100,
+      y0: -1100,
+      y1: -1500,
+    })
+  })
+
+  it('hotel-9f (AH 1800, bên 350)', () => {
+    expect(callBoxHole(clone('hotel-9f'), 350)).toEqual({
+      x0: 1450,
+      x1: 1550,
+      y0: -1100,
+      y1: -1500,
+    })
+  })
+
+  it('w > side: kẹp ở mép tường ngoài (x1 = AH)', () => {
+    const p = clone()
+    p.structure.callBox.w = 600
+    expect(callBoxHole(p, 200)).toEqual({
+      x0: 1300,
+      x1: 1500,
+      y0: -1100,
+      y1: -1500,
+    })
+  })
+
+  it('bottom + h > H: kẹp đỉnh tại −H', () => {
+    const p = clone()
+    const H = p.structure.roughOpeningHeight
+    p.structure.callBox = { w: 100, h: 800, bottom: 1800 }
+    const hole = callBoxHole(p, 200)!
+    expect(hole.y0).toBe(-1800)
+    expect(hole.y1).toBe(-H)
+  })
+
+  it('bottom ≥ H (kể cả bằng): null', () => {
+    const p = clone()
+    const H = p.structure.roughOpeningHeight
+    p.structure.callBox = { w: 100, h: 400, bottom: H }
+    expect(callBoxHole(p, 200)).toBeNull()
+    p.structure.callBox.bottom = H + 100
+    expect(callBoxHole(p, 200)).toBeNull()
+    p.structure.callBox.bottom = H - 1
+    expect(callBoxHole(p, 200)).not.toBeNull()
+  })
+
+  it('w = 0, h = 0, side = 0 hoặc âm: null', () => {
+    const p = clone()
+    p.structure.callBox.w = 0
+    expect(callBoxHole(p, 200)).toBeNull()
+    const q = clone()
+    q.structure.callBox.h = 0
+    expect(callBoxHole(q, 200)).toBeNull()
+    expect(callBoxHole(clone(), 0)).toBeNull()
+    expect(callBoxHole(clone(), -50)).toBeNull()
+  })
+
+  it('NaN ở bất kỳ đầu vào nào: null, không ném lỗi', () => {
+    const p = clone()
+    p.structure.callBox = { w: NaN, h: NaN, bottom: NaN }
+    expect(callBoxHole(p, 200)).toBeNull()
+    expect(callBoxHole(clone(), NaN)).toBeNull()
+    const q = clone()
+    q.structure.callBox.bottom = NaN
+    expect(callBoxHole(q, 200)).toBeNull()
+  })
+})
+
+describe('callBoxPlan', () => {
+  const v = view(10, { x: 30, y: 40 })
+  const front = 2000
+  const holeOf = (w: number) => ({
+    x0: 1300,
+    x1: 1300 + w,
+    y0: -1100,
+    y1: -1500,
+  })
+
+  it.each([100, 150, 200])(
+    'lỗ rộng %s: ô ⊠ rộng w·scale, mép trái ở hole.x0, đáy ở front',
+    (w) => {
+      const { prims } = callBoxPlan(v, holeOf(w), front)
+      const b = primsBounds(prims)!
+      expect(b.w).toBeCloseTo(w * v.scale, 6)
+      expect(b.h).toBeCloseTo(90 * v.scale, 6)
+      expect(b.x).toBeCloseTo(toSheet(v, { x: 1300, y: 0 }).x, 6)
+      expect(b.y + b.h).toBeCloseTo(toSheet(v, { x: 0, y: front }).y, 6)
+    },
+  )
+
+  it('ring = box(hole.x0, front − 90, w, 90)', () => {
+    expect(callBoxPlan(v, holeOf(150), front).ring).toEqual(
+      box(1300, front - 90, 150, 90),
+    )
+    expect(callBoxPlan(v, holeOf(100), front).ring).toEqual(
+      box(1300, front - 90, 100, 90),
+    )
+  })
+
+  it('hộp bao của prims trùng ring (đổi sang giấy)', () => {
+    const { ring, prims } = callBoxPlan(v, holeOf(150), front)
+    const b = primsBounds(prims)!
+    const tl = toSheet(v, ring[0])
+    const br = toSheet(v, ring[2])
+    expect(b.x).toBeCloseTo(tl.x, 6)
+    expect(b.y).toBeCloseTo(tl.y, 6)
+    expect(b.x + b.w).toBeCloseTo(br.x, 6)
+    expect(b.y + b.h).toBeCloseTo(br.y, 6)
+  })
+
+  it('mọi tọa độ hữu hạn', () => {
+    for (const q of callBoxPlan(v, holeOf(150), front).prims)
+      for (const n of numbersOf(q)) expect(Number.isFinite(n)).toBe(true)
   })
 })

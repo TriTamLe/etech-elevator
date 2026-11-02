@@ -6,6 +6,14 @@ export const JAMB = {
   wideOpening: 1100,
   /** Narrow jamb (35×50): opening = OP + this. */
   narrowExtra: 200,
+  /**
+   * Jamb frame in front view around a door OP wide and HH high (the DWG symbols at OP 700
+   * / HH 2100): width OP + `extra`, top at HH + `head`.
+   */
+  frame: {
+    wide: { extra: 290, head: 200 },
+    narrow: { extra: 150, head: 50 },
+  },
 } as const
 
 /** Minimum clearances for the hard rules. Both sample sets have AH − CW = 400, BH − CD = 600. */

@@ -37,7 +37,7 @@ Trong PDF của bộ Ô.Khải, các trang **không xếp theo thứ tự** (01,
 1. **Xuất PDF.** Chạy `yarn export:preset all` (hoặc `yarn export:preset hotel-9f` / `house-5f`); lệnh ghi `.verify/<preset>.pdf` (thư mục không commit). Lệnh cần dev server đang chạy và dùng Chrome có sẵn trên máy:
    - Mặc định gọi `http://localhost:3000`. Nếu phiên chính cho cổng khác thì đặt `EXPORT_BASE_URL=http://localhost:<cổng>`.
    - Nếu lệnh báo không mở được trang thì dừng lại và báo cho phiên chính; **không** tự khởi động hay tắt dev server.
-2. **Phạm vi hiện tại.** Web mới có các trang **Bìa, DTP 01, DTP 02** (vẽ ở 5b, xuất PDF từ 5c). Chỉ so 3 trang này; các trang DTP 03 trở đi ghi "chưa làm", không tính là lệch.
+2. **Phạm vi hiện tại.** Web có các trang **Bìa, DTP 01–04 và 06–08** (số web). DTP 05 (mặt cắt đứng) làm ở P11: ghi "chưa làm", không tính là lệch. Khi chỉ có một loại bao che, web chỉ có một trang cửa tầng và phòng máy lùi lên một số.
 3. **Đổi sang ảnh.** Dùng `pdftoppm -r 100 -png` cho cả PDF web và PDF mẫu.
 4. **So từng cặp trang.** Đọc hai ảnh cạnh nhau. Nếu máy có ImageMagick (`compare`) thì tạo thêm ảnh khác biệt để dễ thấy. Tập trung vào:
    - Hình học: vị trí và kích thước tường, cabin, lỗ chờ, dầm, đà, cửa, ký hiệu.
@@ -61,6 +61,9 @@ Trong PDF của bộ Ô.Khải, các trang **không xếp theo thứ tự** (01,
   - Ghi chú bao che hẹp ghi đủ tầng trên cùng. Bộ Chú Nghiêm ghi "2F~8F" là thiếu, đúng phải là "2F~9F".
   - Chính tả đã sửa: "TRÁCH NHIỆM", "Đặc tính", "CABIN".
   - Kích thước ghi theo kiểu bộ Ô.Khải, ví dụ "Chiều rộng = 1500", "LỖ CHỜ = 900".
+  - Trang hình (03, 04, 06–08) vẽ **đúng số thật**; DWG bộ Ô.Khải có chỗ không đúng số (pit, cửa tầng: 2300 vẽ 2400, OP 700 vẽ 750). Tỷ lệ do web tự chọn (1:15–1:20).
+  - DTP 03: tiêu đề "MẶT CẮT CỬA TẦNG"; đối trọng canh giữa; cửa 2S tạm vẽ như cửa mở giữa; có ô ⊠ lỗ hộp nút ở tường gạch bên phải.
+  - Cửa tầng (06/07): mọi chữ kích thước cùng cỡ lớn (như bộ Chú Nghiêm); bao che rộng có đầu khung chạm lanh tô nên không có dải hatch ở đỉnh, dải hai bên rộng (1100 − OP − 290)/2; không vẽ vòng tròn chú thích ở mặt bằng bao che hẹp; mặt bằng hoàn thiện luôn có "Hoistway Width AH".
 
 ## Báo cáo trả về
 

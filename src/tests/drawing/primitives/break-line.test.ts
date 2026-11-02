@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest'
 
-import { BREAK_GAP, breakLine } from '#/drawing/primitives/break-line'
+import {
+  BREAK_GAP,
+  breakLine,
+  zigzagBreak,
+} from '#/drawing/primitives/break-line'
 import { numbersOf } from '#/tests/drawing/helpers'
 
 /** Khoảng cách từ điểm tới đường thẳng qua a, b. */
@@ -105,5 +109,79 @@ describe('breakLine', () => {
     expect(f()).toEqual(out)
     for (const l of out)
       for (const n of numbersOf(l)) expect(Number.isFinite(n)).toBe(true)
+  })
+})
+
+describe('zigzagBreak', () => {
+  const o = { half: 5, amp: 2, overshoot: 3 }
+
+  it('1 polyline 6 điểm, nét thin mặc định', () => {
+    const out = zigzagBreak({ x: 0, y: 0 }, { x: 100, y: 0 }, o)
+    expect(out).toHaveLength(1)
+    expect(out[0].kind).toBe('polyline')
+    expect(out[0].pts).toHaveLength(6)
+    expect(out[0].weight).toBe('thin')
+    expect(
+      zigzagBreak(
+        { x: 0, y: 0 },
+        { x: 100, y: 0 },
+        { ...o, weight: 'medium' },
+      )[0].weight,
+    ).toBe('medium')
+  })
+
+  it('đầu / cuối kéo quá a / b đúng overshoot', () => {
+    const [pl] = zigzagBreak({ x: 10, y: 20 }, { x: 110, y: 20 }, o)
+    expect(pl.pts[0]).toEqual({ x: 7, y: 20 })
+    expect(pl.pts[5]).toEqual({ x: 113, y: 20 })
+  })
+
+  it('không có overshoot thì chạy đúng từ a đến b', () => {
+    const [pl] = zigzagBreak(
+      { x: 0, y: 0 },
+      { x: 100, y: 0 },
+      {
+        half: 5,
+        amp: 2,
+      },
+    )
+    expect(pl.pts[0]).toEqual({ x: 0, y: 0 })
+    expect(pl.pts[5]).toEqual({ x: 100, y: 0 })
+  })
+
+  it('bump ở giữa mặc định: xuống rồi lên, đối xứng qua giữa', () => {
+    const [pl] = zigzagBreak({ x: 0, y: 0 }, { x: 100, y: 0 }, o)
+    const [, p1, p2, p3, p4] = pl.pts
+    expect(p1).toEqual({ x: 45, y: 0 })
+    expect(p2).toEqual({ x: 45, y: 2 }) // xuống giấy (y tăng)
+    expect(p3).toEqual({ x: 55, y: -2 })
+    expect(p4).toEqual({ x: 55, y: 0 })
+    expect((p1.x + p4.x) / 2).toBe(50)
+  })
+
+  it('at dời bump theo tỷ lệ chiều dài', () => {
+    const [pl] = zigzagBreak(
+      { x: 0, y: 0 },
+      { x: 100, y: 0 },
+      {
+        ...o,
+        at: 0.25,
+      },
+    )
+    expect(pl.pts[1].x).toBe(20)
+    expect(pl.pts[4].x).toBe(30)
+  })
+
+  it('đường dọc: bump lệch sang trái (pháp tuyến xoay theo đường)', () => {
+    const [pl] = zigzagBreak({ x: 50, y: 0 }, { x: 50, y: 100 }, o)
+    expect(pl.pts[0].y).toBeCloseTo(-3, 9)
+    expect(pl.pts[2].x).toBeCloseTo(48, 9)
+    expect(pl.pts[3].x).toBeCloseTo(52, 9)
+    for (const q of numbersOf(pl)) expect(Number.isFinite(q)).toBe(true)
+  })
+
+  it('d = 0 hoặc điểm không hữu hạn trả []', () => {
+    expect(zigzagBreak({ x: 5, y: 5 }, { x: 5, y: 5 }, o)).toEqual([])
+    expect(zigzagBreak({ x: 0, y: 0 }, { x: NaN, y: 0 }, o)).toEqual([])
   })
 })

@@ -8,7 +8,7 @@ export type {
   Pad,
   RealBox,
 } from '#/drawing/primitives/fit-scale'
-export { len, toSheet, view } from '#/drawing/primitives/view'
+export { len, shiftView, toSheet, view } from '#/drawing/primitives/view'
 export type { View } from '#/drawing/primitives/view'
 export {
   DIM_RATIO,
@@ -38,7 +38,12 @@ export type { HatchName } from '#/drawing/primitives/hatch-patterns'
 export { arrowHead } from '#/drawing/primitives/arrow-head'
 export { LEADER_LINE_GAP, leader } from '#/drawing/primitives/leader'
 export type { LeaderOpts } from '#/drawing/primitives/leader'
-export { BREAK_GAP, breakLine } from '#/drawing/primitives/break-line'
+export {
+  BREAK_GAP,
+  breakLine,
+  zigzagBreak,
+} from '#/drawing/primitives/break-line'
+export type { ZigzagOpts } from '#/drawing/primitives/break-line'
 export { DOOR_ARROW, doorArrow } from '#/drawing/primitives/door-arrow'
 export { SECTION_MARK, sectionMark } from '#/drawing/primitives/section-mark'
 export { table } from '#/drawing/primitives/table'

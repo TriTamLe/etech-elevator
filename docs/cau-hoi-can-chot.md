@@ -153,6 +153,19 @@ Khi PO trả lời: ghi vào cột **Quyết định PO** ở bảng tóm tắt 
 
 ---
 
+## D. Quyết định khi vẽ các trang hình (02/11/2026)
+
+Hỏi và chốt ngay trong lúc làm P8–P10, ghi lại để tra:
+
+- **Tỷ lệ hình** (P8): chọn trong danh sách dày 1:10, 15, 20, 25, 30, 40, 50, 60, 75, 100, 125, 150, 200.
+- **Cửa 2S** (P9): tạm vẽ ký hiệu cửa mở giữa (CO), form cảnh báo vàng. Khi có DWG cửa 2S thì thêm ký hiệu.
+- **Tiêu đề DTP 03** (P9): "MẶT CẮT CỬA TẦNG".
+- **Chữ kích thước trên trang cửa tầng** (P10): mọi số cùng cỡ lớn như bộ Chú Nghiêm, kể cả 200/300 hai bên và 100/400/1100 của hộp nút.
+- **Khung bao che rộng không vừa lỗ chờ** (P10): OP + 290 > 1100, hoặc HH + 200 > chiều cao lỗ chờ thô, thì form cảnh báo vàng, PDF vẫn xuất (khung vẽ đè lên tường).
+- **Ô ⊠ lỗ hộp nút trên mặt bằng** (P10): vẽ ở trang cửa tầng và cả DTP 03.
+
+---
+
 ## Bảng tóm tắt
 
 | Mã | Câu hỏi | Đề xuất | Ưu tiên | Trạng thái | Quyết định PO |

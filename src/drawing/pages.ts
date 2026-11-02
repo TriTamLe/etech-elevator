@@ -2,6 +2,7 @@ import type { Derived, Page, PageKey } from '#/domain/derive'
 import type { ElevatorParams } from '#/domain/schema'
 import { framed } from '#/drawing/frame'
 import { coverSheet } from '#/drawing/sheets/cover'
+import { landingSheet } from '#/drawing/sheets/landing-door'
 import { machineRoomSheet } from '#/drawing/sheets/machine-room'
 import { pitSheet } from '#/drawing/sheets/pit'
 import { planSheet } from '#/drawing/sheets/plan'
@@ -11,7 +12,7 @@ import type { Prim } from '#/drawing/types'
 
 /**
  * Sheets whose drawing exists. The preview lists only these; the others would be an empty
- * frame (their sheet functions land in P9–P11). Add a key here when its sheet is done.
+ * frame (the section lands in P11). Add a key here when its sheet is done.
  */
 export const READY_PAGES: ReadonlyArray<PageKey> = [
   'cover',
@@ -19,6 +20,8 @@ export const READY_PAGES: ReadonlyArray<PageKey> = [
   'spec',
   'plan',
   'pit',
+  'landing-wide',
+  'landing-narrow',
   'machine-room',
 ]
 
@@ -43,6 +46,10 @@ export function renderPage(
       return framed(p, d, page, planSheet(p, d))
     case 'pit':
       return framed(p, d, page, pitSheet(p, d))
+    case 'landing-wide':
+      return framed(p, d, page, landingSheet(p, d, 'wide'))
+    case 'landing-narrow':
+      return framed(p, d, page, landingSheet(p, d, 'narrow'))
     case 'machine-room':
       return framed(p, d, page, machineRoomSheet(p, d))
     default:

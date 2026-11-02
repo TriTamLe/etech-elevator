@@ -135,7 +135,7 @@ describe('renderPage responsibility', () => {
 
 describe('readyPages', () => {
   it.each(['house-5f', 'hotel-9f'] as const)(
-    '%s: cover, responsibility, spec, plan, pit, machine-room',
+    '%s: cover, responsibility, spec, plan, pit, landing-wide, landing-narrow, machine-room',
     (id) => {
       expect(
         readyPages(derive(presetParams(id)).pages).map((x) => x.key),
@@ -145,6 +145,8 @@ describe('readyPages', () => {
         'spec',
         'plan',
         'pit',
+        'landing-wide',
+        'landing-narrow',
         'machine-room',
       ])
     },

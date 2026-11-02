@@ -25,6 +25,7 @@ Mỗi ký hiệu một mục (thứ tự trong file = thứ tự trong `SYMBOL_D
 | `block` | tên block nguồn trong DWG; block lồng nhau được bung hết |
 | `region` | (tùy chọn) hộp `[x0, y0, x1, y1]` theo tọa độ DXF của block (mm, y hướng lên); chỉ giữ nét nằm **trọn** trong hộp |
 | `exclude` | (tùy chọn) danh sách hộp; nét nằm trọn trong hộp bị bỏ |
+| `clip` | (tùy chọn) `[{"box": [x0, y0, x1, y1], "cap": true}]`; chạy sau `region`/`exclude`, cắt LINE/polyline tại mép hộp để lấy một phần của polyline (cung/đường tròn chỉ giữ nếu nằm trọn). `cap: true` nối hai đầu hở sau khi cắt (đúng 2 đầu, nếu không sẽ báo lỗi). `region` vẫn phải ôm trọn polyline gốc |
 | `origin` | điểm chèn: `{"anchor": "c"}` (hoặc `bc`, `tc`, `lc`, `rc`, `bl`, `br`, `tl`, `tr`) theo bbox sau khi lọc, hoặc `{"xy": [x, y]}` theo tọa độ DXF (`null` ở một trục = lấy tâm bbox trục đó) |
 | `stretch` | `[{"axis": "x" or "y", "at": số, "dir": 1 or -1}]`; tọa độ **sau khi dời gốc và lật y** (y hướng xuống). Nét ở phía `dir` của `at` được dịch theo `dir` khi kéo giãn |
 

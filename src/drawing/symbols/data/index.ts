@@ -16,6 +16,9 @@ import { callBox } from '#/drawing/symbols/data/call-box'
 import { floorIndicator } from '#/drawing/symbols/data/floor-indicator'
 import { hookPlan } from '#/drawing/symbols/data/hook-plan'
 import { hookDetail } from '#/drawing/symbols/data/hook-detail'
+import { doorOpenArrow } from '#/drawing/symbols/data/door-open-arrow'
+import { jambWidePlan } from '#/drawing/symbols/data/jamb-wide-plan'
+import { callBoxPlan } from '#/drawing/symbols/data/call-box-plan'
 
 export const SYMBOL_DATA = {
   'car-side': carSide,
@@ -35,6 +38,9 @@ export const SYMBOL_DATA = {
   'floor-indicator': floorIndicator,
   'hook-plan': hookPlan,
   'hook-detail': hookDetail,
+  'door-open-arrow': doorOpenArrow,
+  'jamb-wide-plan': jambWidePlan,
+  'call-box-plan': callBoxPlan,
 } as const
 
 export type SymbolId = keyof typeof SYMBOL_DATA

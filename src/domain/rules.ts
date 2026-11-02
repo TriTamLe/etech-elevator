@@ -1,5 +1,6 @@
 import {
   CLEARANCE,
+  JAMB,
   PIT_OH_BY_SPEED,
   REVISION_TABLE_ROWS,
   jambLabelInline,
@@ -55,6 +56,47 @@ export function checkRules(p: ElevatorParams): Array<Issue> {
       error(
         'tech.shaft.width',
         `Lỗ chờ ${width} (${name}) vượt ${maxOpening} = bề rộng hố ${shaft.width} − 2 × ${CLEARANCE.minOpeningSide}.`,
+      )
+    }
+    // The jamb frame must fit the rough opening (only the wide one can be too wide: the
+    // narrow opening grows with OP). Drawn anyway, over the wall.
+    const frame = JAMB.frame[jamb]
+    const frameW = door.width + frame.extra
+    // OP wider than the opening is already an error above.
+    if (door.width <= width && frameW > width) {
+      warning(
+        'tech.door.width',
+        `Khung ${name} rộng OP + ${frame.extra} = ${frameW}, vượt lỗ chờ ${width}.`,
+      )
+    }
+    const frameH = door.height + frame.head
+    const { roughOpeningHeight } = p.structure
+    if (door.height < roughOpeningHeight && frameH > roughOpeningHeight) {
+      warning(
+        'tech.door.height',
+        `Khung ${name} cao HH + ${frame.head} = ${frameH}, vượt chiều cao lỗ chờ thô ${roughOpeningHeight}.`,
+      )
+    }
+  }
+
+  // Call box hole beside the landing opening (right wall piece, up to the lintel).
+  const jambs = jambsInUse(p.floors)
+  if (jambs.length) {
+    const { callBox, roughOpeningHeight } = p.structure
+    const side = Math.max(
+      0,
+      Math.min(...jambs.map((j) => landingOpening(p, j).side)),
+    )
+    if (callBox.w > side) {
+      warning(
+        'structure.callBox.w',
+        `Hộp gọi rộng ${callBox.w} lớn hơn đoạn tường ${formatDecimal(side)} cạnh lỗ chờ.`,
+      )
+    }
+    if (callBox.bottom + callBox.h > roughOpeningHeight) {
+      warning(
+        'structure.callBox.h',
+        `Hộp gọi cao tới ${callBox.bottom + callBox.h}, vượt chiều cao lỗ chờ thô ${roughOpeningHeight}.`,
       )
     }
   }

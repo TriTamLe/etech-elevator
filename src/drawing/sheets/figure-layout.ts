@@ -170,3 +170,104 @@ export const MACHINE_ROOM = {
   /** Underline below the hook when the note is flipped (text sits above it). */
   hookNoteBelow: 260,
 } as const
+
+/**
+ * Landing door sheets (DTP 06/07), measured in blocks `M6` (wide jamb) and `M5` (narrow
+ * jamb) of set 2. Those blocks are NOT drawn to their numbers (M6's 2300 is drawn 2400,
+ * OP 700 as 750, AH 1500 as 1600), so only clearances and annotation positions come from
+ * them; the figure itself is drawn to the real values.
+ *
+ * Coordinates: x from the inner face of the left wall (as on the plan); elevations have
+ * y = −height above the landing floor, the plans y from the front wall's inner face
+ * (0) to its outer face (wall thickness), down the sheet towards the landing.
+ */
+export const LANDING = {
+  text: {
+    /** Every dimension (PO 02/11/2026: one size, as on set 1; DWG A4-20 `\H2x` = 60). */
+    dim: 60,
+    /** "Phần chừa trống…" notes. */
+    note: 60,
+    /** "Wide jamb GF (JD320)". */
+    jamb: 90,
+    /** Two title lines under the figures. */
+    title: 80,
+  },
+  /** Gap between the rough figure's right wall and the finished one's left wall. */
+  columnGap: 850,
+  /** Landing floor (elevation) to the plan's front-wall inner face. */
+  planGap: 900,
+  /** Wall shown above the lintel's top, ending in the break line. */
+  above: 500,
+  /** Side walls drawn behind the plan's front wall, ending in the break line. */
+  planDepth: 400,
+  /** Break line: bump half-run and height, run past the outer walls. */
+  breakHalf: 50,
+  breakAmp: 100,
+  breakOver: 75,
+  /** Jamb label's baseline above the lintel's top. */
+  jambLabelUp: 60,
+  /** Centre line past the elevation floor / into the shaft and past the plan's outer face. */
+  centreBelow: 31,
+  planCentreIn: 124,
+  planCentreOut: 21,
+  /**
+   * Rough elevation's upright note: the two lines' baselines left / right of the centre
+   * line, reading up from this height.
+   */
+  upNote: { left: 67, right: 89, from: 789 },
+  /**
+   * Rough plan's note: line 1 baseline this far into the shaft, starting this far left of
+   * the centre; its arrow points into the opening, inside the front wall.
+   */
+  planNote: { baseline: 180, left: 455, tipX: 250, tipIn: 74 },
+  /** Dimension lines (real mm from the face they measure off). */
+  dims: {
+    /** Rough elevation: lintel + rough height, left of the left wall. */
+    roughHeight: 217,
+    /** Call box hole: bottom + height, right of the right wall; width above the hole. */
+    callBoxSide: 96,
+    callBoxTop: 93,
+    /** Elevation bottom chains below the floor (rough / finished). */
+    roughBottom: 108,
+    finishedBottom: 130,
+    /** "Hoistway Width AH" below the finished elevation and below both plans' outer face. */
+    elevationAh: 300,
+    planAh: 355,
+    /** Rough plan's side | LỖ CHỜ | side chain below the outer face. */
+    planChain: 135,
+    /** Finished elevation: HH (+ jamb head) and the rough height, left of the left wall. */
+    hh: 106,
+    finishedHeight: 220,
+    /** Finished plan's OP below the outer face. */
+    planOp: 190,
+  },
+  /** Floor indicator (wide jamb): centre above HH; its ANSI34 window. */
+  indicator: { up: 100, window: { w: 250, h: 50 } },
+  /** `door-front` / `jamb-*` / `door-co-plan` are drawn for these. */
+  baseOp: 700,
+  baseHh: 2100,
+  /**
+   * `jamb-wide-plan` (left plate) in `door-co-plan`'s frame: at the inner edge of the
+   * door's left U-profile, which moves with the leaf stretch.
+   */
+  jambPlan: { x: -325, y: 34.56 },
+  /** Hatch pattern scales (all from the DWG). */
+  hatch: {
+    concrete: 20,
+    brick: 20,
+    /** Narrow-jamb plans hatch the front brick with BRSTONE. */
+    brstone: 80,
+    frame: 100,
+    indicator: 50,
+  },
+  /** Arrow + two title lines, below the plans' outer face (M5). */
+  caption: {
+    base: 495,
+    width: 253,
+    height: 82,
+    shift: 33,
+    /** Top of line 1 below the arrow base; line pitch. */
+    top: 52,
+    pitch: 133,
+  },
+} as const

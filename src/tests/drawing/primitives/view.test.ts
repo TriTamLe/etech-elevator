@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { len, toSheet, view } from '#/drawing/primitives/view'
+import { len, shiftView, toSheet, view } from '#/drawing/primitives/view'
 
 describe('view', () => {
   it('scale = 1/n, giữ nguyên n và gốc', () => {
@@ -64,5 +64,40 @@ describe('len', () => {
     expect(len(view(40, { x: 99, y: -7 }), 2000)).toBe(
       len(view(40, { x: 0, y: 0 }), 2000),
     )
+  })
+})
+
+describe('shiftView', () => {
+  it('dời gốc đúng dx·scale, dy·scale; giữ n và scale', () => {
+    const v = view(50, { x: 100, y: 200 })
+    const s = shiftView(v, 1000, -500)
+    expect(s.n).toBe(50)
+    expect(s.scale).toBe(v.scale)
+    expect(s.origin.x).toBeCloseTo(100 + 1000 * 0.02, 9)
+    expect(s.origin.y).toBeCloseTo(200 - 500 * 0.02, 9)
+  })
+
+  it('điểm thật (0, 0) của view mới = điểm thật (dx, dy) của view cũ', () => {
+    const v = view(25, { x: 10, y: 20 })
+    const s = shiftView(v, 3000, 1200)
+    const a = toSheet(s, { x: 0, y: 0 })
+    const b = toSheet(v, { x: 3000, y: 1200 })
+    expect(a.x).toBeCloseTo(b.x, 9)
+    expect(a.y).toBeCloseTo(b.y, 9)
+  })
+
+  it('dx = dy = 0: giống view gốc; không sửa view gốc', () => {
+    const v = view(40, { x: 5, y: 6 })
+    expect(shiftView(v, 0, 0)).toEqual(v)
+    shiftView(v, 100, 100)
+    expect(v.origin).toEqual({ x: 5, y: 6 })
+  })
+
+  it('dời hai lần = dời một lần với tổng', () => {
+    const v = view(30, { x: 0, y: 0 })
+    const a = shiftView(shiftView(v, 300, 100), 600, -50)
+    const b = shiftView(v, 900, 50)
+    expect(a.origin.x).toBeCloseTo(b.origin.x, 9)
+    expect(a.origin.y).toBeCloseTo(b.origin.y, 9)
   })
 })
