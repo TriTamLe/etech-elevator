@@ -1,3 +1,5 @@
+import { expect } from 'vitest'
+
 import { BORDER } from '#/drawing/frame/layout'
 import { measure } from '#/drawing/text-metrics'
 import type { Prim, TextPrim } from '#/drawing/types'
@@ -69,4 +71,63 @@ export function textSpan(t: TextPrim): [number, number] {
 export const INNER = {
   left: BORDER.inner.x,
   right: BORDER.inner.x + BORDER.inner.w,
+}
+
+export const EPS = 0.01
+
+/**
+ * Mọi điểm (theo `pointsOf`, chữ chỉ có điểm neo) nằm trong vùng, dung sai `eps`.
+ * Dùng `primsBounds` (#/drawing/sheets/figure) khi cần kiểm cả bề rộng của chữ.
+ */
+export function expectInside(
+  prims: Array<Prim>,
+  area: { left: number; top: number; right: number; bottom: number },
+  eps = EPS,
+) {
+  for (const p of prims)
+    for (const [x, y] of pointsOf(p)) {
+      expect(x).toBeGreaterThanOrEqual(area.left - eps)
+      expect(x).toBeLessThanOrEqual(area.right + eps)
+      expect(y).toBeGreaterThanOrEqual(area.top - eps)
+      expect(y).toBeLessThanOrEqual(area.bottom + eps)
+    }
+}
+
+/**
+ * Hai tường bên của hình mặt bằng, đọc từ nét vẽ: hình chữ nhật 4 đỉnh, kín, nét medium;
+ * tường bên là hình cao nhất ở mép trái / phải (cột góc thấp hơn). Trả về tọa độ giấy của
+ * mặt trong hai tường (x), mép dưới tường (y = BH), và tỷ lệ k = giấy / thật.
+ */
+export function sideWalls(prims: Array<Prim>, width: number) {
+  const rects = prims
+    .filter(
+      (q): q is Extract<Prim, { kind: 'polyline' }> =>
+        q.kind === 'polyline' &&
+        q.weight === 'medium' &&
+        q.closed === true &&
+        q.pts.length === 4,
+    )
+    .map((q) => {
+      const xs = q.pts.map((a) => a.x)
+      const ys = q.pts.map((a) => a.y)
+      return {
+        x0: Math.min(...xs),
+        x1: Math.max(...xs),
+        y0: Math.min(...ys),
+        y1: Math.max(...ys),
+      }
+    })
+  const minX = Math.min(...rects.map((r) => r.x0))
+  const maxX = Math.max(...rects.map((r) => r.x1))
+  const tallest = (rs: typeof rects) =>
+    [...rs].sort((a, b) => b.y1 - b.y0 - (a.y1 - a.y0))[0]
+  const left = tallest(rects.filter((r) => r.x0 === minX))
+  const right = tallest(rects.filter((r) => r.x1 === maxX))
+  return {
+    rects,
+    innerL: left.x1,
+    innerR: right.x0,
+    bottom: left.y1,
+    k: (right.x0 - left.x1) / width,
+  }
 }

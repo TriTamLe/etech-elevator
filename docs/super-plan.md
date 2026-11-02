@@ -668,7 +668,10 @@ Giao cho `symbol-extractor`; phần app do phiên chính làm.
 **Kết quả P7 (28/10/2026):**
 - Đủ 17 ký hiệu, xem trên `/symbols` sạch: không dính nét lạ, không lật. Kích thước: `car-side` 1186 × 3932, `machine` 662 × 503, `door-front` cao 2100.
 - Cả thư viện khoảng 193 KB mã nguồn, **34,7 KB gzip**. Hiện chỉ route `/symbols` dùng tới (chunk riêng); P9–P11 dùng thì nằm trong chunk của trang vẽ.
-- Kéo giãn: cửa và khung giãn về bên phải từ tim (x = 0, dir +1); muốn giãn đều hai bên thì dời điểm chèn sang trái nửa lượng giãn. Chiều cao giãn lên trên (dir −1), đáy đứng yên.
+- Kéo giãn:
+  - **Cửa mở giữa** (`door-co-plan`, `door-front`, sửa ở P9): mỗi lá có một đường giãn (x = ∓175, dir ∓1). Giãn d thì cửa rộng thêm 2d và vẫn đứng giữa, nên OP mới cần d = (OP − 700) / 2. Trước đó chỉ có một đường ở x = 0, làm lá phải rộng hơn lá trái.
+  - **Khung bao che:** giãn về bên phải từ tim (x = 0, dir +1); muốn giãn đều hai bên thì dời điểm chèn sang trái nửa lượng giãn.
+  - **Chiều cao:** giãn lên trên (dir −1), đáy đứng yên.
 - Ghép khi dùng ở P9–P10:
   - `counterweight-plan` không có 2 ray T, phải đặt thêm `rail-t-plan` ở khoảng ±517 so với tâm (bên phải dùng `mirrorX`);
   - khung bao che không có mép trên cánh cửa, phải đặt `door-front` cùng với khung.
@@ -734,19 +737,68 @@ Giao cho `symbol-extractor`; phần app do phiên chính làm.
 
 ### P9 — Mặt cắt ngang, pit, phòng máy (4–6 ngày) → **Mốc M2**
 
-- [ ] **`sheets/plan.tsx`** (mẫu DTP 03, xuất là DTP 03):
-  - Hố AH×BH, tường 200, cột bê tông 4 góc.
-  - Cabin canh giữa; ray hai bên; đối trọng ở vách sau; cửa và ngưỡng ở vách trước.
-  - Lỗ chờ + hai bên; kích thước bao ngoài.
-  - Ghi chú "Xây chèn sau…" nếu bật; mũi tên hướng cửa.
-- [ ] **`sheets/pit.tsx`** (mẫu 05, xuất 04): mặt cắt đứng pit theo PIT, mặt bằng pit AH×BH, ghi chú chống thấm.
-- [ ] **`sheets/machine-room.tsx`** (mẫu 09, xuất 08):
-  - Hố, tường, CPM ở vách trước (cùng giá trị với trang mặt cắt đứng).
-  - Móc treo ở tâm hố, có kích thước định vị.
-  - Dầm đặt máy 3 phía nếu chọn kiểu dầm.
-- [ ] `sheet-verifier` so với cả 2 bộ mẫu. Thử thêm với thông số lạ (AH 2200, OP 900…) để chắc hình co giãn đúng.
+**Quy tắc chung của các trang hình** (đo trên DWG, 02/11/2026):
+- **Chữ trên hình có cỡ cố định tính bằng mm thật, giống AutoCAD:**
+  - kích thước 100;
+  - "Hướng cửa vào thang máy" và tiêu đề: 100 trên mặt bằng, 80 ở pit và phòng máy;
+  - ghi chú xây chèn, đoạn "Ghi chú" và "*Chống thấm Pit hố thang": 100;
+  - "Dầm đặt máy", "vị trí móc treo", nhãn CPM: 70 (DWG ghi 50, nhưng PDF mẫu in khoảng 70 % chữ kích thước).
+
+  Nhãn nằm trong chỗ hẹp (CPM nhỏ, pit hẹp) tự co tới 60 % rồi mới cắt "…".
+
+  Đổi ra giấy bằng `cadSize(view, h)` = 1,18 × h / n. Vì vậy cả hình kể cả chữ co giãn theo cùng một tỷ lệ. `fitFigure` vẽ thử ở 1:1 để đo, rồi chọn tỷ lệ lớn nhất còn vừa khung.
+- **Hằng số hình** (khe cabin 285, ray cách cabin 100, đối trọng, mũi tên, vị trí kích thước…) nằm trong `src/drawing/sheets/figure-layout.ts`, mỗi số có ghi nguồn.
+- **PO chốt:**
+  - cửa 2S tạm vẽ ký hiệu cửa CO, form cảnh báo;
+  - trang 03 có tiêu đề "MẶT CẮT CỬA TẦNG".
+
+- [x] **`sheets/plan.ts`** (mẫu DTP 03, xuất DTP 03):
+  - hố AH×BH, tường gạch, 4 cột bê tông;
+  - cabin canh giữa, vách đôi, có lối vào;
+  - 2 ray cabin; đối trọng và 2 ray của nó sát vách sau;
+  - cửa và ngưỡng kéo giãn theo OP; nét sàn tầng và nêm xây chèn;
+  - kích thước kiểu bộ 2, CW và CD trong cabin;
+  - ghi chú "Xây chèn sau…" và đoạn "Ghi chú" (nếu bật);
+  - mũi tên cửa và tiêu đề.
+- [x] **`sheets/pit.ts`** (mẫu 05, xuất 04):
+  - mặt cắt C-C: tường, đáy, gờ sàn tầng 1, "*Chống thấm Pit hố thang" có 3 đường dẫn, `PIT = …`;
+  - mặt bằng pit bê tông 4 phía, kích thước AH và BH bên trong.
+- [x] **`sheets/machine-room.ts`** (mẫu 09, xuất 08):
+  - tường gạch, cột bê tông;
+  - "Dầm đặt máy" 3 phía khi chọn kiểu dầm;
+  - lỗ CPM ở vách trước;
+  - móc treo tại vị trí trong form (mặc định tâm hố), có kích thước tới vách phải và vách trước.
+- [x] Luật mới trong form: cảnh báo cửa 2S; lỗi khi móc treo nằm ngoài hố; lỗi khi CPM rộng hơn hố.
+- [x] `sheet-verifier` so với cả 2 bộ mẫu. Thử thêm với thông số lạ (AH 2200, OP 900…) để chắc hình co giãn đúng.
 
 **Tiêu chí xong:** 3 trang đạt OK hoặc lệch nhẹ với cả 2 bộ; thông số lạ vẫn ra hình hợp lý.
+
+**Kết quả P9 (02/11/2026) → đạt Mốc M2:**
+- **`sheet-verifier`, lần kiểm cuối:**
+
+  | Trang | Bộ 1 (Chú Nghiêm) | Bộ 2 (Ô.Khải) |
+  |---|---|---|
+  | DTP 03 | OK | lệch nhẹ |
+  | DTP 04 | OK | OK |
+  | DTP 08 | OK | OK |
+
+  - **Lệch còn lại ở DTP 03 bộ 2:** hình lệch phải khoảng 56 mm. Khối "Ghi chú" quá rộng để nằm bên trái hình mà vẫn giữ 1:15. Muốn canh giữa hẳn thì phải ngắt ghi chú thành dòng hẹp hơn (khác mẫu), hoặc lùi xuống 1:20.
+  - **Lệch đã chốt:**
+    - tỷ lệ 1:15–1:20, mẫu khoảng 1:12–1:17;
+    - tiêu đề "MẶT CẮT CỬA TẦNG";
+    - chưa vẽ hộp nút gọi ⊠ (bộ 1 có);
+    - đối trọng canh giữa;
+    - pit vẽ đúng số;
+    - móc treo đo tới tường phải và tường trước.
+- **Sửa ký hiệu cửa mở giữa** (`door-co-plan`, `door-front`): mỗi lá một đường giãn, nên OP khác 700 vẫn ra 2 lá bằng nhau. Trước đó lá phải rộng hơn. `code-reviewer` phát hiện lỗi này.
+- **Ca biên** (móc sát tường, CPM hẹp hoặc bằng AH, pit hẹp, chỉ có bao che rộng, không tầng nào có cửa):
+  - kích thước định vị móc và nhãn tự đổi phía;
+  - nhãn tự co tới 60 % rồi mới cắt;
+  - form cảnh báo khi móc cách tường dưới 110.
+- **Kiểm tra:**
+  - 1018 test xanh; lint, typecheck và build xanh;
+  - mỗi trang vẽ khoảng 7–11 ms (Node), đã gồm 2 lần vẽ của `fitFigure`;
+  - xem trước và PDF có Bìa, 01, 02, 03, 04, 08. Các trang 05–07 sẽ có ở P10–P11.
 
 ---
 

@@ -132,15 +132,129 @@ describe('leader: gạch chân và đường dẫn', () => {
     expect(g.b).toEqual(target)
   })
 
-  it('target ngay phía trên (x trong khoảng chữ): chọn đầu gần hơn theo tâm', () => {
+  const ONE = [LINES[0]]
+
+  it('1 dòng, target DƯỚI gạch chân, x trong khoảng chữ: kẻ thẳng đứng từ gạch chân', () => {
+    for (const x of [AT.x + 1, CX - 1, CX, CX + 1, AT.x + W - 1]) {
+      const g = guideOf(leader({ x, y: 80 }, AT, ONE, { size: SIZE }))
+      expect(g.a.x).toBeCloseTo(x, 9)
+      expect(g.a.y).toBeCloseTo(underlineY, 9)
+      expect(g.b).toEqual({ x, y: 80 })
+    }
+  })
+
+  it('1 dòng, target dưới nhưng ngoài khoảng chữ: kẹp vào đầu gạch chân gần nhất', () => {
+    const l = guideOf(leader({ x: AT.x - 5, y: 80 }, AT, ONE, { size: SIZE }))
+    const r = guideOf(
+      leader({ x: AT.x + W + 5, y: 80 }, AT, ONE, { size: SIZE }),
+    )
+    expect(l.a.x).toBeCloseTo(AT.x, 9)
+    expect(r.a.x).toBeCloseTo(AT.x + W, 9)
+  })
+
+  it('target PHÍA TRÊN gạch chân (x trong khoảng chữ): ra đầu gần hơn theo tâm, không kẻ xuyên chữ', () => {
+    for (const lines of [ONE, LINES]) {
+      const left = guideOf(
+        leader({ x: CX - 1, y: 10 }, AT, lines, { size: SIZE }),
+      )
+      const right = guideOf(
+        leader({ x: CX + 1, y: 10 }, AT, lines, { size: SIZE }),
+      )
+      expect(left.a.x).toBeCloseTo(AT.x, 9)
+      expect(right.a.x).toBeCloseTo(AT.x + W, 9)
+    }
+  })
+
+  it('ghi chú NHIỀU dòng, target dưới trong khoảng chữ: ra đầu gần hơn (tránh dòng sau)', () => {
     const left = guideOf(
-      leader({ x: CX - 1, y: 10 }, AT, LINES, { size: SIZE }),
+      leader({ x: CX - 1, y: 90 }, AT, LINES, { size: SIZE }),
     )
     const right = guideOf(
-      leader({ x: CX + 1, y: 10 }, AT, LINES, { size: SIZE }),
+      leader({ x: CX + 1, y: 90 }, AT, LINES, { size: SIZE }),
     )
     expect(left.a.x).toBeCloseTo(AT.x, 9)
     expect(right.a.x).toBeCloseTo(AT.x + W, 9)
+  })
+
+  it("attach: 'start' / 'end' ép đầu gạch chân bất kể vị trí target", () => {
+    for (const t of [
+      { x: CX + 10, y: 90 },
+      { x: CX - 10, y: 10 },
+      { x: AT.x + W + 50, y: 90 },
+    ]) {
+      const s = guideOf(leader(t, AT, ONE, { size: SIZE, attach: 'start' }))
+      const e = guideOf(leader(t, AT, LINES, { size: SIZE, attach: 'end' }))
+      expect(s.a.x).toBeCloseTo(AT.x, 9)
+      expect(s.a.y).toBeCloseTo(underlineY, 9)
+      expect(e.a.x).toBeCloseTo(AT.x + W, 9)
+      expect(e.b).toEqual(t)
+    }
+  })
+
+  it("attach: 'nearest' tường minh giống mặc định", () => {
+    const t = { x: CX + 3, y: 80 }
+    expect(leader(t, AT, ONE, { size: SIZE, attach: 'nearest' })).toEqual(
+      leader(t, AT, ONE, { size: SIZE }),
+    )
+  })
+})
+
+describe('leader: nhiều điểm chỉ', () => {
+  const targets = [
+    { x: 60, y: 80 },
+    { x: CX, y: 90 },
+    { x: AT.x + W + 40, y: 70 },
+  ]
+  const underlineY = AT.y + UNDERLINE_DROP * SIZE
+  const ONE = [LINES[0]]
+  const out = leader(targets, AT, ONE, { size: SIZE })
+  const guides = linesOf(out).filter((l) => l !== underlineOf(out))
+
+  it('mỗi điểm một đường dẫn mảnh, xuất phát từ gạch chân', () => {
+    expect(guides).toHaveLength(3)
+    guides.forEach((g, i) => {
+      expect(g.weight).toBe('thin')
+      expect(g.a.y).toBeCloseTo(underlineY, 9)
+      expect(g.b).toEqual(targets[i])
+      expect(g.a.x).toBeGreaterThanOrEqual(AT.x - 1e-9)
+      expect(g.a.x).toBeLessThanOrEqual(AT.x + W + 1e-9)
+    })
+  })
+
+  it('ghi chú 1 dòng, các điểm dưới gạch chân: trái/phải kẹp vào đầu, điểm giữa kẻ thẳng đứng', () => {
+    expect(guides[0].a.x).toBeCloseTo(AT.x, 9)
+    expect(guides[1].a.x).toBeCloseTo(CX, 9)
+    expect(guides[2].a.x).toBeCloseTo(AT.x + W, 9)
+  })
+
+  it('mỗi điểm một mũi tên, đỉnh trùng điểm chỉ', () => {
+    const arrows = arrowsOf(out)
+    expect(arrows).toHaveLength(3)
+    arrows.forEach((a, i) => expect(a.pts[0]).toEqual(targets[i]))
+  })
+
+  it("head: 'none' → không mũi tên nhưng vẫn đủ 3 đường dẫn", () => {
+    const o = leader(targets, AT, ONE, { size: SIZE, head: 'none' })
+    expect(arrowsOf(o)).toHaveLength(0)
+    expect(linesOf(o)).toHaveLength(4)
+  })
+
+  it('chữ và gạch chân chỉ vẽ một lần', () => {
+    expect(texts(out)).toHaveLength(1)
+    expect(linesOf(out).filter((l) => l.a.y === l.b.y)).toHaveLength(1)
+  })
+
+  it('điểm không hữu hạn bị bỏ, các điểm còn lại giữ nguyên', () => {
+    const o = leader([{ x: NaN, y: 1 }, targets[0]], AT, ONE, { size: SIZE })
+    expect(linesOf(o)).toHaveLength(2)
+    expect(arrowsOf(o)).toHaveLength(1)
+  })
+
+  it('mảng rỗng → chỉ chữ và gạch chân', () => {
+    const o = leader([], AT, ONE, { size: SIZE })
+    expect(texts(o)).toHaveLength(1)
+    expect(linesOf(o)).toHaveLength(1)
+    expect(arrowsOf(o)).toHaveLength(0)
   })
 })
 

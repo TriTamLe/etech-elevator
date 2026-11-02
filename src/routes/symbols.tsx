@@ -84,8 +84,9 @@ function sample(
 
 /** Stretch examples: real mm added along each symbol's stretch lines. */
 const STRETCH_SAMPLES: Array<[SymbolId, string, PlaceOpts['stretch']]> = [
-  ['door-front', 'Cửa nhìn trước, OP 700 → 900', { x: 200 }],
-  ['door-co-plan', 'Cửa mặt bằng, rộng thêm 200', { x: 200 }],
+  // Centre-opening doors widen by twice the stretch (one stretch line per leaf).
+  ['door-front', 'Cửa nhìn trước, OP 700 → 900', { x: 100 }],
+  ['door-co-plan', 'Cửa mặt bằng, OP 700 → 900', { x: 100 }],
   [
     'jamb-wide-jd320',
     'Bao che rộng, lỗ chờ +200 và HH +300',

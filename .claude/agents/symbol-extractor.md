@@ -99,7 +99,7 @@ Ký hiệu được lưu thành **dữ liệu hình học TypeScript**, không p
 - **Làm gọn:** làm tròn số tới 0,01 mm; bỏ đoạn dài 0; gộp các nét trùng nhau; nối các LINE liên tiếp chung đầu mút thành một polyline.
 - **`bbox`** tính từ hình học sau khi đặt gốc. `label` là tên tiếng Việt, lấy từ config.
 - **`stretch`** cho từng ký hiệu, theo kiểu lệnh STRETCH của AutoCAD: `[{ axis: 'x'|'y', at, dir: 1|-1 }]`.
-  - Nét ở phía `dir` của `at` dịch theo `dir`. Trục x của cửa thường dùng `dir: 1`. Trục y của vật đứng trên điểm chèn dùng `dir: -1`, để vật cao lên phía trên.
+  - Nét ở phía `dir` của `at` dịch theo `dir`. Cửa mở giữa có **một đường cho mỗi lá** (x = ∓175, dir ∓1), để hai lá giãn đều và cửa vẫn đứng giữa. Khung bao che dùng một đường x = 0, `dir: 1`. Trục y của vật đứng trên điểm chèn dùng `dir: -1`, để vật cao lên phía trên.
   - Cung và đường tròn không được vắt qua đường cắt; `extract.py` sẽ báo lỗi.
   - Đặt đường cắt ở giữa vật, không đè lên nét quan trọng:
   - `door-front` và `door-co-plan` giãn theo OP (trục x);

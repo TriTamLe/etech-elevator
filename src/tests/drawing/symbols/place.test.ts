@@ -3,6 +3,7 @@ import { createElement } from 'react'
 import { describe, expect, it } from 'vitest'
 
 import { SheetSvg } from '#/drawing/render-svg'
+import { symbol } from '#/drawing/symbols'
 import { placeSymbol, placedBox, stretchedBox } from '#/drawing/symbols/place'
 import type { SymbolData } from '#/drawing/symbols/types'
 import type { ArcPrim, Prim } from '#/drawing/types'
@@ -546,5 +547,98 @@ describe('cung kéo giãn theo nét, không theo tâm', () => {
     expect(tall[0].c.y).toBeCloseTo(base[0].c.y, 9)
     // An arc wholly above the line moves up with the stretch.
     expect(tall[1].c.y).toBeCloseTo(base[1].c.y - 300, 9)
+  })
+})
+
+describe('cửa mở giữa: hai đường giãn x, mỗi lá một đường', () => {
+  const IDS = ['door-co-plan', 'door-front'] as const
+  const o = { at: { x: 0, y: 0 }, scale: 1 }
+  const polys = (prims: Array<Prim>) =>
+    prims.filter((p) => p.kind === 'polyline')
+  const ptsOf = (prims: Array<Prim>) => polys(prims).flatMap((p) => p.pts)
+
+  it.each(IDS)(
+    '%s: có 2 đường giãn x đối xứng (∓ cùng khoảng, dir ngược nhau)',
+    (id) => {
+      const xs = symbol(id).stretch.filter((l) => l.axis === 'x')
+      expect(xs).toHaveLength(2)
+      const [a, b] = [...xs].sort((p, q) => p.at - q.at)
+      expect(a.at).toBeCloseTo(-b.at, 9)
+      expect(a.dir).toBe(-1)
+      expect(b.dir).toBe(1)
+    },
+  )
+
+  it.each(IDS)('%s: bbox gốc đối xứng quanh x = 0', (id) => {
+    const b = symbol(id).bbox
+    expect(b.x + b.w / 2).toBeCloseTo(0, 6)
+  })
+
+  it.each(IDS.flatMap((id) => [-50, 50, 100].map((d) => [id, d] as const)))(
+    '%s giãn %i: bbox rộng thêm 2d, vẫn đối xứng quanh x = 0',
+    (id, d) => {
+      const sym = symbol(id)
+      const base = stretchedBox(sym, {})
+      const sb = stretchedBox(sym, { x: d })
+      expect(sb.w).toBeCloseTo(base.w + 2 * d, 9)
+      expect(sb.x + sb.w / 2).toBeCloseTo(0, 9)
+      // placedBox (cùng phép biến đổi) và nét thật cũng khớp
+      const pb = placedBox(sym, { ...o, stretch: { x: d } })
+      expect(pb.w).toBeCloseTo(sb.w, 9)
+      const pts = ptsOf(placeSymbol(sym, { ...o, stretch: { x: d } }))
+      const x0 = Math.min(...pts.map((p) => p.x))
+      const x1 = Math.max(...pts.map((p) => p.x))
+      expect(x0 + x1).toBeCloseTo(0, 6)
+      expect(x1 - x0).toBeCloseTo(
+        Math.max(...ptsOf(placeSymbol(sym, o)).map((p) => p.x)) * 2 + 2 * d,
+        6,
+      )
+    },
+  )
+
+  it.each(IDS)(
+    '%s: đoạn dọc giáp lá ở x = 0 vẫn ở x = 0 sau khi giãn',
+    (id) => {
+      const sym = symbol(id)
+      const vertical = (prims: Array<Prim>) =>
+        polys(prims).filter(
+          (p) =>
+            p.pts.length === 2 &&
+            p.pts[0].x === p.pts[1].x &&
+            p.pts[0].y !== p.pts[1].y,
+        )
+      const base = vertical(placeSymbol(sym, o)).filter((p) => p.pts[0].x === 0)
+      expect(base.length).toBeGreaterThan(0)
+      for (const d of [-50, 50, 100]) {
+        const stretched = vertical(
+          placeSymbol(sym, { ...o, stretch: { x: d } }),
+        )
+        const centre = stretched.filter((p) => Math.abs(p.pts[0].x) < 1e-9)
+        expect(centre).toHaveLength(base.length)
+      }
+    },
+  )
+
+  it.each(IDS.flatMap((id) => [-50, 50, 100].map((d) => [id, d] as const)))(
+    '%s giãn %i: hai nửa trái/phải đối xứng (lật qua x = 0 trùng nhau)',
+    (id, d) => {
+      const pts = ptsOf(placeSymbol(symbol(id), { ...o, stretch: { x: d } }))
+      // Nguồn DWG lệch tối đa ~0,05 mm giữa hai lá.
+      for (const p of pts)
+        expect(
+          pts.some(
+            (q) => Math.abs(q.x + p.x) < 0.1 && Math.abs(q.y - p.y) < 0.1,
+          ),
+        ).toBe(true)
+    },
+  )
+
+  it('door-front: giãn x và y cùng lúc, x vẫn đối xứng', () => {
+    const sym = symbol('door-front')
+    const base = stretchedBox(sym, {})
+    const sb = stretchedBox(sym, { x: 60, y: 200 })
+    expect(sb.w).toBeCloseTo(base.w + 120, 9)
+    expect(sb.h).toBeCloseTo(base.h + 200, 9)
+    expect(sb.x + sb.w / 2).toBeCloseTo(0, 9)
   })
 })

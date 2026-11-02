@@ -16,6 +16,8 @@ export const CLEARANCE = {
   minDepthGap: 600,
   /** Wall left on each side of the landing opening (placeholder). */
   minOpeningSide: 100,
+  /** Hoist hook centre to a wall: below this the hook symbol (Ø ~213) touches it. */
+  hookWall: 110,
 } as const
 
 /**

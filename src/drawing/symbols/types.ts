@@ -25,7 +25,10 @@ export type SymbolData = {
   label: string
   /** Bounds relative to the insertion point, before any stretch. */
   bbox: Box
-  /** At most one per axis. */
+  /**
+   * Stretch lines. A centre-opening door has one per leaf (x at ∓175, dir ∓1), so a
+   * stretch of d widens it by 2d and keeps it centred; the others have one per axis.
+   */
   stretch: ReadonlyArray<StretchLine>
   segs: ReadonlyArray<Seg>
 }

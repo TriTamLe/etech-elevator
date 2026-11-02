@@ -6,8 +6,8 @@ import type { Prim, Pt } from '#/drawing/types'
 
 // Leader notes as on the reference set ("*Dầm bê tông 200 x 400 / kiềng quanh hố
 // thang"): the first line starts with "*" and is underlined, later lines are centred
-// under it, and a straight leader runs from the underline's nearer end to an arrow at the
-// target. Sheet coordinates throughout.
+// under it, and a straight leader runs from the underline to an arrow at each target
+// (one or several; see `attach`). Sheet coordinates throughout.
 
 export type LeaderOpts = {
   /** Font size (em, sheet mm). */
@@ -17,6 +17,11 @@ export type LeaderOpts = {
   head?: 'arrow' | 'none'
   /** Baseline pitch per em between lines. */
   lineGap?: number
+  /**
+   * Where leaders leave the underline: 'nearest' point (default), or always its 'start'
+   * or 'end' (a diagonal from one end, as for the machine room's hook note).
+   */
+  attach?: 'nearest' | 'start' | 'end'
 }
 
 /** Pitch between note lines per em, measured on the reference section sheet. */
@@ -24,10 +29,10 @@ export const LEADER_LINE_GAP = 1.3
 
 /**
  * Note `lines` whose first line starts at `at` (baseline, left end), pointing at
- * `target`. Blank lines are dropped; no text draws nothing.
+ * `target` (or several). Blank lines are dropped; no text draws nothing.
  */
 export function leader(
-  target: Pt,
+  target: Pt | ReadonlyArray<Pt>,
   at: Pt,
   lines: ReadonlyArray<string>,
   o: LeaderOpts,
@@ -42,17 +47,32 @@ export function leader(
   ls.slice(1).forEach((l, i) => {
     out.push(text(cx, at.y + (i + 1) * pitch, l, o.size, { anchor: 'middle' }))
   })
-  // Leader from the underline end on the target's side.
+  // One leader per target. 'nearest': from the underline's end on the target's side,
+  // or straight down from the underline when the note is one line and the target lies
+  // below it within its span (the pit's "Chống thấm" note points at both walls and the
+  // floor); never through the text.
   const y = at.y + UNDERLINE_DROP * o.size
-  const from: Pt = { x: target.x < cx ? at.x : at.x + w, y }
-  if (Number.isFinite(target.x) && Number.isFinite(target.y)) {
-    out.push({ kind: 'line', a: from, b: target, weight: 'thin' })
+  const targets: ReadonlyArray<Pt> = Array.isArray(target) ? target : [target]
+  for (const t of targets) {
+    if (!Number.isFinite(t.x) || !Number.isFinite(t.y)) continue
+    const fx =
+      o.attach === 'start'
+        ? at.x
+        : o.attach === 'end'
+          ? at.x + w
+          : ls.length === 1 && t.y > y
+            ? Math.min(Math.max(t.x, at.x), at.x + w)
+            : t.x < cx
+              ? at.x
+              : at.x + w
+    const from: Pt = { x: fx, y }
+    out.push({ kind: 'line', a: from, b: t, weight: 'thin' })
     if ((o.head ?? 'arrow') === 'arrow') {
       const arrow = DIM_RATIO.arrow * o.size
       out.push(
         arrowHead(
-          target,
-          { x: target.x - from.x, y: target.y - from.y },
+          t,
+          { x: t.x - from.x, y: t.y - from.y },
           arrow,
           arrow * DIM_RATIO.arrowWidth,
         ),

@@ -135,11 +135,18 @@ describe('renderPage responsibility', () => {
 
 describe('readyPages', () => {
   it.each(['house-5f', 'hotel-9f'] as const)(
-    '%s: cover, responsibility, spec',
+    '%s: cover, responsibility, spec, plan, pit, machine-room',
     (id) => {
       expect(
         readyPages(derive(presetParams(id)).pages).map((x) => x.key),
-      ).toEqual(['cover', 'responsibility', 'spec'])
+      ).toEqual([
+        'cover',
+        'responsibility',
+        'spec',
+        'plan',
+        'pit',
+        'machine-room',
+      ])
     },
   )
 })

@@ -5,7 +5,7 @@ export const doorCoPlan: SymbolData = {
   id: 'door-co-plan',
   label: 'Cửa mở giữa và ngưỡng cửa nhìn mặt bằng',
   bbox: { x: -700, y: -185.45, w: 1400, h: 220.01 },
-  stretch: [{ axis: 'x', at: 0, dir: 1 }],
+  stretch: [{ axis: 'x', at: -175, dir: -1 }, { axis: 'x', at: 175, dir: 1 }],
   segs: [
     { t: 'l', p: [350, -57.94, 680, -57.94] },
     { t: 'l', p: [350, -72.94, 680, -72.94] },

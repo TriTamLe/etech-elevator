@@ -5,7 +5,7 @@ export const doorFront: SymbolData = {
   id: 'door-front',
   label: 'Cánh cửa nhìn trước',
   bbox: { x: -375, y: -2100, w: 750, h: 2100 },
-  stretch: [{ axis: 'x', at: 0, dir: 1 }, { axis: 'y', at: -1000, dir: -1 }],
+  stretch: [{ axis: 'x', at: -175, dir: -1 }, { axis: 'x', at: 175, dir: 1 }, { axis: 'y', at: -1000, dir: -1 }],
   segs: [
     { t: 'l', p: [0, 0, -375, 0, -375, -2100, 0, -2100] },
     { t: 'l', p: [0, 0, 0, -2100] },

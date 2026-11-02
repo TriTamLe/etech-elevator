@@ -94,6 +94,156 @@ describe('checkRules', () => {
   })
 })
 
+describe('luật cửa 2S, móc treo và CPM', () => {
+  it('cửa 2S là cảnh báo (không chặn xuất)', () => {
+    const p = presetParams('house-5f')
+    p.tech.door.type = '2S'
+    const issues = checkRules(p)
+    const w = issues.filter((i) => i.path === 'tech.door.type')
+    expect(w).toHaveLength(1)
+    expect(w[0].level).toBe('warning')
+    expect(hasBlockingErrors(issues)).toBe(false)
+  })
+
+  it('cửa CO không có cảnh báo cửa', () => {
+    const p = presetParams('house-5f')
+    expect(
+      checkRules(p).filter((i) => i.path === 'tech.door.type'),
+    ).toHaveLength(0)
+  })
+
+  it('móc treo x > bề rộng hố là lỗi, đúng path', () => {
+    const p = presetParams('house-5f')
+    p.topRoom.hook.x = p.tech.shaft.width + 1
+    const issues = checkRules(p)
+    expect(errorsAt(issues, 'topRoom.hook.x')).toHaveLength(1)
+    expect(errorsAt(issues, 'topRoom.hook.y')).toHaveLength(0)
+    expect(hasBlockingErrors(issues)).toBe(true)
+  })
+
+  it('móc treo y > chiều sâu hố là lỗi, đúng path', () => {
+    const p = presetParams('house-5f')
+    p.topRoom.hook.y = p.tech.shaft.depth + 1
+    const issues = checkRules(p)
+    expect(errorsAt(issues, 'topRoom.hook.y')).toHaveLength(1)
+    expect(errorsAt(issues, 'topRoom.hook.x')).toHaveLength(0)
+    expect(hasBlockingErrors(issues)).toBe(true)
+  })
+
+  it('móc treo bằng đúng AH / BH thì chấp nhận (biên)', () => {
+    const p = presetParams('house-5f')
+    p.topRoom.hook.x = p.tech.shaft.width
+    p.topRoom.hook.y = p.tech.shaft.depth
+    const issues = checkRules(p)
+    expect(errorsAt(issues, 'topRoom.hook.x')).toHaveLength(0)
+    expect(errorsAt(issues, 'topRoom.hook.y')).toHaveLength(0)
+  })
+
+  it('móc treo null (ở tâm hố) không báo', () => {
+    const p = presetParams('house-5f')
+    p.topRoom.hook.x = null
+    p.topRoom.hook.y = null
+    const issues = checkRules(p)
+    expect(errorsAt(issues, 'topRoom.hook.x')).toHaveLength(0)
+    expect(errorsAt(issues, 'topRoom.hook.y')).toHaveLength(0)
+    expect(issues).toEqual([])
+  })
+
+  it('CPM rộng hơn hố là lỗi, bằng thì chấp nhận', () => {
+    const p = presetParams('house-5f')
+    p.topRoom.cpm.w = p.tech.shaft.width + 1
+    expect(errorsAt(checkRules(p), 'topRoom.cpm.w')).toHaveLength(1)
+    p.topRoom.cpm.w = p.tech.shaft.width
+    expect(errorsAt(checkRules(p), 'topRoom.cpm.w')).toHaveLength(0)
+  })
+})
+
+describe('cảnh báo móc treo sát tường', () => {
+  const warnAt = (issues: Array<Issue>, path: string) =>
+    issues.filter((i) => i.level === 'warning' && i.path === path)
+
+  it.each([
+    [
+      'topRoom.hook.x',
+      'x',
+      'width',
+      'sát tường trái',
+      (_: number): number => 109,
+    ],
+    [
+      'topRoom.hook.x',
+      'x',
+      'width',
+      'sát tường phải',
+      (n: number): number => n - 109,
+    ],
+    [
+      'topRoom.hook.y',
+      'y',
+      'depth',
+      'sát tường trước',
+      (_: number): number => 109,
+    ],
+    [
+      'topRoom.hook.y',
+      'y',
+      'depth',
+      'sát tường sau',
+      (n: number): number => n - 109,
+    ],
+  ] as const)(
+    '%s (%s) %s: cảnh báo, không chặn xuất',
+    (path, axis, dim, _l, at) => {
+      const p = presetParams('house-5f')
+      p.topRoom.hook[axis] = at(p.tech.shaft[dim])
+      const issues = checkRules(p)
+      const w = warnAt(issues, path)
+      expect(w).toHaveLength(1)
+      expect(w[0].message).toContain('tường')
+      expect(w[0].message).not.toContain('vách')
+      expect(errorsAt(issues, path)).toHaveLength(0)
+      expect(hasBlockingErrors(issues)).toBe(false)
+    },
+  )
+
+  it('đúng ngưỡng 110 từ tường thì không cảnh báo (biên)', () => {
+    const p = presetParams('house-5f')
+    p.topRoom.hook.x = 110
+    p.topRoom.hook.y = 110
+    expect(checkRules(p)).toEqual([])
+    p.topRoom.hook.x = p.tech.shaft.width - 110
+    p.topRoom.hook.y = p.tech.shaft.depth - 110
+    expect(checkRules(p)).toEqual([])
+  })
+
+  it('móc ngoài hố là lỗi (không kèm cảnh báo sát tường), thông báo dùng "tường"', () => {
+    const p = presetParams('house-5f')
+    p.topRoom.hook.x = p.tech.shaft.width + 1
+    p.topRoom.hook.y = p.tech.shaft.depth + 1
+    const issues = checkRules(p)
+    for (const path of ['topRoom.hook.x', 'topRoom.hook.y']) {
+      const e = errorsAt(issues, path)
+      expect(e).toHaveLength(1)
+      expect(e[0].message).toContain('tường')
+      expect(e[0].message).not.toContain('vách')
+      expect(warnAt(issues, path)).toHaveLength(0)
+    }
+  })
+
+  it('móc null không cảnh báo', () => {
+    const p = presetParams('house-5f')
+    p.topRoom.hook.x = null
+    p.topRoom.hook.y = null
+    expect(checkRules(p)).toEqual([])
+  })
+
+  it('cảnh báo 2S không nhắc "vách"', () => {
+    const p = presetParams('house-5f')
+    p.tech.door.type = '2S'
+    for (const i of checkRules(p)) expect(i.message).not.toContain('vách')
+  })
+})
+
 describe('hasBlockingErrors', () => {
   it('rỗng hoặc chỉ cảnh báo thì false, có lỗi thì true', () => {
     expect(hasBlockingErrors([])).toBe(false)

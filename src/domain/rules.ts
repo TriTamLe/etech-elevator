@@ -66,6 +66,42 @@ export function checkRules(p: ElevatorParams): Array<Issue> {
     )
   }
 
+  if (door.type === '2S') {
+    warning(
+      'tech.door.type',
+      'Chưa có ký hiệu cửa 2S trên bản vẽ, đang vẽ cửa mở giữa (CO).',
+    )
+  }
+
+  const { hook, cpm } = p.topRoom
+  const near = (v: number, size: number) =>
+    v < CLEARANCE.hookWall || v > size - CLEARANCE.hookWall
+  if (hook.x !== null && hook.x > shaft.width) {
+    error(
+      'topRoom.hook.x',
+      `Móc treo cách tường trái ${hook.x}, nằm ngoài bề rộng hố ${shaft.width}.`,
+    )
+  } else if (hook.x !== null && near(hook.x, shaft.width)) {
+    warning(
+      'topRoom.hook.x',
+      `Móc treo cách tường dưới ${CLEARANCE.hookWall} mm, ký hiệu móc sẽ chạm tường.`,
+    )
+  }
+  if (hook.y !== null && hook.y > shaft.depth) {
+    error(
+      'topRoom.hook.y',
+      `Móc treo cách tường trước ${hook.y}, nằm ngoài chiều sâu hố ${shaft.depth}.`,
+    )
+  } else if (hook.y !== null && near(hook.y, shaft.depth)) {
+    warning(
+      'topRoom.hook.y',
+      `Móc treo cách tường dưới ${CLEARANCE.hookWall} mm, ký hiệu móc sẽ chạm tường.`,
+    )
+  }
+  if (cpm.w > shaft.width) {
+    error('topRoom.cpm.w', `CPM rộng ${cpm.w} vượt bề rộng hố ${shaft.width}.`)
+  }
+
   if (p.floors.length !== p.tech.stops) {
     error(
       'floors',
