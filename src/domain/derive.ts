@@ -82,12 +82,17 @@ export function floorGroups(floors: Array<Floor>): Array<FloorGroup> {
   })
 }
 
-export type HeightRow = { label: string; value: number | null }
+export type HeightRow = {
+  label: string
+  value: number | null
+  /** Top floor only: OH and the top room height that make up its value. */
+  parts?: [number, number]
+}
 
 /**
  * Floor-height table rows, top to bottom, ending with PIT (decision #14):
  * grouped like the drawing; a group whose floors differ in height is split per floor.
- * `value` null = not entered (the sheet prints "…….").
+ * `value` null = not entered (the sheet prints ".......").
  */
 export function heightTableRows(p: ElevatorParams): Array<HeightRow> {
   const rows: Array<HeightRow> = []
@@ -96,6 +101,7 @@ export function heightTableRows(p: ElevatorParams): Array<HeightRow> {
       rows.push({
         label: p.floors[group.indices[0]].name,
         value: p.tech.overhead + p.tech.topRoomHeight,
+        parts: [p.tech.overhead, p.tech.topRoomHeight],
       })
       continue
     }

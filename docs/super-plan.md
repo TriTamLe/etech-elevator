@@ -908,10 +908,29 @@ PO chốt (03/11/2026): CPM ở hình hông nằm ngay mặt tường trước (
 - 1270 test xanh; lint, typecheck và build xanh.
 
 **P11c — Ghi chú, bảng, chi tiết, biến thể:**
-- [ ] Ghi chú dẫn không chồng nhau (`stackNotes`): dầm đầu cửa, dầm kiềng, đà, móc treo, vị trí/sàn đặt máy.
-- [ ] Chi tiết móc palăng Ø18 và bảng "CHIỀU CAO TẦNG THỰC TẾ".
-- [ ] Biến thể bộ 2: dầm kiềng 2 cỡ, kiểu đỡ máy, bảng có số hoặc ".......".
-- [ ] Kiểm tra với N = 2, 3, 4, 5, 9, 20 và cả 2 bộ mẫu (`sheet-verifier`), `code-reviewer`.
+
+PO chốt (03/11/2026): bảng chiều cao không có tiêu đề (như bộ Chú Nghiêm); kiểu đỡ máy sàn in "*Sàn đặt máy 200x200" (số 200 là bệ máy, không thêm ô vào form).
+
+- [x] `stackNotes` + `noteExtent` (`primitives/leader.ts`): ghi chú cùng cột giữ vị trí mong muốn, chỉ bị đẩy xuống khi chạm ghi chú trên.
+- [x] `sheets/section-notes.ts`:
+  - cột ghi chú bên phải hình hông (dầm kiềng mái, sàn buồng trên kèm kiểu đỡ máy, dầm kiềng mỗi sàn trên 1F, một ghi chú đà mỗi level), mỗi ghi chú 2 mũi tên (mặt cắt dầm trong tường sau và dải dầm qua hố);
+  - ghi chú dầm đầu cửa ở mỗi level có cửa; ghi chú móc trên mái ở cả 2 hình (đổi bên khi sát vách);
+  - chữ và cỡ dầm lấy từ form.
+- [x] Chi tiết móc palăng: hình cố định `hook-detail`, số Ø, a, a, b in theo form qua `label` (ngoại lệ, đã ghi trong `CLAUDE.md`); "Móc treo Palăng {tải} tấn / Khách hàng thực hiện", "Sắt Ø{bar}".
+- [x] Bảng chiều cao: "Chiều cao các tầng" gộp 2 cột, dòng OH "4800 (3600 + 1200)", tầng chưa nhập in "......."; dòng co lại (700 → tối thiểu 300) khi bảng chạm đáy hình.
+- [x] Biến thể bộ 2: dầm kiềng 2 cỡ, kiểu đỡ máy, bảng có số hoặc ".......".
+- [x] Kiểm tra với N = 2, 3, 4, 5, 9, 20 và cả 2 bộ mẫu (`sheet-verifier`), `code-reviewer`.
+
+**Kết quả P11c (03/11/2026) — Mốc M3:**
+- `sheet-verifier`: cả 2 bộ lệch nhẹ, không thiếu mục nào; không có chữ chồng chữ. Còn lại như mẫu: đường ngắt cắt ngang chữ "THEO THỰC TẾ" xoay đứng ở chuỗi kích thước (mẫu cũng vậy).
+- Sửa theo `code-reviewer`:
+  - đường ngắt đặt vào khe giữa các ghi chú (`breakElevation`), không còn cố định 520 dưới sàn;
+  - gạch chân ghi chú dầm neo trên đỉnh dầm 30 (như M7), nên dầm cao hơn không đẩy ghi chú xuống;
+  - ghi chú móc tránh ghi chú dầm kiềng mái, được lấn tối đa 400 qua mặt ngoài vách trái như mẫu;
+  - nhịp dầm dùng chung ở `section-beams.ts`; dòng OH của bảng mang `parts` từ `derive`;
+  - `SectionFrame.top`; hằng `SECTION.maxMidBeams`.
+- Trang 05 có khoảng 4800 nét. 1344 test xanh; lint, typecheck, build xanh; các file P11 đúng Prettier.
+- Trước P12: 48 file cũ của repo chưa chạy Prettier (`yarn run check` báo), không thuộc P11.
 
 **Tiêu chí xong:** đủ 9 trang khớp cả 2 bộ mẫu; với 20 tầng vẫn vừa khổ A3.
 

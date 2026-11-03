@@ -51,7 +51,7 @@ describe('floorGroups', () => {
 describe('heightTableRows', () => {
   it('house-5f: 5F 4800 · 4F 3600 · 2F-3F 3600 · 1F 3900 · PIT 1400', () => {
     expect(heightTableRows(presetParams('house-5f'))).toEqual([
-      { label: '5F', value: 4800 },
+      { label: '5F', value: 4800, parts: [3600, 1200] },
       { label: '4F', value: 3600 },
       { label: '2F-3F', value: 3600 },
       { label: '1F', value: 3900 },
@@ -63,7 +63,7 @@ describe('heightTableRows', () => {
     const p = presetParams('house-5f')
     p.floors[2].height = 3300
     expect(heightTableRows(p)).toEqual([
-      { label: '5F', value: 4800 },
+      { label: '5F', value: 4800, parts: [3600, 1200] },
       { label: '4F', value: 3600 },
       { label: '3F', value: 3300 },
       { label: '2F', value: 3600 },
@@ -72,7 +72,7 @@ describe('heightTableRows', () => {
     ])
   })
 
-  it('tầng chưa nhập chiều cao thì value null (in "…….")', () => {
+  it('tầng chưa nhập chiều cao thì value null (in ".......")', () => {
     const p = presetParams('house-5f')
     p.floors[0].height = null
     p.floors[1].height = null
@@ -90,7 +90,7 @@ describe('heightTableRows', () => {
 
   it('hotel-9f chưa nhập: mọi dòng tầng thường là null, PIT 1500', () => {
     const rows = heightTableRows(presetParams('hotel-9f'))
-    expect(rows[0]).toEqual({ label: '9F', value: 5100 })
+    expect(rows[0]).toEqual({ label: '9F', value: 5100, parts: [3600, 1500] })
     expect(rows.at(-1)).toEqual({ label: 'PIT', value: 1500 })
     expect(rows.slice(1, -1).every((r) => r.value === null)).toBe(true)
   })

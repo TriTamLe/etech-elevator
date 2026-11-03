@@ -166,6 +166,8 @@ Hỏi và chốt ngay trong lúc làm P8–P10, ghi lại để tra:
 - **Chiều cao trên mặt cắt đứng** (P11): mỗi tầng hoặc nhóm tầng vẽ cùng một chiều cao cố định và ghi "THEO THỰC TẾ"; OH, buồng trên, PIT, lỗ chờ, HH, dầm và đà vẽ đúng số.
 - **Chi tiết móc palăng Ø18** (P11): giữ hình cố định của DWG, các số Ø, a, b in theo form.
 - **CPM trên mặt cắt đứng** (P11b, 03/11/2026): ở hình nhìn hông, CPM nằm ngay mặt tường trước như bộ Chú Nghiêm (khớp DTP 08); ở hình nhìn trước, ô CPM gạch chéo vẽ đúng w × h của form tính từ sàn buồng trên, bị chặn bởi bề rộng hố và chiều cao buồng.
+- **Bảng chiều cao tầng trên mặt cắt đứng** (P11c, 03/11/2026): không in tiêu đề "CHIỀU CAO TẦNG THỰC TẾ", như bộ Chú Nghiêm; dòng đầu trong bảng là "Chiều cao các tầng".
+- **Ghi chú kiểu đỡ máy sàn** (P11c, 03/11/2026): in "*Sàn đặt máy 200x200", số 200 là bệ máy cao 200 đã vẽ; không thêm ô vào form. Kiểu dầm in "*Vị trí đặt máy".
 
 ---
 

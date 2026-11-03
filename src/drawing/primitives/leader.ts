@@ -1,7 +1,7 @@
 import { UNDERLINE_DROP, text, underlinedText } from '#/drawing/prims'
 import { arrowHead } from '#/drawing/primitives/arrow-head'
 import { DIM_RATIO } from '#/drawing/primitives/dimension'
-import { measure } from '#/drawing/text-metrics'
+import { ascent, descent, measure } from '#/drawing/text-metrics'
 import type { Prim, Pt } from '#/drawing/types'
 
 // Leader notes as on the reference set ("*Dầm bê tông 200 x 400 / kiềng quanh hố
@@ -78,6 +78,49 @@ export function leader(
         ),
       )
     }
+  }
+  return out
+}
+
+/** A note's reach above and below its underline (sheet mm), for `stackNotes`. */
+export function noteExtent(
+  lines: number,
+  size: number,
+  lineGap = LEADER_LINE_GAP,
+): { above: number; below: number } {
+  const drop = UNDERLINE_DROP * size
+  return {
+    above: drop + ascent(size),
+    below: (lines - 1) * lineGap * size + descent(size) - drop,
+  }
+}
+
+export type StackNote = {
+  /** Wanted underline height (sheet mm, y down). */
+  y: number
+  above: number
+  below: number
+}
+
+/**
+ * Underline heights for notes sharing one column: each stays at its wanted `y` unless
+ * it would come within `gap` of the note above it, then it moves down just enough.
+ * Returned in the input's order.
+ */
+export function stackNotes(
+  notes: ReadonlyArray<StackNote>,
+  gap: number,
+): Array<number> {
+  const order = notes
+    .map((_, i) => i)
+    .sort((a, b) => notes[a].y - notes[b].y || a - b)
+  const out: Array<number> = new Array<number>(notes.length)
+  let bottom = -Infinity
+  for (const i of order) {
+    const n = notes[i]
+    const y = Math.max(n.y, bottom + gap + n.above)
+    out[i] = y
+    bottom = y + n.below
   }
   return out
 }

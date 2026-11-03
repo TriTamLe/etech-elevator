@@ -2,8 +2,13 @@ import { describe, expect, it } from 'vitest'
 
 import { UNDERLINE_DROP } from '#/drawing/prims'
 import { DIM_RATIO } from '#/drawing/primitives/dimension'
-import { LEADER_LINE_GAP, leader } from '#/drawing/primitives/leader'
-import { measure } from '#/drawing/text-metrics'
+import {
+  LEADER_LINE_GAP,
+  leader,
+  noteExtent,
+  stackNotes,
+} from '#/drawing/primitives/leader'
+import { ascent, descent, measure } from '#/drawing/text-metrics'
 import type { LinePrim, PolylinePrim, Prim } from '#/drawing/types'
 import { numbersOf, textSpan, texts } from '#/tests/drawing/helpers'
 
@@ -318,5 +323,55 @@ describe('leader: ổn định', () => {
     expect(f()).toEqual(a)
     for (const p of a)
       for (const n of numbersOf(p)) expect(Number.isFinite(n)).toBe(true)
+  })
+})
+
+describe('noteExtent', () => {
+  it('1 dòng: trên gạch chân là dòng đầu, dưới chỉ còn chân chữ lòi qua gạch chân', () => {
+    expect(noteExtent(1, SIZE)).toEqual({
+      above: UNDERLINE_DROP * SIZE + ascent(SIZE),
+      below: descent(SIZE) - UNDERLINE_DROP * SIZE,
+    })
+  })
+
+  it('n dòng: dưới gạch chân là (n − 1) bước dòng cộng phần chân chữ', () => {
+    const e = noteExtent(3, SIZE)
+    expect(e.below).toBeCloseTo(
+      2 * LEADER_LINE_GAP * SIZE + descent(SIZE) - UNDERLINE_DROP * SIZE,
+      9,
+    )
+  })
+})
+
+describe('stackNotes', () => {
+  const n = (y: number, above = 2, below = 6) => ({ y, above, below })
+
+  it('không chạm: giữ nguyên vị trí mong muốn', () => {
+    expect(stackNotes([n(10), n(30), n(60)], 1)).toEqual([10, 30, 60])
+  })
+
+  it('chạm: đẩy xuống vừa đủ cách ghi chú trên một khoảng gap', () => {
+    // Note 1 ends at 10 + 6 = 16; note 2 needs its top (y − 2) ≥ 16 + 1.
+    expect(stackNotes([n(10), n(12)], 1)).toEqual([10, 19])
+  })
+
+  it('đẩy dây chuyền: ghi chú thứ ba bị đẩy theo ghi chú thứ hai', () => {
+    expect(stackNotes([n(10), n(12), n(20)], 1)).toEqual([10, 19, 28])
+  })
+
+  it('đầu vào lộn thứ tự: xếp theo y, trả về theo thứ tự đầu vào', () => {
+    expect(stackNotes([n(12), n(10)], 1)).toEqual([19, 10])
+  })
+
+  it('cùng y: giữ thứ tự đầu vào', () => {
+    expect(stackNotes([n(10), n(10)], 1)).toEqual([10, 19])
+  })
+
+  it('không đổi mảng đầu vào; mảng rỗng → rỗng', () => {
+    const input = [n(12), n(10)]
+    const copy = structuredClone(input)
+    stackNotes(input, 1)
+    expect(input).toEqual(copy)
+    expect(stackNotes([], 1)).toEqual([])
   })
 })

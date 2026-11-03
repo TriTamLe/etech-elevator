@@ -24,6 +24,15 @@ import {
 } from '#/drawing/sheets/figure'
 import { UNDERLINE_DROP } from '#/drawing/prims'
 import { SECTION } from '#/drawing/sheets/figure-layout'
+import { midSpan, ringSpan, roofSpan } from '#/drawing/sheets/section-beams'
+import type { Span } from '#/drawing/sheets/section-beams'
+import {
+  breakElevation,
+  frontNotes,
+  heightTable,
+  hookDetail,
+  sideNotes,
+} from '#/drawing/sheets/section-notes'
 import { placeSymbol, symbol } from '#/drawing/symbols'
 import { measure } from '#/drawing/text-metrics'
 import type { Prim, Pt } from '#/drawing/types'
@@ -52,6 +61,8 @@ export type SectionLevel = {
 
 export type SectionFrame = {
   levels: Array<SectionLevel>
+  /** The top floor's level (the last of `levels`). */
+  top: SectionLevel
   /** Top room floor ("TẦNG MÁI"), its ceiling (roof underside) and the roof slab's top. */
   machine: number
   roof: number
@@ -70,7 +81,7 @@ export function sectionLevels(p: ElevatorParams, d: Derived): SectionFrame {
     // Up to the next ring beam's underside; bounded in case of a tiny spacing.
     for (
       let t = spacing;
-      t < height - ring && midBeams.length < 20;
+      t < height - ring && midBeams.length < SECTION.maxMidBeams;
       t += spacing
     )
       if (t - mid.h > 0) midBeams.push(t)
@@ -90,7 +101,13 @@ export function sectionLevels(p: ElevatorParams, d: Derived): SectionFrame {
   })
   const machine = e
   const roof = machine + p.tech.topRoomHeight
-  return { levels, machine, roof, roofTop: roof + SECTION.roof.thick }
+  return {
+    levels,
+    top: levels[levels.length - 1],
+    machine,
+    roof,
+    roofTop: roof + SECTION.roof.thick,
+  }
 }
 
 export type SectionEquipment = {
@@ -131,7 +148,7 @@ export function sectionEquipment(
   const BH = p.tech.shaft.depth
   const AH = p.tech.shaft.width
   const pit = p.tech.pit
-  const top = f.levels[f.levels.length - 1].floor
+  const top = f.top.floor
   const M = SECTION.machine
   const R = SECTION.ropes
   const sheave = { x: BH - M.fromBack, y: -(f.machine + M.sheave) }
@@ -180,8 +197,6 @@ export function sectionEquipment(
     },
   }
 }
-
-type Span = [number, number]
 
 /** `whole` less the `cut` spans (elevations), in order. */
 function subtract(whole: Span, cut: ReadonlyArray<Span>): Array<Span> {
@@ -242,15 +257,12 @@ const theo: DimLabel = () => THEO_THUC_TE
 
 /** Ring beams under every floor and the top room floor, and the mid beams (elevations). */
 function beamSpans(p: ElevatorParams, f: SectionFrame) {
-  const ring = p.structure.ringBeamFloor.h
-  const mid = p.structure.midBeam.h
-  const floors = [...f.levels.map((l) => l.floor), f.machine]
   return {
-    ring: floors.map((e): Span => [e - ring, e]),
-    mid: f.levels.flatMap((l) =>
-      l.midBeams.map((t): Span => [l.floor + t - mid, l.floor + t]),
+    ring: [...f.levels.map((l) => l.floor), f.machine].map((e) =>
+      ringSpan(p, e),
     ),
-    roof: [f.roofTop - p.structure.ringBeamTop.h, f.roofTop] as Span,
+    mid: f.levels.flatMap((l) => l.midBeams.map((t) => midSpan(p, l, t))),
+    roof: roofSpan(p, f),
   }
 }
 
@@ -544,7 +556,7 @@ function sideAnnotations(
         ),
       )
   }
-  const top = f.levels[f.levels.length - 1]
+  const top = f.top
   out.push(
     ...dimChain(
       v,
@@ -596,7 +608,7 @@ function frontAnnotations(
   const W = p.structure.wall
   const AH = p.tech.shaft.width
   const D = SECTION.frontDims
-  const top = f.levels[f.levels.length - 1]
+  const top = f.top
   const ys: Array<number> = [p.tech.pit, 0]
   const labels: Array<DimLabel | undefined> = [prefixLabel('PIT = ')]
   for (const l of f.levels) {
@@ -665,12 +677,16 @@ function drawSection(p: ElevatorParams, d: Derived, v: View): Array<Prim> {
     ...equipmentFront(eq, fv),
     ...sideAnnotations(p, f, v, st),
     ...frontAnnotations(p, f, fv, st),
+    ...sideNotes(p, f, eq, v),
+    ...frontNotes(p, f, eq, fv),
+    ...hookDetail(p, f, fv, st),
+    ...heightTable(p, d, f, fv),
   ]
 
   // Section marks: B through the top room, A through the top floor, C through the pit.
   const M = SECTION.marks
   const size = cadSize(v, SECTION.text.mark)
-  const top = f.levels[f.levels.length - 1]
+  const top = f.top
   const cuts: Array<[string, number]> = [
     ['B', f.machine + M.b],
     ['A', top.floor + M.a],
@@ -685,10 +701,11 @@ function drawSection(p: ElevatorParams, d: Derived, v: View): Array<Prim> {
         }),
       )
 
-  // Break lines across a collapsed group, under the floor above it.
+  // Break lines across a collapsed group, under the floor above it, in the gap between
+  // the notes there.
   for (const l of f.levels) {
     if (!l.collapsed) continue
-    const y = -(l.floor + l.height) + SECTION.breakBelow
+    const y = -breakElevation(p, f, l, v)
     const O = SECTION.breakOver
     out.push(
       ...breakLine(

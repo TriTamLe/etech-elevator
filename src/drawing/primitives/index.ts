@@ -36,8 +36,13 @@ export {
 } from '#/drawing/primitives/hatch-patterns'
 export type { HatchName } from '#/drawing/primitives/hatch-patterns'
 export { arrowHead } from '#/drawing/primitives/arrow-head'
-export { LEADER_LINE_GAP, leader } from '#/drawing/primitives/leader'
-export type { LeaderOpts } from '#/drawing/primitives/leader'
+export {
+  LEADER_LINE_GAP,
+  leader,
+  noteExtent,
+  stackNotes,
+} from '#/drawing/primitives/leader'
+export type { LeaderOpts, StackNote } from '#/drawing/primitives/leader'
 export {
   BREAK_GAP,
   breakLine,

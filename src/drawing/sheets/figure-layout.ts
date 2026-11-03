@@ -295,12 +295,18 @@ export const SECTION = {
     mark: 400,
     /** "CPM 800 X 1500" in the top room (both sets, measured on the PDFs). */
     cpm: 75,
+    /** Hoist hook detail's note and the height table (MTEXT 180), "Sắt Ø18" (225). */
+    detail: 180,
+    bar: 225,
+    table: 180,
   },
   /** Standard-40's DIMASZ and DIMGAP (real mm). */
   dimArrow: 40,
   dimGap: 20,
   /** Drawn height of a floor or a collapsed group (M7 1F and 2F~3F). */
   slot: 3400,
+  /** At most this many mid beams per level (guards a tiny `midBeam.spacing`). */
+  maxMidBeams: 20,
   /** Landing slab in front of the door wall: reach, thickness, bevel under its tip. */
   landing: { reach: 754, thick: 150, bevel: 150 },
   /** The top room floor's landing slab reaches further (same thickness). */
@@ -337,6 +343,62 @@ export const SECTION = {
    */
   ropes: { hitchTop: 350, hitchBottom: 409, carX: 1099, carBottom: 300 },
   /**
+   * Leader notes right of the side view (M7): underlines start `x` right of the back
+   * wall's outer face; each note points at its beam's middle in the wall section and
+   * `band` inside the shaft, its underline wanted `rise` above the beam's top (M7: ~+30
+   * on the floors' ring beams, so a deeper beam does not push its note down) and kept
+   * `gap` clear of the note above (`stackNotes`).
+   */
+  notes: { x: 134, band: 130, rise: 30, gap: 60 },
+  /** "*Dầm đầu cửa": underline `above` the head beam's top, text ending `end` short of the door wall. */
+  doorNote: { above: 60, end: 187 },
+  /**
+   * "*Móc treo tải 2 tấn" above the roof: underline `above` the roof's top, text ending
+   * `gap` short of the hook, at most `overhang` past the left wall's outer face (M7's
+   * front view note runs ~160 past it), else right of the hook; the leader ends
+   * `target` into the hook.
+   */
+  hookNote: {
+    above: 225,
+    gap: 222,
+    overhang: 400,
+    target: { x: 50, down: 137 },
+  },
+  /**
+   * Hoist hook detail (M7), right of the front view: the `hook-detail` origin `x` right
+   * of its right wall's outer face, `down` below the top floor. Fixed shape: the
+   * measured points (from the origin, y up) and dimension lines of "a" across the U,
+   * "a" down it and "b" overall print the form's numbers, not the drawn 500 / 4055.
+   */
+  detail: {
+    x: 3974,
+    down: 1887,
+    across: { x0: -249.6, x1: 250.4, y: 251.3, line: -617.7 },
+    depth: { x: 0.4, y0: -249.6, y1: 251.3, line: -837.2 },
+    length: {
+      a: { x: -2009.9, y: 372.5 },
+      b: { x: 2045.4, y: 475.4 },
+      line: -956.7,
+    },
+    /** "Móc treo Palăng": first line from `x`, underline at `shelf`, leader to the U's bottom. */
+    note: { x: 505, shelf: 1419.5, target: { x: -61.1, y: -195.2 } },
+    /** "Sắt Ø18": underline from `x` at `shelf`, leader to the U's right leg. */
+    bar: { x: 692.1, shelf: -100.5, target: { x: 250.4, y: 0 } },
+  },
+  /**
+   * Floor height table (M7, without the set-1 title as on set 2): top left `x` right of
+   * the front view's right wall, `down` below the top floor; rows shrink (to `minRow`)
+   * to end above the figure's bottom.
+   */
+  table: {
+    x: 2214,
+    down: 4329,
+    cols: [1424, 2425],
+    header: 750,
+    row: 700,
+    minRow: 300,
+  },
+  /**
    * `landing-door-side` insertion: this far into the shaft from the door wall's inner
    * face (its left edge sits in the wall) and this far below the landing floor.
    */
@@ -363,8 +425,11 @@ export const SECTION = {
    * cut lines B above the top room floor, A above the top floor, C a share of PIT down.
    */
   marks: { left: 2752, right: 1041, length: 900, b: 550, a: 1230, c: 0.855 },
-  /** Break line across a collapsed group, this far under the floor above it. */
-  breakBelow: 520,
+  /**
+   * Break line across a collapsed group: this far under the note on the floor above it
+   * (M7 draws it ~530 under that floor), or halfway to the note below when closer.
+   */
+  breakClear: 150,
   /** Break lines run past the walls (side view: past the dims and notes). */
   breakOver: { side: 1400, front: 500 },
   hatch: {

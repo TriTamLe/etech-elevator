@@ -478,12 +478,18 @@ describe('sectionSheet: buồng trên và thiết bị', () => {
     expect(dimText.size / level.size).toBeCloseTo(100 / 150, 6)
   })
 
-  it('hai kiểu đỡ máy cho cùng một hình (chỉ ghi chú khác, ở P11c)', () => {
+  it('hai kiểu đỡ máy cho cùng một hình, chỉ khác dòng ghi chú', () => {
     const a = clone()
     const b = clone()
     a.topRoom.machineSupport = 'beams'
     b.topRoom.machineSupport = 'floor'
-    expect(draw(a)).toEqual(draw(b))
+    const [da, db] = [draw(a), draw(b)]
+    const shape = (out: Array<Prim>) => out.filter((q) => q.kind !== 'text')
+    // Same drawing apart from the note's text and its underline / leaders.
+    expect(da.length).toBe(db.length)
+    expect(shape(da).length).toBe(shape(db).length)
+    const diff = words(da).filter((w, i) => w !== words(db)[i])
+    expect(diff).toEqual(['*Vị trí đặt máy'])
   })
 
   it('có bệ máy cao 200 từ giữa tường trước tới tường sau', () => {

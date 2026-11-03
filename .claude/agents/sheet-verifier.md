@@ -37,7 +37,7 @@ Trong PDF của bộ Ô.Khải, các trang **không xếp theo thứ tự** (01,
 1. **Xuất PDF.** Chạy `yarn export:preset all` (hoặc `yarn export:preset hotel-9f` / `house-5f`); lệnh ghi `.verify/<preset>.pdf` (thư mục không commit). Lệnh cần dev server đang chạy và dùng Chrome có sẵn trên máy:
    - Mặc định gọi `http://localhost:3000`. Nếu phiên chính cho cổng khác thì đặt `EXPORT_BASE_URL=http://localhost:<cổng>`.
    - Nếu lệnh báo không mở được trang thì dừng lại và báo cho phiên chính; **không** tự khởi động hay tắt dev server.
-2. **Phạm vi hiện tại.** Web có đủ các trang **Bìa, DTP 01–08** (số web). DTP 05 (mặt cắt đứng) đang làm theo 3 phần P11a–c: phiên chính sẽ nói phần nào đã có. Trong PDF mẫu, trang này là DTP 06: trang 4 của file bộ Ô.Khải, trang 6 của file bộ Chú Nghiêm. Khi chỉ có một loại bao che, web chỉ có một trang cửa tầng và phòng máy lùi lên một số.
+2. **Phạm vi hiện tại.** Web có đủ các trang **Bìa, DTP 01–08** (số web). DTP 05 (mặt cắt đứng) đã đủ: khung, buồng trên và thiết bị, ghi chú dẫn, chi tiết móc palăng, bảng chiều cao. Trong PDF mẫu, trang này là DTP 06: trang 4 của file bộ Ô.Khải, trang 6 của file bộ Chú Nghiêm. Khi chỉ có một loại bao che, web chỉ có một trang cửa tầng và phòng máy lùi lên một số.
 3. **Đổi sang ảnh.** Dùng `pdftoppm -r 100 -png` cho cả PDF web và PDF mẫu.
 4. **So từng cặp trang.** Đọc hai ảnh cạnh nhau. Nếu máy có ImageMagick (`compare`) thì tạo thêm ảnh khác biệt để dễ thấy. Tập trung vào:
    - Hình học: vị trí và kích thước tường, cabin, lỗ chờ, dầm, đà, cửa, ký hiệu.
@@ -65,6 +65,7 @@ Trong PDF của bộ Ô.Khải, các trang **không xếp theo thứ tự** (01,
   - DTP 03: tiêu đề "MẶT CẮT CỬA TẦNG"; đối trọng canh giữa; cửa 2S tạm vẽ như cửa mở giữa; có ô ⊠ lỗ hộp nút ở tường gạch bên phải.
   - Mặt cắt đứng (05): mỗi tầng hoặc nhóm vẽ cao cố định, ghi "THEO THỰC TẾ"; OH, buồng trên, PIT, lỗ, dầm và đà vẽ đúng số; tên tầng dạng "TẦNG 5F(OH)"; đà giữa tầng đặt mỗi `spacing` từ sàn; chi tiết móc palăng vẽ cố định, số lấy từ form.
   - Mặt cắt đứng (05), buồng trên và thiết bị: CPM nhìn cạnh nằm ở mặt ngoài tường trước (theo bộ Chú Nghiêm; bộ Ô.Khải lùi ra ~640); ô CPM ở hình trước vẽ đúng w × h của form (mẫu vẽ kín buồng); BH thật thường lớn hơn 1610 của mẫu nên cụm cabin bám tường trước, cụm đối trọng bám tường sau và dây từ puly cabin lên máy hơi xiên; cabin là ký hiệu cố định nên với OH thật nó chạm dải dầm kiềng dưới sàn buồng trên, cột giữa cabin không nhô lên buồng trên; bệ máy cao 200 giống nhau ở hai kiểu đỡ máy (chỉ ghi chú khác).
+  - Mặt cắt đứng (05), ghi chú và cột phải: bảng chiều cao **không có tiêu đề** "CHIỀU CAO TẦNG THỰC TẾ" (theo bộ Chú Nghiêm), gộp dòng theo nhóm tầng của web; mỗi level một ghi chú đà (chỉ vào đà thấp nhất); ghi chú kiểu đỡ máy chung đường dẫn với dầm kiềng sàn buồng trên; "*Sàn đặt máy 200x200" là chữ cố định; ghi chú xếp không chồng nhau nên có thể lệch vài trăm mm so với mẫu; chi tiết móc palăng vẽ hình cố định, số Ø, a, b lấy từ form.
   - Cửa tầng (06/07): mọi chữ kích thước cùng cỡ lớn (như bộ Chú Nghiêm); bao che rộng có đầu khung chạm lanh tô nên không có dải hatch ở đỉnh, dải hai bên rộng (1100 − OP − 290)/2; không vẽ vòng tròn chú thích ở mặt bằng bao che hẹp; mặt bằng hoàn thiện luôn có "Hoistway Width AH".
 
 ## Báo cáo trả về
