@@ -12,7 +12,7 @@ Package manager is **yarn 1** — never run `npm install` / `pnpm` (no extra loc
 
 - `yarn dev` (local D1 via the Cloudflare vite plugin) · `yarn build`
 - `yarn typecheck` · `yarn lint` · `yarn test` — all must pass before a commit
-- `yarn test:e2e`: Playwright in the local Chrome (no browser download). It starts its own dev server on port 3100 with a separate local D1 (`.wrangler/e2e`, reset each run). Needs poppler (`pdftoppm`, `pdfinfo`). After an intended drawing change, `yarn test:e2e:update` refreshes the page baselines in `tests/e2e/__snapshots__/` (commit them).
+- `yarn test:e2e`: Playwright in the local Chrome (no browser download). It starts its own dev server on port 3100 with a separate local D1 (`.wrangler/e2e`, reset each run). Needs poppler (`pdftoppm`, `pdfinfo`). After an intended drawing change, `yarn test:e2e:update` refreshes the page baselines in `tests/e2e/__snapshots__/` (commit them). `yarn test:e2e:perf` runs only the `@perf` timings (typing, PDF export), kept out of `test:e2e` because they swing with machine load. `DEBUG=pw:webserver` prints the dev server's output.
 - `yarn export:preset [hotel-9f|house-5f|all]` → `.verify/<preset>.pdf` via the running dev server's `/dev/export` and the local Chrome (playwright-core, no browser download); `EXPORT_BASE_URL` overrides `http://localhost:3000`
 - Production (Workers + D1 + Access): deploy, migrate remote, backup/restore, who can sign in → `docs/van-hanh.md`
 - `yarn gen:symbols` regenerates `src/drawing/symbols/data/` from the reference DWG (`tools/extract-symbols/`, Python venv; see its README). Never hand-edit the generated files

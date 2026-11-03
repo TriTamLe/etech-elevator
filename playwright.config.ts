@@ -1,14 +1,13 @@
 import { defineConfig } from '@playwright/test'
 
 // E2E in the locally installed Chrome (no browser download), against a dev server of
-// its own on port 3100 with its own local D1 (.wrangler/e2e, reset by global-setup).
+// its own on port 3100 with its own local D1 (.wrangler/e2e, reset by tests/e2e/reset-db.ts).
 //   yarn test:e2e            · yarn test:e2e:update  (refresh the sheet baselines)
 
 const PORT = 3100
 
 export default defineConfig({
   testDir: 'tests/e2e',
-  globalSetup: './tests/e2e/global-setup.ts',
   // One D1 for every test.
   workers: 1,
   fullyParallel: false,
@@ -24,7 +23,8 @@ export default defineConfig({
     trace: 'retain-on-failure',
   },
   webServer: {
-    command: `yarn dev --port ${PORT} --strictPort`,
+    // Reset the E2E D1 first, then start the server (see reset-db.ts).
+    command: `yarn -s tsx tests/e2e/reset-db.ts && yarn dev --port ${PORT} --strictPort`,
     url: `http://localhost:${PORT}`,
     env: { E2E: '1' },
     reuseExistingServer: false,

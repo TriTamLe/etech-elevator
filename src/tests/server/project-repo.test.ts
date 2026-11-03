@@ -85,10 +85,19 @@ describe('project repo', () => {
     expect(await repo.updateInfo(db, 'missing', { name: 'X', address: '' })).toBeNull()
   })
 
-  it('save rejects params that fail the schema', async () => {
+  it('updateInfo rejects a blank name', async () => {
     const { id } = await repo.create(db, presetParams('house-5f'))
-    const bad = { ...presetParams('house-5f'), tech: { loadKg: -1 } }
-    await expect(repo.save(db, id, bad as never)).rejects.toThrow()
+    await expect(repo.updateInfo(db, id, { name: '   ', address: '' })).rejects.toThrow()
+  })
+
+  // Schema validation lives in saveProject's validator; save writes what it is given once.
+  it('save writes the given params and their list columns', async () => {
+    const { id } = await repo.create(db, presetParams('house-5f'))
+    const params = presetParams('house-5f')
+    params.project.name = 'NHÀ CHỊ TƯ'
+    params.tech.loadKg = 630
+    expect((await repo.save(db, id, params))?.name).toBe('NHÀ CHỊ TƯ')
+    expect((await repo.get(db, id))?.params).toEqual(params)
   })
 
   it('soft-deletes and restores', async () => {

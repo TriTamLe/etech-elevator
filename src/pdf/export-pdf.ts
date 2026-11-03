@@ -17,6 +17,26 @@ import { addDrawingFonts } from '#/pdf/fonts'
 
 export type ExportProgress = (done: number, total: number) => void
 
+/** `performance.measure('pdf:<name>')` from `start` to now (DevTools / perf E2E). */
+function measure(name: string, start: number) {
+  performance.measure(`pdf:${name}`, { start, end: performance.now() })
+}
+
+/**
+ * Lets the browser paint (the "Đang xuất i/n…" status) between pages. A MessageChannel
+ * task, not setTimeout: hidden tabs throttle timers to about one a second.
+ */
+function nextTask(): Promise<void> {
+  return new Promise((resolve) => {
+    const { port1, port2 } = new MessageChannel()
+    port1.onmessage = () => {
+      port1.close()
+      resolve()
+    }
+    port2.postMessage(null)
+  })
+}
+
 /** Renders a sheet's SVG into `host` synchronously and returns the <svg> element. */
 function mountSheet(host: HTMLElement, prims: ReadonlyArray<Prim>) {
   const root = createRoot(host)
@@ -31,10 +51,12 @@ export async function exportPdf(
   params: ElevatorParams,
   { onProgress }: { onProgress?: ExportProgress } = {},
 ): Promise<Blob> {
+  let t = performance.now()
   const [{ jsPDF }, { svg2pdf }] = await Promise.all([
     import('jspdf'),
     import('svg2pdf.js'),
   ])
+  measure('libs', t)
   const d = derive(params)
   const pages = readyPages(d.pages)
 
@@ -46,7 +68,9 @@ export async function exportPdf(
     // Otherwise the 14 standard fonts are listed in every PDF although no text uses them.
     putOnlyUsedFonts: true,
   })
+  t = performance.now()
   await addDrawingFonts(doc)
+  measure('fonts', t)
   doc.setProperties({ title: params.project.name, creator: COMPANY.shortName })
 
   // svg2pdf reads computed styles, so the sheet must sit in the document (off-screen).
@@ -58,6 +82,7 @@ export async function exportPdf(
   try {
     onProgress?.(0, pages.length)
     for (const [i, page] of pages.entries()) {
+      t = performance.now()
       if (i > 0) doc.addPage('a3', 'landscape')
       const { svg, unmount } = mountSheet(host, renderPage(params, d, page))
       try {
@@ -70,10 +95,15 @@ export async function exportPdf(
       } finally {
         unmount()
       }
+      measure(`page-${i + 1}`, t)
       onProgress?.(i + 1, pages.length)
+      if (i < pages.length - 1) await nextTask()
     }
   } finally {
     host.remove()
   }
-  return doc.output('blob')
+  t = performance.now()
+  const blob = doc.output('blob')
+  measure('output', t)
+  return blob
 }

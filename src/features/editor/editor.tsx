@@ -43,15 +43,17 @@ import { Icons } from '#/components/app/icons'
 import { cn } from '#/lib/utils'
 import type { ProjectDetail } from '#/server/project-repo'
 
+// Memoised: they read the editor context, so the tab, preview page or save status no
+// longer re-render them. Every keystroke still does (issues change with each value).
 const SECTIONS = [
-  ['project', 'A', 'Thông tin hồ sơ', SectionProject],
-  ['tech', 'B', 'Đặc tính kỹ thuật', SectionTech],
-  ['structure', 'C', 'Kết cấu hố & cửa tầng', SectionStructure],
-  ['floors', 'D', 'Danh sách tầng', SectionFloors],
-  ['topRoom', 'E', 'Buồng trên cùng / phòng máy', SectionTopRoom],
-  ['responsibility', 'F', 'Hạng mục trách nhiệm', SectionResponsibility],
+  ['project', 'A', 'Thông tin hồ sơ', React.memo(SectionProject)],
+  ['tech', 'B', 'Đặc tính kỹ thuật', React.memo(SectionTech)],
+  ['structure', 'C', 'Kết cấu hố & cửa tầng', React.memo(SectionStructure)],
+  ['floors', 'D', 'Danh sách tầng', React.memo(SectionFloors)],
+  ['topRoom', 'E', 'Buồng trên cùng / phòng máy', React.memo(SectionTopRoom)],
+  ['responsibility', 'F', 'Hạng mục trách nhiệm', React.memo(SectionResponsibility)],
   // Part of the title block, kept apart because it is a growing list: no letter, an icon.
-  ['revisions', null, 'Lịch sử hiệu chỉnh', SectionRevisions],
+  ['revisions', null, 'Lịch sử hiệu chỉnh', React.memo(SectionRevisions)],
 ] as const
 
 const DEFAULT_OPEN = ['project', 'tech']
@@ -103,12 +105,19 @@ export function Editor({ project }: { project: ProjectDetail }) {
   // next render puts the old values back.
   const [defaults, setDefaults] = React.useState(initial)
   const form = useProjectForm(defaults)
-  const replaceParams = (params: ElevatorParams) => {
-    setDefaults(params)
-    form.reset(params)
-  }
+  const replaceParams = React.useCallback(
+    (params: ElevatorParams) => {
+      setDefaults(params)
+      form.reset(params)
+    },
+    [form],
+  )
   const values = useStore(form.store, (s) => s.values)
   const issues = React.useMemo(() => collectIssues(values), [values])
+  const context = React.useMemo(
+    () => ({ form, issues, replaceParams }),
+    [form, issues, replaceParams],
+  )
   const autosave = useAutosave(project.id, issues, initial, savedAt)
   // Kept here, not in the preview: the preview unmounts with its tab on narrow screens.
   const lastValid = useLastValid(issues.params)
@@ -202,7 +211,7 @@ export function Editor({ project }: { project: ProjectDetail }) {
   )
 
   return (
-    <EditorProvider value={{ form, issues, replaceParams }}>
+    <EditorProvider value={context}>
       <div className="flex h-dvh flex-col">
         <EditorHeader
           name={values.project.name}

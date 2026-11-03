@@ -1,3 +1,5 @@
+import * as React from 'react'
+
 import { jambLabelInline } from '#/domain/config'
 import { derive } from '#/domain/derive'
 import type { JambType } from '#/domain/schema'
@@ -12,7 +14,10 @@ const mm = new Intl.NumberFormat('vi-VN')
  */
 export function DerivedPanel() {
   const { issues } = useEditor()
-  const d = issues.params ? derive(issues.params) : null
+  const d = React.useMemo(
+    () => (issues.params ? derive(issues.params) : null),
+    [issues.params],
+  )
 
   return (
     <section

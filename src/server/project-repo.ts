@@ -89,13 +89,16 @@ export async function duplicate(
   return create(db, params)
 }
 
-/** Writes params and refreshes the mirrored list columns. */
+/**
+ * Writes params and refreshes the mirrored list columns. `params` must already be valid:
+ * saveProject's validator parsed them, updateInfo builds them from stored (migrated)
+ * params. Parsing again would double the CPU of every autosave (10 ms Worker budget).
+ */
 export async function save(
   db: ProjectDb,
   id: string,
-  input: ElevatorParams,
+  params: ElevatorParams,
 ): Promise<ProjectListItem | null> {
-  const params = ElevatorParams.parse(input)
   const updatedAt = new Date()
   const rows = await db
     .update(projects)
@@ -117,15 +120,14 @@ export async function updateInfo(
   id: string,
   info: { name: string; address: string },
 ): Promise<ProjectListItem | null> {
+  // save() no longer parses: check the two fields this merges in (cheap, not the blob).
+  const { name, address } = ElevatorParams.shape.project.shape
+  const next = { name: name.parse(info.name), address: address.parse(info.address) }
   const current = await get(db, id)
   if (!current) return null
   return save(db, id, {
     ...current.params,
-    project: {
-      ...current.params.project,
-      name: info.name.trim(),
-      address: info.address.trim(),
-    },
+    project: { ...current.params.project, ...next },
   })
 }
 

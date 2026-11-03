@@ -2,14 +2,20 @@ import * as React from 'react'
 
 import { Skeleton } from '#/components/ui/skeleton'
 import { derive } from '#/domain/derive'
-import type { PageKey } from '#/domain/derive'
+import type { Page, PageKey } from '#/domain/derive'
 import type { ElevatorParams } from '#/domain/schema'
 import { readyPages, renderPage } from '#/drawing/pages'
 import { DRAWING_FONT } from '#/drawing/render-svg'
 import { PageThumbnails } from '#/features/editor/page-thumbnails'
-import type { PreviewPage } from '#/features/editor/page-thumbnails'
+import type {
+  PreviewPage,
+  ThumbSource,
+} from '#/features/editor/page-thumbnails'
 import { SheetViewer } from '#/features/editor/sheet-viewer'
+import { useDebouncedValue } from '#/lib/use-debounced-value'
 import { cn } from '#/lib/utils'
+
+const THUMBS_DELAY_MS = 300
 
 /** Resolves once the four Tinos faces are usable, so the sheet never paints in a fallback font. */
 function useDrawingFontReady(): boolean {
@@ -28,6 +34,15 @@ function useDrawingFontReady(): boolean {
     }
   }, [])
   return ready
+}
+
+/** `pages`, as the same array while no key, code or title changes (keeps the strip memo). */
+function useStablePages(pages: Array<Page> | null): Array<Page> | null {
+  const signature = pages
+    ?.map((p) => `${p.key}\u0000${p.code}\u0000${p.title}`)
+    .join('\u0001')
+  // Keyed by content, not identity: a new array with the same pages is the old one.
+  return React.useMemo(() => pages, [signature])
 }
 
 /** The latest non-null params seen, so the sheet stays put while a field is invalid. */
@@ -63,22 +78,32 @@ export function SheetPreview({
   const stale = invalid && params !== null
   const fontReady = useDrawingFontReady()
 
-  const sheets = React.useMemo(() => {
-    if (!shown) return null
-    const d = derive(shown)
-    const ready: Array<PreviewPage> = readyPages(d.pages).map((pg) => ({
-      page: pg,
-      prims: renderPage(shown, d, pg),
-    }))
-    return { ready, total: d.pages.length }
-  }, [shown])
-  const pages = sheets?.ready
+  // The sheet on screen follows every keystroke (deferred). Thumbnail drawings follow
+  // once typing pauses, each thumbnail redrawing in its own idle callback. The strip's
+  // buttons (keys, codes, labels) always come from the current page list, so they never
+  // disagree with the sheet on screen.
+  const d = React.useMemo(() => (shown ? derive(shown) : null), [shown])
+  const pages = React.useMemo(() => (d ? readyPages(d.pages) : null), [d])
+  const index = Math.max(0, pages?.findIndex((p) => p.key === page) ?? 0)
+  const currentPage = pages?.[index]
+  const current = React.useMemo<PreviewPage | undefined>(
+    () =>
+      shown && d && currentPage
+        ? { page: currentPage, prims: renderPage(shown, d, currentPage) }
+        : undefined,
+    [shown, d, currentPage],
+  )
+  const thumbParams = useDebouncedValue(shown, THUMBS_DELAY_MS)
+  const strip = useStablePages(pages)
+  const thumbSource = React.useMemo<ThumbSource | null>(
+    () => (thumbParams ? { params: thumbParams, d: derive(thumbParams) } : null),
+    [thumbParams],
+  )
+  const sheets = d && pages ? { ready: pages.length, total: d.pages.length } : null
 
-  const index = Math.max(0, pages?.findIndex((p) => p.page.key === page) ?? 0)
-  const current = pages?.[index]
   const go = (i: number) => {
     const next = pages?.[i]
-    if (next) onPageChange(next.page.key)
+    if (next) onPageChange(next.key)
   }
 
   return (
@@ -99,7 +124,8 @@ export function SheetPreview({
             )}
           >
             <PageThumbnails
-              pages={pages}
+              pages={strip ?? pages}
+              source={thumbSource}
               current={current.page.key}
               onSelect={onPageChange}
               orientation={layout === 'side' ? 'vertical' : 'horizontal'}
@@ -125,9 +151,9 @@ export function SheetPreview({
         aria-live="polite"
       >
         {sheets &&
-          `${sheets.ready.length} / ${sheets.total} trang${
-            sheets.ready.length < sheets.total
-              ? ` · còn ${sheets.total - sheets.ready.length} trang hình vẽ chưa làm`
+          `${sheets.ready} / ${sheets.total} trang${
+            sheets.ready < sheets.total
+              ? ` · còn ${sheets.total - sheets.ready} trang hình vẽ chưa làm`
               : ''
           }`}
         {stale && ' · Đang hiện bản hợp lệ gần nhất'}

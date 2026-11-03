@@ -947,16 +947,28 @@ PO chốt (03/11/2026):
 Làm theo 4 phần P12a–d, commit từng phần. Đo CPU Worker để sang P13, vì cần deploy bản thật.
 
 - [x] **Playwright (P12a):**
-  - `playwright.config.ts` tự bật `yarn dev --port 3100 --strictPort` với `E2E=1`; `vite.config.ts` khi đó dùng D1 riêng `.wrangler/e2e`, được `tests/e2e/global-setup.ts` xóa và migrate lại mỗi lần chạy. DB dev không bị đụng tới.
+  - `playwright.config.ts` tự bật `yarn dev --port 3100 --strictPort` với `E2E=1`; `vite.config.ts` khi đó dùng D1 riêng `.wrangler/e2e`, được `tests/e2e/reset-db.ts` xóa và migrate lại mỗi lần chạy, ngay trong lệnh `webServer` trước khi bật server (Playwright bật `webServer` trước `globalSetup`, xóa DB dưới server đang chạy làm D1 hỏng giữa chừng). DB dev không bị đụng tới.
   - Luồng chính (`main-flow.spec.ts`): tạo → sửa → tự lưu → reload → lưu phiên bản → sửa → khôi phục → tải PDF (tên file, 9 trang qua `pdfinfo`).
   - Danh sách (`projects.spec.ts`): tìm không dấu, xóa có xác nhận + hoàn tác, nhân bản. Nhập JSON schema v1 (`import-old.spec.ts`).
   - So ảnh (`sheets.spec.ts`): PDF của 2 bộ mẫu từ `/dev/export`, `pdftoppm -r 100`, so với 18 ảnh chuẩn trong `tests/e2e/__snapshots__/` (3,8 MB), ngưỡng 0,1 % điểm ảnh. Đổi hình vẽ có chủ đích thì chạy `yarn test:e2e:update`.
   - So với PDF mẫu: vẫn do người xem / `sheet-verifier`.
 - [x] **Trường hợp biên (P12a, vitest):** mọi trang với N = 2, 3, 4, 5, 10, 20, 30 của cả 2 bộ; tên rất dài; thiếu chiều cao mọi tầng; bật/tắt các công tắc (cửa, bao che, xây chèn, cửa 2S, loại thang, kiểu đỡ máy, móc, 6 loại hồ sơ); nhập JSON v1 từ file fixture `tests/e2e/fixtures/house-5f-v1.json`.
-- [ ] **Hiệu năng:**
-  - Xem trước dưới 100 ms mỗi lần gõ; xuất 9 trang dưới 5 giây.
-  - Bundle ban đầu không chứa jsPDF.
-  - CPU của Worker dưới 10 ms (kiểm bằng `wrangler tail`).
+- [x] **Hiệu năng (P12b):** đo bằng `tests/e2e/perf.spec.ts` (tag `@perf`, chạy `yarn test:e2e:perf`; không nằm trong `yarn test:e2e` vì số dao động theo tải máy). Bộ khách sạn 9 tầng, trên dev server, nên là cận trên của bản build.
+
+  | Đo | Trước | Sau | Mục tiêu |
+  |---|---|---|---|
+  | Gõ tải trọng → DTP 02 đổi, cách 150 ms (trung vị / p95) | 130 / 241 ms | 68 / 88 ms | < 100 ms |
+  | Như trên, cách 400 ms (gặp lúc thumbnail vẽ lại) | — | 37 / 77 ms | < 100 ms |
+  | Cách 150 ms, CPU giới hạn 4x (trung vị) | 860 ms | 308 ms | (chỉ ghi) |
+  | Xuất 9 trang, lần đầu / lần sau | 1,8 / 1,57 s | 1,8–2,0 / 1,5 s | < 5 s |
+  | Thư viện PDF trong lần tải đầu | không | không | không |
+
+  - Xem trước: mỗi phím chỉ vẽ trang đang xem. Hình 9 thumbnail đi theo params trễ 300 ms, mỗi thumbnail tự vẽ lại trong một `requestIdleCallback` riêng (`src/lib/when-idle.ts`), nên phím gõ chen được giữa các thumbnail; còn nút, mã và tên trang luôn lấy từ danh sách trang hiện tại. Gói cả dải vào một lần render (kể cả qua `useDeferredValue`) làm phím gặp lúc vẽ lại mất 123 ms, vì bước gắn 9 SVG vào DOM không ngắt được.
+  - Màn soạn: memo value của context, các nhóm ô (chặn render lại khi đổi tab/trang/trạng thái lưu; mỗi phím vẫn render lại vì `issues` đổi) và `derive` của panel Tự tính.
+  - Xuất PDF: mốc `pdf:*` (`performance.measure`) cho từng giai đoạn; nhường luồng giữa các trang bằng `MessageChannel` (tab ẩn kẹp `setTimeout` còn ~1 lần/giây) để dòng "Đang xuất i/9…" kịp hiện. Chậm nhất: bìa ~0,5 s (logo), DTP 05 ~0,3 s, `output` ~0,45 s.
+  - Lưu: `repo.save` không parse Zod lần hai (validator của `saveProject` đã parse); `updateInfo` chỉ parse 2 ô tên/địa chỉ nó ghép vào.
+  - Sửa lỗi P12a: `global-setup.ts` xóa D1 E2E sau khi dev server đã bật (Playwright bật `webServer` trước `globalSetup`), làm D1 hỏng giữa lần chạy dài; nay reset trong lệnh `webServer` (`tests/e2e/reset-db.ts`).
+- [ ] **CPU của Worker dưới 10 ms** (kiểm bằng `wrangler tail`, P13 sau khi deploy).
 - [ ] **Hoàn thiện giao diện:**
   - Trạng thái rỗng, lỗi mạng, phím tắt.
   - Rà lại toàn bộ chữ tiếng Việt.
@@ -1047,7 +1059,7 @@ design.md          hệ thống thiết kế đã khóa (Hallmark)
 | `typecheck` | `tsc --noEmit` |
 | `lint` / `format` | `eslint` / `prettier --write . && eslint --fix` |
 | `test` / `test:watch` | `vitest run` / `vitest` |
-| `test:e2e` / `test:e2e:update` | `playwright test` / `--update-snapshots` (P12; tự bật dev cổng 3100 với D1 riêng `.wrangler/e2e`) |
+| `test:e2e` / `test:e2e:update` / `test:e2e:perf` | `playwright test` (trừ `@perf`) / `--update-snapshots` / chỉ `@perf` (P12; tự bật dev cổng 3100 với D1 riêng `.wrangler/e2e`) |
 | `export:preset` | `tsx scripts/export-preset.ts` (thêm ở P5) |
 | `cf-typegen` | `wrangler types` |
 | `db:generate` | `drizzle-kit generate` |
