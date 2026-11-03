@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { ZodError } from 'zod'
 
+import { TITLE_BLOCK_PART_DEFAULT } from '#/domain/config'
 import { migrate, migrateImport } from '#/domain/migrate'
 import { presetParams } from '#/domain/presets'
 import { CURRENT_SCHEMA_VERSION } from '#/domain/schema'
@@ -96,5 +97,19 @@ describe('migrateImport', () => {
 
   it('keeps the version errors as they are', () => {
     expect(() => migrateImport({ schemaVersion: 99 })).toThrow(/phiên bản 99/)
+  })
+})
+
+describe('migrate: file JSON schema v1 trên đĩa (dùng chung với E2E)', () => {
+  it('tests/e2e/fixtures/house-5f-v1.json nâng lên bản hiện tại, có "THANG MÁY"', async () => {
+    const { readFileSync } = await import('node:fs')
+    const raw = JSON.parse(
+      readFileSync('tests/e2e/fixtures/house-5f-v1.json', 'utf8'),
+    ) as Record<string, unknown>
+    expect(raw.schemaVersion).toBe(1)
+    const p = migrateImport(raw)
+    expect(p.schemaVersion).toBe(CURRENT_SCHEMA_VERSION)
+    expect(p.project.titleBlockPart).toBe(TITLE_BLOCK_PART_DEFAULT)
+    expect(p.project.name).toBe('DỰ ÁN CŨ (SCHEMA V1)')
   })
 })

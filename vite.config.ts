@@ -11,7 +11,11 @@ const config = defineConfig({
   resolve: { tsconfigPaths: true },
   plugins: [
     devtools(),
-    cloudflare({ viteEnvironment: { name: 'ssr' } }),
+    cloudflare({
+      viteEnvironment: { name: 'ssr' },
+      // E2E runs on its own local D1 (tests/e2e/global-setup.ts), never the dev one.
+      persistState: process.env.E2E ? { path: '.wrangler/e2e' } : true,
+    }),
     tailwindcss(),
     tanstackStart(),
     viteReact(),

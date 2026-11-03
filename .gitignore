@@ -17,6 +17,8 @@ todos.json
 
 # Local tooling output
 .verify
+test-results
+playwright-report
 backups
 tools/extract-symbols/.venv
 tools/extract-symbols/.out

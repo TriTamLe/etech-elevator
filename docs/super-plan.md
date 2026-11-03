@@ -560,7 +560,7 @@ Việc mang từ P4 sang: dùng `pageOverrides` (ngày hoàn thành, số hiệu
 **Phục vụ kiểm tra tự động**
 - [x] Route `/dev/export?preset=…` (chỉ DEV) và script `scripts/export-preset.ts` xuất PDF từ bộ mẫu vào `.verify/` (5c).
 - [x] Thêm script `yarn export:preset [hotel-9f|house-5f|all]`, dùng cho `sheet-verifier` (5c).
-- [x] Cài `playwright-core` 1.63 (không phải `playwright`): chạy bằng Chrome có sẵn trên máy (`channel: 'chrome'`), không tải trình duyệt ~150 MB (5c).
+- [x] Cài `playwright-core` 1.63 (không phải `playwright`): chạy bằng Chrome có sẵn trên máy (`channel: 'chrome'`), không tải trình duyệt ~150 MB (5c). P12 thêm `@playwright/test` cùng bản 1.63.0 cho E2E, vẫn chạy bằng Chrome có sẵn.
 
 **Tiêu chí xong:**
 - PDF mở được trong Preview và Acrobat, là vector, chữ tiếng Việt đúng.
@@ -938,11 +938,21 @@ PO chốt (03/11/2026): bảng chiều cao không có tiêu đề (như bộ Ch�
 
 ### P12 — Kiểm thử tổng & hoàn thiện (2–3 ngày)
 
-- [ ] **Playwright:**
-  - Luồng chính: tạo → sửa → tự lưu → phiên bản → tải PDF.
-  - So ảnh từng trang của bản xuất với ảnh chuẩn do chính app tạo (để phát hiện thay đổi ngoài ý muốn).
-  - So với PDF mẫu (người xem duyệt).
-- [ ] **Trường hợp biên:** N từ 2 đến 30; tên rất dài; thiếu chiều cao tầng; bật/tắt các công tắc; nhập JSON phiên bản cũ.
+PO chốt (03/11/2026):
+- E2E bằng `@playwright/test` 1.63.0 chạy Chrome có sẵn, không tải trình duyệt;
+- ảnh chuẩn commit vào repo;
+- mất mạng thì tạm dừng và tự lưu khi có mạng lại, có biểu ngữ;
+- phím tắt Ctrl/⌘ + S (lưu ngay), Ctrl/⌘ + P (tải PDF), "/" (tìm dự án).
+
+Làm theo 4 phần P12a–d, commit từng phần. Đo CPU Worker để sang P13, vì cần deploy bản thật.
+
+- [x] **Playwright (P12a):**
+  - `playwright.config.ts` tự bật `yarn dev --port 3100 --strictPort` với `E2E=1`; `vite.config.ts` khi đó dùng D1 riêng `.wrangler/e2e`, được `tests/e2e/global-setup.ts` xóa và migrate lại mỗi lần chạy. DB dev không bị đụng tới.
+  - Luồng chính (`main-flow.spec.ts`): tạo → sửa → tự lưu → reload → lưu phiên bản → sửa → khôi phục → tải PDF (tên file, 9 trang qua `pdfinfo`).
+  - Danh sách (`projects.spec.ts`): tìm không dấu, xóa có xác nhận + hoàn tác, nhân bản. Nhập JSON schema v1 (`import-old.spec.ts`).
+  - So ảnh (`sheets.spec.ts`): PDF của 2 bộ mẫu từ `/dev/export`, `pdftoppm -r 100`, so với 18 ảnh chuẩn trong `tests/e2e/__snapshots__/` (3,8 MB), ngưỡng 0,1 % điểm ảnh. Đổi hình vẽ có chủ đích thì chạy `yarn test:e2e:update`.
+  - So với PDF mẫu: vẫn do người xem / `sheet-verifier`.
+- [x] **Trường hợp biên (P12a, vitest):** mọi trang với N = 2, 3, 4, 5, 10, 20, 30 của cả 2 bộ; tên rất dài; thiếu chiều cao mọi tầng; bật/tắt các công tắc (cửa, bao che, xây chèn, cửa 2S, loại thang, kiểu đỡ máy, móc, 6 loại hồ sơ); nhập JSON v1 từ file fixture `tests/e2e/fixtures/house-5f-v1.json`.
 - [ ] **Hiệu năng:**
   - Xem trước dưới 100 ms mỗi lần gõ; xuất 9 trang dưới 5 giây.
   - Bundle ban đầu không chứa jsPDF.
@@ -1019,7 +1029,7 @@ public/            brand/*.webp · fonts/tinos/*.ttf · favicon.ico
 assets/brand/      PNG gốc (không phục vụ trên web)
 tools/extract-symbols/
 scripts/           export-preset.ts
-tests/e2e/         Playwright
+tests/e2e/         Playwright E2E (`@playwright/test`, Chrome có sẵn) · __snapshots__/ ảnh chuẩn từng trang PDF · fixtures/
 docs/              báo cáo · super-plan.md
 drizzle/           migration SQL
 design.md          hệ thống thiết kế đã khóa (Hallmark)
@@ -1037,7 +1047,7 @@ design.md          hệ thống thiết kế đã khóa (Hallmark)
 | `typecheck` | `tsc --noEmit` |
 | `lint` / `format` | `eslint` / `prettier --write . && eslint --fix` |
 | `test` / `test:watch` | `vitest run` / `vitest` |
-| `test:e2e` | `playwright test` (thêm ở P5) |
+| `test:e2e` / `test:e2e:update` | `playwright test` / `--update-snapshots` (P12; tự bật dev cổng 3100 với D1 riêng `.wrangler/e2e`) |
 | `export:preset` | `tsx scripts/export-preset.ts` (thêm ở P5) |
 | `cf-typegen` | `wrangler types` |
 | `db:generate` | `drizzle-kit generate` |
