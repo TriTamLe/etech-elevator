@@ -22,6 +22,7 @@ import {
   landingDoorFront,
   walls,
 } from '#/drawing/sheets/figure'
+import { UNDERLINE_DROP } from '#/drawing/prims'
 import { SECTION } from '#/drawing/sheets/figure-layout'
 import { placeSymbol, symbol } from '#/drawing/symbols'
 import { measure } from '#/drawing/text-metrics'
@@ -92,6 +93,94 @@ export function sectionLevels(p: ElevatorParams, d: Derived): SectionFrame {
   return { levels, machine, roof, roofTop: roof + SECTION.roof.thick }
 }
 
+export type SectionEquipment = {
+  /** Side view: x from the door wall's inner face, y = −elevation. */
+  side: {
+    /** Insertion points (each symbol's own anchor); `sheave` is the sheave centre. */
+    car: Pt
+    pulley: Pt
+    hitch: Pt
+    bracket: Pt
+    sheave: Pt
+    counterweight: Pt
+    /** Buffer F (car), buffer U (counterweight). */
+    buffers: [Pt, Pt]
+    hook: Pt
+    /** Hitch → car pulley, car pulley → sheave, sheave → counterweight. */
+    ropes: Array<[Pt, Pt]>
+  }
+  /** Front view: x from the left wall's inner face. */
+  front: {
+    /** CPM opening (top left corner, size), drawn to the form's w × h. */
+    cpm: { x: number; y: number; w: number; h: number }
+    hook: Pt
+    buffers: [Pt, Pt]
+  }
+}
+
+/**
+ * Where the fixed-size equipment goes. The car side keeps M7's distances from the door
+ * wall, the counterweight side from the back wall; the rope between them (car pulley
+ * to sheave) runs straight, upright only when BH is M7's. The hook comes from the form.
+ */
+export function sectionEquipment(
+  p: ElevatorParams,
+  d: Derived,
+  f: SectionFrame,
+): SectionEquipment {
+  const BH = p.tech.shaft.depth
+  const AH = p.tech.shaft.width
+  const pit = p.tech.pit
+  const top = f.levels[f.levels.length - 1].floor
+  const M = SECTION.machine
+  const R = SECTION.ropes
+  const sheave = { x: BH - M.fromBack, y: -(f.machine + M.sheave) }
+  const counterweight = {
+    x: BH - SECTION.counterweight.fromBack,
+    y: pit - SECTION.counterweight.up,
+  }
+  const cwTop = counterweight.y + symbol('counterweight-side').bbox.y
+  const cpmW = Math.min(p.topRoom.cpm.w, AH)
+  const cpmH = Math.min(p.topRoom.cpm.h, p.tech.topRoomHeight)
+  return {
+    side: {
+      car: { x: SECTION.car.x, y: -top + SECTION.car.below },
+      pulley: { x: SECTION.pulley.x, y: -top + SECTION.pulley.below },
+      hitch: { x: SECTION.hitch.x, y: -(f.machine + SECTION.hitch.top) },
+      bracket: { x: SECTION.bracket.x, y: -(f.machine + SECTION.bracket.top) },
+      sheave,
+      counterweight,
+      buffers: [
+        { x: SECTION.buffers.car, y: pit },
+        { x: BH - SECTION.buffers.counterweight, y: pit },
+      ],
+      hook: { x: d.hook.y, y: -f.roof },
+      ropes: [
+        [
+          { x: SECTION.pulley.x, y: -(f.machine + R.hitchTop) },
+          { x: SECTION.pulley.x, y: -top + R.hitchBottom },
+        ],
+        [
+          { x: R.carX, y: -top + R.carBottom },
+          { x: sheave.x - M.radius, y: sheave.y },
+        ],
+        [
+          { x: sheave.x + M.radius, y: sheave.y },
+          { x: sheave.x + M.radius, y: cwTop },
+        ],
+      ],
+    },
+    front: {
+      cpm: { x: 0, y: -(f.machine + cpmH), w: cpmW, h: cpmH },
+      hook: { x: d.hook.x, y: -f.roof },
+      buffers: [
+        { x: AH / 2, y: pit },
+        { x: AH - SECTION.buffers.counterweight, y: pit },
+      ],
+    },
+  }
+}
+
 type Span = [number, number]
 
 /** `whole` less the `cut` spans (elevations), in order. */
@@ -140,6 +229,13 @@ const outline = (v: View, pts: Array<Pt>, weight: 'thin' | 'medium'): Prim => ({
   pts: pts.map((q) => toSheet(v, q)),
   closed: true,
   weight,
+})
+
+const segment = (v: View, a: Pt, b: Pt): Prim => ({
+  kind: 'line',
+  a: toSheet(v, a),
+  b: toSheet(v, b),
+  weight: 'thin',
 })
 
 const theo: DimLabel = () => THEO_THUC_TE
@@ -217,16 +313,21 @@ function sideView(p: ElevatorParams, f: SectionFrame, v: View): Array<Prim> {
       SECTION.hatch.concrete,
     ),
   ]
-  // Landing slabs in front of the door wall, bevelled under their tip.
-  for (const e of [...f.levels.map((l) => l.floor), f.machine])
+  // Landing slabs in front of the door wall, bevelled under their tip; the top room
+  // floor's reaches further.
+  const slabs: Array<[number, { reach: number; bevel: number }]> = [
+    ...f.levels.map((l): [number, typeof L] => [l.floor, L]),
+    [f.machine, SECTION.topLanding],
+  ]
+  for (const [e, { reach, bevel }] of slabs)
     out.push(
       ...walls(
         v,
         [
           [
             { x: -W, y: -e },
-            { x: -W - L.reach, y: -e },
-            { x: -W - L.reach + L.bevel, y: -e + L.thick },
+            { x: -W - reach, y: -e },
+            { x: -W - reach + bevel, y: -e + L.thick },
             { x: -W, y: -e + L.thick },
           ],
         ],
@@ -294,6 +395,106 @@ function frontView(p: ElevatorParams, f: SectionFrame, v: View): Array<Prim> {
     )
   }
   return out
+}
+
+/** Side view's top room: the CPM edge-on and its label, the machine platform, the hook. */
+function topRoomSide(
+  p: ElevatorParams,
+  f: SectionFrame,
+  e: SectionEquipment,
+  v: View,
+): Array<Prim> {
+  const W = p.structure.wall
+  const BH = p.tech.shaft.depth
+  const C = SECTION.cpm
+  const out: Array<Prim> = [
+    outline(v, box(-W, -f.roof, C.frame, f.roof - f.machine), 'thin'),
+    ...C.lines.map((dx) =>
+      segment(v, { x: -W + dx, y: -f.roof }, { x: -W + dx, y: -f.machine }),
+    ),
+    outline(
+      v,
+      box(
+        -W / 2,
+        -(f.machine + SECTION.platform),
+        BH + W / 2,
+        SECTION.platform,
+      ),
+      'medium',
+    ),
+    ...placeSymbol(symbol('hook-hang'), {
+      at: toSheet(v, e.side.hook),
+      scale: v.scale,
+    }),
+  ]
+  // "CPM w X h" ending short of the frame, its underline running on to the frame.
+  const label = `CPM ${p.topRoom.cpm.w} X ${p.topRoom.cpm.h}`
+  const size = cadSize(v, SECTION.text.cpm)
+  const end = toSheet(v, { x: -W - C.gap, y: -f.roof + C.below })
+  const under = end.y + UNDERLINE_DROP * size
+  out.push(
+    { kind: 'text', x: end.x, y: end.y, text: label, size, anchor: 'end' },
+    {
+      kind: 'line',
+      a: { x: end.x - measure(label, size), y: under },
+      b: { x: toSheet(v, { x: -W, y: 0 }).x, y: under },
+      weight: 'thin',
+    },
+  )
+  return out
+}
+
+/** Side view's equipment: car and its pulley, rope hitch, machine, ropes, pit. */
+function equipmentSide(e: SectionEquipment, v: View): Array<Prim> {
+  const s = e.side
+  const place = (
+    id: Parameters<typeof symbol>[0],
+    at: Pt,
+    opts: { scale?: number; mirrorX?: boolean } = {},
+  ) =>
+    placeSymbol(symbol(id), {
+      at: toSheet(v, at),
+      scale: v.scale * (opts.scale ?? 1),
+      mirrorX: opts.mirrorX,
+    })
+  return [
+    ...place('car-side', s.car),
+    ...place('car-pulley-side', s.pulley),
+    ...place('rope-hitch-bracket', s.bracket),
+    ...place('rope-hitch', s.hitch, { scale: SECTION.hitch.scale }),
+    ...place(
+      'machine',
+      { x: s.sheave.x, y: s.sheave.y - SECTION.machine.centre },
+      { mirrorX: true },
+    ),
+    ...s.ropes.map(([a, b]) => segment(v, a, b)),
+    ...place('buffer-a', s.buffers[0]),
+    ...place('buffer-b', s.buffers[1]),
+    ...place('counterweight-side', s.counterweight),
+  ]
+}
+
+/** Front view's top room and pit: the crossed CPM opening, the hook, the buffers. */
+function equipmentFront(e: SectionEquipment, v: View): Array<Prim> {
+  const c = e.front.cpm
+  const r = box(c.x, c.y, c.w, c.h)
+  return [
+    outline(v, r, 'thin'),
+    segment(v, r[0], r[2]),
+    segment(v, r[1], r[3]),
+    ...placeSymbol(symbol('hook-hang'), {
+      at: toSheet(v, e.front.hook),
+      scale: v.scale,
+    }),
+    ...placeSymbol(symbol('buffer-a'), {
+      at: toSheet(v, e.front.buffers[0]),
+      scale: v.scale,
+    }),
+    ...placeSymbol(symbol('buffer-b'), {
+      at: toSheet(v, e.front.buffers[1]),
+      scale: v.scale,
+    }),
+  ]
 }
 
 /** Side view: floor names on their level lines, opening heights, the level chain. */
@@ -455,9 +656,13 @@ function drawSection(p: ElevatorParams, d: Derived, v: View): Array<Prim> {
   // Front view right of the side view; its x from its left wall's inner face.
   const fx = BH + W + SECTION.viewGap + W
   const fv = shiftView(v, fx, 0)
+  const eq = sectionEquipment(p, d, f)
   const out: Array<Prim> = [
     ...sideView(p, f, v),
+    ...topRoomSide(p, f, eq, v),
+    ...equipmentSide(eq, v),
     ...frontView(p, f, fv),
+    ...equipmentFront(eq, fv),
     ...sideAnnotations(p, f, v, st),
     ...frontAnnotations(p, f, fv, st),
   ]

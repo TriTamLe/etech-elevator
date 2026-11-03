@@ -20,8 +20,8 @@ function segBounds(seg: Seg): Array<[number, number]> {
 }
 
 describe('thư viện ký hiệu', () => {
-  it('đủ 21 ký hiệu, id khớp khóa', () => {
-    expect(SYMBOL_IDS).toHaveLength(21)
+  it('đủ 23 ký hiệu, id khớp khóa', () => {
+    expect(SYMBOL_IDS).toHaveLength(23)
     for (const id of SYMBOL_IDS) expect(symbol(id).id).toBe(id)
   })
 
@@ -70,7 +70,7 @@ describe('thư viện ký hiệu', () => {
       'car-side',
       'buffer-a',
       'buffer-b',
-      'pit-ladder',
+      'counterweight-side',
       'door-front',
       'jamb-wide-jd320',
       'jamb-narrow-35x50',

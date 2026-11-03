@@ -649,7 +649,7 @@ Giao cho `symbol-extractor`; phần app do phiên chính làm.
   - `requirements.txt` (ezdxf 1.4.5, matplotlib 3.11.2), `extract.py`, `symbols.config.json` (block nguồn, vùng cắt, nét loại trừ, điểm chèn, đường kéo giãn, nhãn), `README.md`;
   - venv và `.out/` không commit.
 - [x] Đổi DWG sang DXF bằng `dwg2dxf` vào `.out/`; lệnh `yarn gen:symbols` chạy lại được toàn bộ.
-- [x] Xuất **7 block**: `car-side`, `landing-door-side`, `machine`, `rope-hitch`, `buffer-a`, `buffer-b`, `pit-ladder` (bung cả block lồng nhau như `doorlock`).
+- [x] Xuất **7 block**: `car-side`, `landing-door-side`, `machine`, `rope-hitch`, `buffer-a`, `buffer-b`, `pit-ladder` (bung cả block lồng nhau như `doorlock`). P11b đổi `pit-ladder` thành `counterweight-side`: block 56 thật ra là đối trọng nhìn hông.
 - [x] Cắt **10 ký hiệu nét rời**: `rail-t-plan`, `counterweight-plan`, `door-co-plan`, `door-front`, `jamb-wide-jd320`, `jamb-narrow-35x50`, `call-box`, `floor-indicator`, `hook-plan`, `hook-detail`.
 - [x] P10 thêm **3 ký hiệu** cho trang cửa tầng: `door-open-arrow` (mũi tên mở cửa), `jamb-wide-plan` (tấm khung bao che rộng nhìn mặt bằng, cắt khỏi polyline chung bằng khóa `clip` mới của `extract.py`), `call-box-plan` (ô ⊠ 100 × 90). Thư viện có 20 ký hiệu.
 - [x] Mỗi ký hiệu là một file `src/drawing/symbols/data/<id>.ts`, sinh tự động:
@@ -867,7 +867,7 @@ Giao cho `symbol-extractor`; phần app do phiên chính làm.
 **Đo trên DWG** (khối `M7`, 02/11/2026):
 - Cỡ chữ (mm thật): ghi chú, tên tầng và chữ kích thước 100; chữ A/B/C 400; bảng và chi tiết móc 180.
 - M7 là **sơ đồ**, không vẽ đúng số: tầng vẽ 3400/3000 và ghi "THEO THỰC TẾ"; OH 3600 vẽ 3000; buồng trên 1200 vẽ 1300; BH/AH vẽ 1610/1710; chi tiết móc ghi 1500 nhưng vẽ 4055.
-- Ký hiệu `pit-ladder` (block 56) thật ra là **đối trọng nhìn hông**, treo trên dây cáp đối trọng. M7 không có thang xuống pit.
+- Block 56 (trước đây gọi `pit-ladder`) thật ra là **đối trọng nhìn hông**, treo trên dây cáp đối trọng. M7 không có thang xuống pit. P11b đã đổi tên thành `counterweight-side`.
 
 **PO chốt (02/11/2026):**
 - mỗi tầng hoặc nhóm tầng vẽ cao cố định `SECTION.slot` = 3400 và ghi "THEO THỰC TẾ"; OH, buồng trên, PIT, lỗ chờ, HH, dầm và đà vẽ đúng số. Trang luôn vừa A3, vì tối đa 4 ô tầng;
@@ -883,14 +883,29 @@ Giao cho `symbol-extractor`; phần app do phiên chính làm.
 
 **Kết quả P11a (02/11/2026):**
 - `sheet-verifier`: OK ở cả 2 bộ, phần khung (lệch nhẹ). Đã sửa sau lần kiểm: ký hiệu A/B/C thêm nét đứng chỉ hướng nhìn có mũi tên (`sectionMark`, mặc định bật).
-- Cỡ chữ theo M7: tên tầng 150 (MTEXT 100 có `\H1.5x`); kích thước dùng dimstyle `Standard-40` (chữ 70, mũi tên 40, khe 20), nhỏ hơn các trang hình khác như trên mẫu. Gạch `AR-B816C` vẽ ở tỷ lệ 7,5 thay vì 5, để hàng gạch in cách khoảng 0,8 mm như mẫu.
+- Cỡ chữ theo M7: tên tầng 150 (MTEXT 100 có `\H1.5x`); kích thước dùng dimstyle `Standard-40` (mũi tên 40, khe 20). P11b sửa chữ kích thước từ 70 thành 100: style ghi 70 nhưng cả 34 kích thước của M7 đều ghi đè DIMTXT = 100. Gạch `AR-B816C` vẽ ở tỷ lệ 7,5 thay vì 5, để hàng gạch in cách khoảng 0,8 mm như mẫu.
 - Lệch còn lại, chấp nhận: bộ 1 ghi "PM = 1500" cho buồng trên (web theo bộ 2: số trơn); tầng OH có 2 đà (1500/1500/600) vì đà đặt mỗi `spacingTop` từ sàn, mẫu vẽ 1 đà 1800/1800.
 - 1227 test xanh; lint, typecheck và build xanh.
 
 **P11b — Buồng trên và pit:**
-- [ ] Tường trước buồng trên và CPM (chữ "CPM w X h" ở hình hông, ô gạch chéo ở hình trước); móc `hook-hang`.
-- [ ] Máy kéo (`mirrorX`, tâm puly cao hơn sàn mái 500), kiểu đỡ máy (dầm hoặc sàn 200 × 200), ty cáp (scale 0,5) và giá đỡ, dây cáp, cụm cabin ở tầng OH.
-- [ ] Pit: giảm chấn F/U, đối trọng nhìn hông (đổi tên `pit-ladder` → `counterweight-side`).
+
+PO chốt (03/11/2026): CPM ở hình hông nằm ngay mặt tường trước (bộ Chú Nghiêm, khớp DTP 08); ô CPM ở hình trước vẽ đúng w × h của form.
+
+- [x] Buồng trên (hình hông): khung CPM nhìn cạnh (rộng 50, 3 nét trong) ở mặt ngoài tường trước, từ mái xuống sàn; chữ "CPM w X h" cỡ 75 có gạch chân chạy tới khung (đo trên PDF, M7 không có chữ này); bệ máy cao 200 từ giữa tường trước tới tường sau (cả 2 bộ đều có, ở cả hai kiểu đỡ máy; ghi chú khác nhau để P11c); sàn sảnh tầng mái vươn 955, vát 187; móc `hook-hang` tại vị trí móc của form (`d.hook`, như DTP 08).
+- [x] Thiết bị (hình hông), số đo M7 ghi trong `SECTION`: cụm cabin bám tường trước (`car-side` ở tầng OH, `car-pulley-side`, `rope-hitch` scale 0,5 trên `rope-hitch-bracket`, giảm chấn F); cụm đối trọng bám tường sau (`machine` lật, tâm puly cao hơn sàn buồng trên 500; `counterweight-side`; giảm chấn U); 3 dây cáp nối các điểm tiếp tuyến puly.
+- [x] Hình trước: ô CPM gạch chéo từ vách trái, đúng w × h (chặn bởi AH và chiều cao buồng); móc; giảm chấn F giữa hố, U cách vách phải 179,5.
+- [x] `sectionEquipment(p, d, f)`: hàm thuần trả về mọi vị trí, dùng để vẽ và để test.
+- [x] Thư viện: `pit-ladder` → `counterweight-side` (kèm hộp đầu), thêm `rope-hitch-bracket`, `car-pulley-side`; còn 23 ký hiệu.
+- [x] Sửa P11a: chữ kích thước 70 → 100 (M7 ghi đè DIMTXT = 100 ở mọi kích thước).
+
+**Kết quả P11b (03/11/2026):**
+- `sheet-verifier`: cả 2 bộ lệch nhẹ; pit OK. Chữ kích thước giờ gần cỡ mẫu (khoảng 0,88 lần, hình web nhỏ hơn mẫu khoảng 8%).
+- Lệch còn lại, chấp nhận:
+  - BH thật (1900/2000) lớn hơn 1610 mà mẫu vẽ, nên dây từ puly cabin lên máy hơi xiên. Đối trọng vẫn bám tường sau, như DTP 03.
+  - Cabin là ký hiệu cố định, đỉnh ở OH + 3325, nên với OH thật cabin chạm dải dầm kiềng và không nhô lên buồng trên như mẫu.
+  - Bộ Chú Nghiêm có thêm một hộp nhỏ dưới bệ máy, mẫu bộ Ô.Khải không có; web không vẽ.
+- Trang 05 có khoảng 4560 nét, vẽ khoảng 11–14 ms (Node).
+- 1270 test xanh; lint, typecheck và build xanh.
 
 **P11c — Ghi chú, bảng, chi tiết, biến thể:**
 - [ ] Ghi chú dẫn không chồng nhau (`stackNotes`): dầm đầu cửa, dầm kiềng, đà, móc treo, vị trí/sàn đặt máy.

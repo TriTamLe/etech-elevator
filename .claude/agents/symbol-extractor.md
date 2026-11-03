@@ -61,7 +61,7 @@ Góc dưới Model có một bản sao nhỏ của các hình, có lẽ là bả
 | `rope-hitch` | `WWWWWW` | Cụm ty cáp có lò xo |
 | `buffer-a` | `F` | Giảm chấn loại 1 |
 | `buffer-b` | `U` | Giảm chấn loại 2 |
-| `pit-ladder` | `56` | Thang xuống pit |
+| `counterweight-side` | `56` + hộp đầu rời trong `M7` (region) | Đối trọng nhìn hông |
 
 **Nét rời, phải cắt theo vùng** (lọc entity theo bounding box bên trong block của trang):
 

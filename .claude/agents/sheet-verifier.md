@@ -64,6 +64,7 @@ Trong PDF của bộ Ô.Khải, các trang **không xếp theo thứ tự** (01,
   - Trang hình (03, 04, 06–08) vẽ **đúng số thật**; DWG bộ Ô.Khải có chỗ không đúng số (pit, cửa tầng: 2300 vẽ 2400, OP 700 vẽ 750). Tỷ lệ do web tự chọn (1:15–1:20).
   - DTP 03: tiêu đề "MẶT CẮT CỬA TẦNG"; đối trọng canh giữa; cửa 2S tạm vẽ như cửa mở giữa; có ô ⊠ lỗ hộp nút ở tường gạch bên phải.
   - Mặt cắt đứng (05): mỗi tầng hoặc nhóm vẽ cao cố định, ghi "THEO THỰC TẾ"; OH, buồng trên, PIT, lỗ, dầm và đà vẽ đúng số; tên tầng dạng "TẦNG 5F(OH)"; đà giữa tầng đặt mỗi `spacing` từ sàn; chi tiết móc palăng vẽ cố định, số lấy từ form.
+  - Mặt cắt đứng (05), buồng trên và thiết bị: CPM nhìn cạnh nằm ở mặt ngoài tường trước (theo bộ Chú Nghiêm; bộ Ô.Khải lùi ra ~640); ô CPM ở hình trước vẽ đúng w × h của form (mẫu vẽ kín buồng); BH thật thường lớn hơn 1610 của mẫu nên cụm cabin bám tường trước, cụm đối trọng bám tường sau và dây từ puly cabin lên máy hơi xiên; cabin là ký hiệu cố định nên với OH thật nó chạm dải dầm kiềng dưới sàn buồng trên, cột giữa cabin không nhô lên buồng trên; bệ máy cao 200 giống nhau ở hai kiểu đỡ máy (chỉ ghi chú khác).
   - Cửa tầng (06/07): mọi chữ kích thước cùng cỡ lớn (như bộ Chú Nghiêm); bao che rộng có đầu khung chạm lanh tô nên không có dải hatch ở đỉnh, dải hai bên rộng (1100 − OP − 290)/2; không vẽ vòng tròn chú thích ở mặt bằng bao che hẹp; mặt bằng hoàn thiện luôn có "Hoistway Width AH".
 
 ## Báo cáo trả về

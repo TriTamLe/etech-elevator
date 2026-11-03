@@ -63,9 +63,15 @@
       "stretch": []
     },
     {
-      "id": "pit-ladder",
-      "label": "Thang xuống pit",
-      "block": "56",
+      "id": "counterweight-side",
+      "label": "Đối trọng nhìn hông",
+      "block": "M7",
+      "region": [
+        178680,
+        -155740,
+        178810,
+        -154500
+      ],
       "origin": {
         "anchor": "bc"
       },
@@ -393,17 +399,80 @@
       "origin": {
         "anchor": "c"
       },
-      "stretch": [{ "axis": "x", "at": 0, "dir": 1 }]
+      "stretch": [
+        {
+          "axis": "x",
+          "at": 0,
+          "dir": 1
+        }
+      ]
     },
     {
       "id": "hook-hang",
       "label": "Móc treo nhìn đứng",
       "block": "M7",
-      "region": [178280, -140900, 178430, -140684],
+      "region": [
+        178280,
+        -140900,
+        178430,
+        -140684
+      ],
       "origin": {
         "anchor": "tc"
       },
       "stretch": []
+    },
+    {
+      "id": "rope-hitch-bracket",
+      "label": "Giá đỡ ty cáp",
+      "block": "M7",
+      "region": [
+        177530,
+        -141786,
+        177870,
+        -141566
+      ],
+      "origin": {
+        "xy": [
+          177700,
+          -141566.7
+        ]
+      },
+      "stretch": [],
+      "exclude": [
+        [
+          177640,
+          -141740,
+          177760,
+          -141566.9
+        ]
+      ]
+    },
+    {
+      "id": "car-pulley-side",
+      "label": "Puly dưới cabin",
+      "block": "M7",
+      "region": [
+        177700,
+        -145625,
+        178423,
+        -145162
+      ],
+      "origin": {
+        "xy": [
+          177699.9,
+          -145162
+        ]
+      },
+      "stretch": [],
+      "exclude": [
+        [
+          177790,
+          -145625,
+          178380,
+          -145162
+        ]
+      ]
     }
   ]
 }

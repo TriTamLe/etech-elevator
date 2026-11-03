@@ -8,12 +8,14 @@ import { primsBounds } from '#/drawing/sheets/figure'
 import { SECTION } from '#/drawing/sheets/figure-layout'
 import {
   THEO_THUC_TE,
+  sectionEquipment,
   sectionLevels,
   sectionSheet,
 } from '#/drawing/sheets/section'
+import { symbol } from '#/drawing/symbols'
 import type * as Symbols from '#/drawing/symbols'
 import type { PlaceOpts } from '#/drawing/symbols'
-import type { Prim } from '#/drawing/types'
+import type { Prim, TextPrim } from '#/drawing/types'
 import {
   EPS,
   expectInside,
@@ -53,6 +55,11 @@ const count = (out: Array<Prim>, w: string) =>
   words(out).filter((x) => x === w).length
 const sideDoors = () =>
   spy.symbols.filter((s) => s.id === 'landing-door-side').length
+const placed = (id: string) => spy.symbols.filter((s) => s.id === id)
+const equipment = (p: ElevatorParams) => {
+  const d = derive(p)
+  return sectionEquipment(p, d, sectionLevels(p, d))
+}
 
 /** Bộ mẫu có đúng n tầng (tầng giữa lấy từ tầng 2). */
 function withFloors(id: Id, n: number): ElevatorParams {
@@ -329,6 +336,402 @@ describe.each(['house-5f', 'hotel-9f'] as const)('sectionSheet: %s', (id) => {
   })
 })
 
+describe('sectionEquipment', () => {
+  it.each(['house-5f', 'hotel-9f'] as const)(
+    '%s: cụm cabin bám tường trước, cụm đối trọng bám tường sau',
+    (id) => {
+      const p = clone(id)
+      const f = frame(p)
+      const BH = p.tech.shaft.depth
+      const pit = p.tech.pit
+      const top = f.levels[f.levels.length - 1].floor
+      const s = equipment(p).side
+      expect(s.sheave).toEqual({ x: BH - 351, y: -(f.machine + 500) })
+      expect(s.car).toEqual({ x: 682.1, y: -top + 607 })
+      expect(s.pulley).toEqual({ x: 375.6, y: -top + 176.8 })
+      expect(s.hitch).toEqual({ x: 369.5, y: -(f.machine + 553.5) })
+      expect(s.bracket).toEqual({ x: 375.7, y: -(f.machine + 418.5) })
+      expect(s.counterweight).toEqual({ x: BH - 191, y: pit - 448 })
+      // F dưới cabin, U dưới đối trọng; cả hai đứng trên sàn pit.
+      expect(s.buffers).toEqual([
+        { x: 947.1, y: pit },
+        { x: BH - 179.5, y: pit },
+      ])
+    },
+  )
+
+  it('móc theo form: hình hông dùng khoảng cách tới tường trước, hình trước tới vách trái', () => {
+    const p = clone()
+    const f = frame(p)
+    // Để trống → tâm hố.
+    p.topRoom.hook.x = null
+    p.topRoom.hook.y = null
+    let e = equipment(p)
+    expect(e.side.hook).toEqual({ x: p.tech.shaft.depth / 2, y: -f.roof })
+    expect(e.front.hook).toEqual({ x: p.tech.shaft.width / 2, y: -f.roof })
+    p.topRoom.hook.x = 300
+    p.topRoom.hook.y = 400
+    e = equipment(p)
+    expect(e.side.hook.x).toBe(400)
+    expect(e.front.hook.x).toBe(300)
+  })
+
+  it('giảm chấn hình trước: F ở giữa hố, U cách vách phải 179,5', () => {
+    const p = clone('hotel-9f')
+    const AH = p.tech.shaft.width
+    expect(equipment(p).front.buffers).toEqual([
+      { x: AH / 2, y: p.tech.pit },
+      { x: AH - 179.5, y: p.tech.pit },
+    ])
+  })
+
+  describe('ô CPM hình trước', () => {
+    it('đúng w × h từ form, từ sàn buồng trên, sát vách trái', () => {
+      const p = clone('hotel-9f') // 800 × 1200, buồng trên 1500
+      const f = frame(p)
+      expect(equipment(p).front.cpm).toEqual({
+        x: 0,
+        y: -(f.machine + 1200),
+        w: 800,
+        h: 1200,
+      })
+    })
+
+    it('bị chặn bởi chiều cao buồng trên và bề rộng hố', () => {
+      const p = clone('house-5f')
+      p.topRoom.cpm = { w: 5000, h: 9000 }
+      const f = frame(p)
+      expect(equipment(p).front.cpm).toEqual({
+        x: 0,
+        y: -f.roof,
+        w: p.tech.shaft.width,
+        h: p.tech.topRoomHeight,
+      })
+    })
+  })
+
+  describe('dây cáp', () => {
+    it('đầu dây nằm ở tiếp tuyến puly máy (± bán kính 160)', () => {
+      const p = clone()
+      const s = equipment(p).side
+      const [hitch, car, cw] = s.ropes
+      expect(car[1]).toEqual({ x: s.sheave.x - 160, y: s.sheave.y })
+      expect(cw[0]).toEqual({ x: s.sheave.x + 160, y: s.sheave.y })
+      // Dây đối trọng đứng, đúng trục đối trọng, xuống tới đỉnh ký hiệu.
+      expect(cw[1].x).toBe(s.counterweight.x)
+      expect(cw[1].y).toBeCloseTo(
+        s.counterweight.y + symbol('counterweight-side').bbox.y,
+        6,
+      )
+      // Dây ty cáp đứng, theo trục trái của puly cabin.
+      expect(hitch[0].x).toBe(s.pulley.x)
+      expect(hitch[1].x).toBe(s.pulley.x)
+    })
+
+    it('BH = 1610 (như M7): dây puly cabin → máy đứng thẳng; BH khác thì xiên', () => {
+      const p = clone()
+      p.tech.shaft.depth = 1610
+      let car = equipment(p).side.ropes[1]
+      expect(car[0].x).toBeCloseTo(car[1].x, 6)
+      p.tech.shaft.depth = 1900
+      car = equipment(p).side.ropes[1]
+      expect(car[1].x - car[0].x).toBeCloseTo(290, 6)
+    })
+  })
+})
+
+describe('sectionSheet: buồng trên và thiết bị', () => {
+  it('đặt đủ ký hiệu: cabin, puly, giá ty cáp, ty cáp ½, máy lật, đối trọng, F/U và móc ở cả hai hình', () => {
+    draw(clone())
+    const n = placed('car-side').length
+    expect(n).toBeGreaterThan(0)
+    expect(placed('car-pulley-side')).toHaveLength(n)
+    expect(placed('rope-hitch-bracket')).toHaveLength(n)
+    expect(placed('counterweight-side')).toHaveLength(n)
+    expect(placed('machine')).toHaveLength(n)
+    expect(placed('buffer-a')).toHaveLength(2 * n)
+    expect(placed('buffer-b')).toHaveLength(2 * n)
+    expect(placed('hook-hang')).toHaveLength(2 * n)
+    expect(placed('machine').every((s) => s.opts.mirrorX)).toBe(true)
+    const car = placed('car-side')
+    const hitch = placed('rope-hitch')
+    expect(hitch).toHaveLength(n)
+    hitch.forEach((h, i) =>
+      expect(h.opts.scale / car[i].opts.scale).toBeCloseTo(0.5, 9),
+    )
+  })
+
+  it('chữ "CPM w X h" ở hình hông, cỡ 75 so với kích thước 100', () => {
+    const p = clone()
+    const out = draw(p)
+    const ts = texts(out)
+    const cpm = ts.find((t) => t.text === 'CPM 800 X 1200') as TextPrim
+    expect(cpm).toBeDefined()
+    const dimText = ts.find((t) => t.text === '2300') as TextPrim
+    expect(cpm.size / dimText.size).toBeCloseTo(75 / 100, 6)
+  })
+
+  it('chữ kích thước 100, tên tầng 150 (theo M7)', () => {
+    const ts = texts(draw(clone()))
+    const dimText = ts.find((t) => t.text === '2300')!
+    const level = ts.find((t) => t.text === 'TẦNG 1F')!
+    expect(dimText.size / level.size).toBeCloseTo(100 / 150, 6)
+  })
+
+  it('hai kiểu đỡ máy cho cùng một hình (chỉ ghi chú khác, ở P11c)', () => {
+    const a = clone()
+    const b = clone()
+    a.topRoom.machineSupport = 'beams'
+    b.topRoom.machineSupport = 'floor'
+    expect(draw(a)).toEqual(draw(b))
+  })
+
+  it('có bệ máy cao 200 từ giữa tường trước tới tường sau', () => {
+    const p = clone()
+    const out = draw(p)
+    const W = p.structure.wall
+    const ratio = (p.tech.shaft.depth + W / 2) / SECTION.platform
+    const found = out.some((q) => {
+      if (q.kind !== 'polyline' || !q.closed || q.pts.length !== 4) return false
+      const xs = q.pts.map((t) => t.x)
+      const ys = q.pts.map((t) => t.y)
+      const w = Math.max(...xs) - Math.min(...xs)
+      const h = Math.max(...ys) - Math.min(...ys)
+      return h > 0 && Math.abs(w / h - ratio) < 1e-6
+    })
+    expect(found).toBe(true)
+  })
+})
+
+/** Đa giác kín 4 đỉnh, kèm hộp bao (tọa độ giấy). */
+function quads(out: Array<Prim>) {
+  return out
+    .filter(
+      (q): q is Extract<Prim, { kind: 'polyline' }> =>
+        q.kind === 'polyline' && q.closed === true && q.pts.length === 4,
+    )
+    .map((q) => {
+      const xs = q.pts.map((a) => a.x)
+      const ys = q.pts.map((a) => a.y)
+      return {
+        q,
+        x0: Math.min(...xs),
+        x1: Math.max(...xs),
+        y0: Math.min(...ys),
+        y1: Math.max(...ys),
+      }
+    })
+}
+
+describe('sectionSheet: sàn sảnh, khung CPM, ô CPM hình trước', () => {
+  it.each(['house-5f', 'hotel-9f'] as const)(
+    '%s: sàn sảnh tầng mái vươn 955, vát 187; mỗi level còn lại vươn 754, vát 150 (dày 150)',
+    (id) => {
+      const p = clone(id)
+      const out = draw(p)
+      const n = frame(p).levels.length
+      // Sàn sảnh: hình thang có cạnh trên (vươn) và cạnh dưới ngắn hơn đúng bằng độ vát.
+      const slabs = quads(out).filter(({ q }) => {
+        const [a, b, c, e] = q.pts
+        return (
+          Math.abs(a.y - b.y) < 1e-9 &&
+          Math.abs(c.y - e.y) < 1e-9 &&
+          Math.abs(a.x - e.x) < 1e-9 &&
+          c.x < a.x &&
+          c.y > a.y
+        )
+      })
+      const shape = (r: number, bev: number) =>
+        slabs.filter(({ q }) => {
+          const [a, b, c, e] = q.pts
+          const h = c.y - a.y
+          return (
+            Math.abs((a.x - b.x) / h - r / 150) < 1e-6 &&
+            Math.abs((c.x - b.x) / h - bev / 150) < 1e-6 &&
+            e.x === a.x
+          )
+        })
+      expect(shape(955, 187)).toHaveLength(1)
+      expect(shape(754, 150)).toHaveLength(n)
+    },
+  )
+
+  it('khung CPM hình hông: rộng 50 nằm ở mặt ngoài tường trước (x = −W), cao từ mái xuống sàn buồng trên', () => {
+    const p = clone()
+    const f = frame(p)
+    const out = draw(p)
+    const frames = quads(out).filter(
+      ({ q, x0, x1, y0, y1 }) =>
+        q.weight === 'thin' &&
+        Math.abs(
+          (x1 - x0) / (y1 - y0) - SECTION.cpm.frame / (f.roof - f.machine),
+        ) < 1e-6,
+    )
+    expect(frames).toHaveLength(1)
+    const fr = frames[0]
+    // Sàn sảnh bắt đầu đúng ở mặt ngoài tường trước (x = −W): mép trái khung trùng với nó.
+    const k = (fr.x1 - fr.x0) / SECTION.cpm.frame
+    const slab = quads(out).find(({ q }) => {
+      const [a, b, c] = q.pts
+      const h = c.y - a.y
+      return (
+        Math.abs(a.y - b.y) < 1e-9 &&
+        h > 0 &&
+        Math.abs((a.x - b.x) / h - 955 / 150) < 1e-6
+      )
+    })
+    expect(slab).toBeDefined()
+    expect(fr.x0).toBeCloseTo(slab!.q.pts[0].x, 6)
+    // Các vạch trong cách mép trái 20, 25, 30.
+    for (const dx of SECTION.cpm.lines) {
+      const hit = out.some(
+        (q) =>
+          q.kind === 'line' &&
+          Math.abs(q.a.x - q.b.x) < 1e-9 &&
+          Math.abs(q.a.x - (fr.x0 + dx * k)) < 1e-6 &&
+          Math.abs(Math.abs(q.a.y - q.b.y) / k - (f.roof - f.machine)) < 1e-6,
+      )
+      expect(hit).toBe(true)
+    }
+  })
+
+  it('gạch chân chữ CPM chạy từ đầu chữ tới khung; chữ kết thúc cách khung 200', () => {
+    const p = clone()
+    const out = draw(p)
+    const f = frame(p)
+    const label = texts(out).find((t) => t.text === 'CPM 700 X 1200')
+    const t = (label ??
+      texts(out).find((x) => x.text.startsWith('CPM'))) as TextPrim
+    expect(t).toBeDefined()
+    const [x0, x1] = textSpan(t)
+    const under = out.find(
+      (q) =>
+        q.kind === 'line' &&
+        q.a.y === q.b.y &&
+        q.a.y > t.y &&
+        q.a.y - t.y < t.size &&
+        Math.abs(q.a.x - x0) < 1e-6,
+    ) as Extract<Prim, { kind: 'line' }>
+    expect(under).toBeDefined()
+    const fr = quads(out).find(
+      ({ q, x0: a, x1: b, y0, y1 }) =>
+        q.weight === 'thin' &&
+        Math.abs(
+          (b - a) / (y1 - y0) - SECTION.cpm.frame / (f.roof - f.machine),
+        ) < 1e-6,
+    )!
+    // Đầu kia của gạch chân đúng mép trái khung, xa chữ đúng 200 (thật).
+    expect(under.b.x).toBeCloseTo(fr.x0, 6)
+    const k = (fr.x1 - fr.x0) / SECTION.cpm.frame
+    expect(fr.x0 - x1).toBeCloseTo(SECTION.cpm.gap * k, 6)
+  })
+
+  it('chữ CPM theo form (không cố định 800 × 1200)', () => {
+    const p = clone()
+    p.topRoom.cpm = { w: 900, h: 1500 }
+    expect(count(draw(p), 'CPM 900 X 1500')).toBe(1)
+  })
+
+  it.each(['house-5f', 'hotel-9f'] as const)(
+    '%s: ô CPM hình trước có đúng 2 đường chéo nối các góc đối',
+    (id) => {
+      const p = clone(id)
+      const { w, h } = p.topRoom.cpm
+      const out = draw(p)
+      const isDiag = (q: Prim, b: ReturnType<typeof quads>[number]) => {
+        if (q.kind !== 'line') return false
+        const xs = [q.a.x, q.b.x].sort((m, n) => m - n)
+        const ys = [q.a.y, q.b.y].sort((m, n) => m - n)
+        return (
+          Math.abs(xs[0] - b.x0) < 1e-6 &&
+          Math.abs(xs[1] - b.x1) < 1e-6 &&
+          Math.abs(ys[0] - b.y0) < 1e-6 &&
+          Math.abs(ys[1] - b.y1) < 1e-6
+        )
+      }
+      const boxes = quads(out).filter(
+        (b) =>
+          b.q.weight === 'thin' &&
+          Math.abs((b.x1 - b.x0) / (b.y1 - b.y0) - w / h) < 1e-6 &&
+          out.some((q) => isDiag(q, b)),
+      )
+      expect(boxes).toHaveLength(1)
+      const diag = out.filter((q) => isDiag(q, boxes[0])) as Array<
+        Extract<Prim, { kind: 'line' }>
+      >
+      expect(diag).toHaveLength(2)
+      // Hai chéo ngược hướng nhau (một lên, một xuống).
+      const slope = diag.map((q) =>
+        Math.sign((q.b.y - q.a.y) * (q.b.x - q.a.x)),
+      )
+      expect(slope.sort()).toEqual([-1, 1])
+    },
+  )
+})
+
+describe('sectionEquipment: không phụ thuộc số liệu preset ngoài SECTION', () => {
+  it.each([2, 3, 5, 9, 20])(
+    'N = %i: cụm cabin tính từ tầng trên cùng, cụm đối trọng từ sàn pit, đều hữu hạn',
+    (n) => {
+      const p = withFloors('house-5f', n)
+      const f = frame(p)
+      const top = f.levels[f.levels.length - 1].floor
+      const s = equipment(p).side
+      expect(s.car.y).toBeCloseTo(-top + SECTION.car.below, 9)
+      expect(s.pulley.y).toBeCloseTo(-top + SECTION.pulley.below, 9)
+      expect(s.hitch.y).toBeCloseTo(-(f.machine + SECTION.hitch.top), 9)
+      expect(s.counterweight.y).toBe(p.tech.pit - SECTION.counterweight.up)
+      expect(s.ropes).toHaveLength(3)
+      for (const v of Object.values(equipment(p).front.cpm))
+        expect(Number.isFinite(v)).toBe(true)
+      for (const [a, b] of s.ropes)
+        for (const v of [a.x, a.y, b.x, b.y])
+          expect(Number.isFinite(v)).toBe(true)
+    },
+  )
+
+  it.each([2, 20])('N = %i: bản vẽ đặt đủ ký hiệu thiết bị', (n) => {
+    draw(withFloors('house-5f', n))
+    for (const id of [
+      'car-side',
+      'car-pulley-side',
+      'rope-hitch-bracket',
+      'rope-hitch',
+      'machine',
+      'counterweight-side',
+    ])
+      expect(placed(id).length).toBeGreaterThan(0)
+    expect(placed('buffer-a').length).toBeGreaterThan(0)
+    expect(placed('buffer-b').length).toBeGreaterThan(0)
+    expect(placed('hook-hang').length).toBeGreaterThan(0)
+  })
+
+  it('vị trí cabin, puly, giá, ty cáp, cửa đối trọng và giảm chấn chỉ do hằng số SECTION (hai preset cùng kích thước hố → cùng tọa độ)', () => {
+    const a = clone('house-5f')
+    const b = clone('hotel-9f')
+    for (const p of [a, b]) {
+      p.tech.shaft.depth = 1800
+      p.tech.shaft.width = 2000
+      p.tech.pit = 1400
+      p.tech.topRoomHeight = 1500
+      p.tech.overhead = 3600
+    }
+    const sa = equipment(a).side
+    const sb = equipment(b).side
+    const rel = (p: ElevatorParams, y: number) =>
+      y + frame(p).levels[frame(p).levels.length - 1].floor
+    expect(sa.car.x).toBe(sb.car.x)
+    expect(sa.pulley.x).toBe(sb.pulley.x)
+    expect(sa.bracket.x).toBe(sb.bracket.x)
+    expect(sa.hitch.x).toBe(sb.hitch.x)
+    expect(sa.buffers).toEqual(sb.buffers)
+    expect(sa.counterweight).toEqual(sb.counterweight)
+    expect(rel(a, sa.car.y)).toBeCloseTo(rel(b, sb.car.y), 9)
+    expect(rel(a, sa.pulley.y)).toBeCloseTo(rel(b, sb.pulley.y), 9)
+    expect(sa.sheave.x).toBe(sb.sheave.x)
+  })
+})
+
 describe('sectionSheet: số "THEO THỰC TẾ" theo số tầng', () => {
   it('đúng theo số level thường và số đà, với N = 2…20', () => {
     const per = (n: number) => {
@@ -502,6 +905,17 @@ describe('sectionSheet: thông số lạ không ném lỗi, nằm trong SHEET_AR
     [
       'midBeam.spacingTop = 100',
       (p) => void (p.structure.midBeam.spacingTop = 100),
+    ],
+    ['BH 1300', (p) => void (p.tech.shaft.depth = 1300)],
+    ['buồng trên 900', (p) => void (p.tech.topRoomHeight = 900)],
+    ['PIT 1100', (p) => void (p.tech.pit = 1100)],
+    ['CPM 1500 × 1800', (p) => void (p.topRoom.cpm = { w: 1500, h: 1800 })],
+    [
+      'móc sát tường',
+      (p) => {
+        p.topRoom.hook.x = 50
+        p.topRoom.hook.y = 50
+      },
     ],
     [
       'không tầng nào có cửa',

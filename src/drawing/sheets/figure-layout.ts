@@ -289,10 +289,12 @@ export const SECTION = {
     note: 100,
     /** Floor names (MTEXT 100 with `\\H1.5x`). */
     level: 150,
-    /** Dimension text: dimstyle Standard-40, DIMTXT 70 (not 100 as on the other sheets). */
-    dim: 70,
+    /** Dimension text: every M7 dimension overrides Standard-40's DIMTXT 70 with 100. */
+    dim: 100,
     /** Section letters A / B / C. */
     mark: 400,
+    /** "CPM 800 X 1500" in the top room (both sets, measured on the PDFs). */
+    cpm: 75,
   },
   /** Standard-40's DIMASZ and DIMGAP (real mm). */
   dimArrow: 40,
@@ -301,6 +303,39 @@ export const SECTION = {
   slot: 3400,
   /** Landing slab in front of the door wall: reach, thickness, bevel under its tip. */
   landing: { reach: 754, thick: 150, bevel: 150 },
+  /** The top room floor's landing slab reaches further (same thickness). */
+  topLanding: { reach: 955, bevel: 187 },
+  /**
+   * CPM seen edge-on (side view): a `frame`-wide outline with inner lines this far in,
+   * its outer face on the door wall's (set 2), roof underside to top room floor. The
+   * label's baseline sits `below` the roof underside and ends `gap` short of the frame;
+   * its underline runs on to the frame.
+   */
+  cpm: { frame: 50, lines: [20, 25, 30], below: 239, gap: 200 },
+  /** Machine platform on the top room floor, mid door wall to the back wall (PDFs). */
+  platform: 200,
+  /**
+   * Equipment (side view, x from the door wall's inner face; M7). Car side, bound to
+   * the door wall: car (`bc`, `below` the top floor), its pulley (`tl`), rope hitch
+   * (scale 0.5) on its bracket, buffer F. Counterweight side, bound to the back wall:
+   * the machine (mirrored, sheave centre `sheave` above the top room floor and
+   * `centre` below the symbol's centre), counterweight (`up` above the pit floor) and
+   * buffer U.
+   */
+  car: { x: 682.1, below: 607 },
+  pulley: { x: 375.6, below: 176.8 },
+  hitch: { x: 369.5, top: 553.5, scale: 0.5 },
+  bracket: { x: 375.7, top: 418.5 },
+  machine: { fromBack: 351, sheave: 500, centre: 6.7, radius: 160 },
+  counterweight: { fromBack: 191, up: 448 },
+  /** Buffer F from the door wall, buffer U from the back / right wall. */
+  buffers: { car: 947.1, counterweight: 179.5 },
+  /**
+   * Ropes: from the hitch (`hitchTop` above the top room floor) down to the car pulley
+   * (`hitchBottom` below the top floor); from the pulley's right end (`carX`,
+   * `carBottom` below the top floor) up to the sheave.
+   */
+  ropes: { hitchTop: 350, hitchBottom: 409, carX: 1099, carBottom: 300 },
   /**
    * `landing-door-side` insertion: this far into the shaft from the door wall's inner
    * face (its left edge sits in the wall) and this far below the landing floor.

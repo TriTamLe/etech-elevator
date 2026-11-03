@@ -5,7 +5,7 @@ import { machine } from '#/drawing/symbols/data/machine'
 import { ropeHitch } from '#/drawing/symbols/data/rope-hitch'
 import { bufferA } from '#/drawing/symbols/data/buffer-a'
 import { bufferB } from '#/drawing/symbols/data/buffer-b'
-import { pitLadder } from '#/drawing/symbols/data/pit-ladder'
+import { counterweightSide } from '#/drawing/symbols/data/counterweight-side'
 import { railTPlan } from '#/drawing/symbols/data/rail-t-plan'
 import { counterweightPlan } from '#/drawing/symbols/data/counterweight-plan'
 import { doorCoPlan } from '#/drawing/symbols/data/door-co-plan'
@@ -20,6 +20,8 @@ import { doorOpenArrow } from '#/drawing/symbols/data/door-open-arrow'
 import { jambWidePlan } from '#/drawing/symbols/data/jamb-wide-plan'
 import { callBoxPlan } from '#/drawing/symbols/data/call-box-plan'
 import { hookHang } from '#/drawing/symbols/data/hook-hang'
+import { ropeHitchBracket } from '#/drawing/symbols/data/rope-hitch-bracket'
+import { carPulleySide } from '#/drawing/symbols/data/car-pulley-side'
 
 export const SYMBOL_DATA = {
   'car-side': carSide,
@@ -28,7 +30,7 @@ export const SYMBOL_DATA = {
   'rope-hitch': ropeHitch,
   'buffer-a': bufferA,
   'buffer-b': bufferB,
-  'pit-ladder': pitLadder,
+  'counterweight-side': counterweightSide,
   'rail-t-plan': railTPlan,
   'counterweight-plan': counterweightPlan,
   'door-co-plan': doorCoPlan,
@@ -43,6 +45,8 @@ export const SYMBOL_DATA = {
   'jamb-wide-plan': jambWidePlan,
   'call-box-plan': callBoxPlan,
   'hook-hang': hookHang,
+  'rope-hitch-bracket': ropeHitchBracket,
+  'car-pulley-side': carPulleySide,
 } as const
 
 export type SymbolId = keyof typeof SYMBOL_DATA
