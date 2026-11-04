@@ -3,7 +3,6 @@ import { createFileRoute, notFound } from '@tanstack/react-router'
 import { z } from 'zod'
 
 import { PRESET_IDS, presetParams } from '#/domain/presets'
-import { exportPdf } from '#/pdf/export-pdf'
 
 // Dev-only: exports a preset to PDF for `yarn export:preset` (scripts/export-preset.ts).
 // The script waits for data-state="ready" on <main>, then reads window.__pdf (base64).
@@ -44,11 +43,15 @@ function DevExport() {
   React.useEffect(() => {
     let alive = true
     window.__pdf = undefined
-    exportPdf(presetParams(preset), {
-      onProgress: (done, total) => {
-        if (alive) setState({ kind: 'running', done, total })
-      },
-    })
+    // Lazy, as in the editor: keeps jsPDF out of the Worker bundle's static graph.
+    import('#/pdf/export-pdf')
+      .then(({ exportPdf }) =>
+        exportPdf(presetParams(preset), {
+          onProgress: (done, total) => {
+            if (alive) setState({ kind: 'running', done, total })
+          },
+        }),
+      )
       .then(blobToBase64)
       .then((base64) => {
         if (!alive) return

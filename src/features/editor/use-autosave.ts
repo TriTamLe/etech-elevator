@@ -1,4 +1,5 @@
 import * as React from 'react'
+import { onlineManager } from '@tanstack/react-query'
 import { useBlocker } from '@tanstack/react-router'
 
 import type { ElevatorParams } from '#/domain/schema'
@@ -27,7 +28,6 @@ export function useAutosave(
   const save = useSaveProject(projectId)
   const online = useOnline()
   const onlineRef = React.useRef(online)
-  onlineRef.current = online
   // What D1 will hold once every queued save has run (saves share one mutation scope, so
   // they land in order). Set before a request starts, put back if it fails — so editing
   // back to an older value while a save is in flight still counts as unsaved.
@@ -37,7 +37,12 @@ export function useAutosave(
   /** Saves started and not settled (read synchronously, unlike save.isPending). */
   const inFlight = React.useRef(0)
   const latest = React.useRef(issues)
-  latest.current = issues
+  // Committed values only (a render React throws away must not leak into the blocker).
+  // Layout effects run before the effects below that call flush().
+  React.useLayoutEffect(() => {
+    onlineRef.current = online
+    latest.current = issues
+  }, [online, issues])
   const [result, setResult] = React.useState<
     { kind: 'saved'; at: Date } | { kind: 'error' } | null
   >({ kind: 'saved', at: initialSavedAt })
@@ -88,9 +93,21 @@ export function useAutosave(
         return inFlight.current > 0 || isDirty(latest.current, target.current)
       }
       // Valid edits (or a save still in flight): finish saving, then let navigation through.
-      const ok = await flush()
-      await queue.current
-      return !ok || isDirty(latest.current, target.current)
+      // If the network drops meanwhile, Query pauses the save and these promises would wait
+      // for the reconnect: stop waiting and ask, as when offline from the start.
+      const offline = untilOffline()
+      const saved = await Promise.race([
+        flush().then(async (ok) => {
+          await queue.current
+          return ok
+        }),
+        offline.promise,
+      ])
+      offline.cancel()
+      if (saved === 'offline') {
+        return inFlight.current > 0 || isDirty(latest.current, target.current)
+      }
+      return !saved || isDirty(latest.current, target.current)
     },
     enableBeforeUnload: () =>
       inFlight.current > 0 || isDirty(latest.current, target.current),
@@ -108,6 +125,17 @@ export function useAutosave(
   })
 
   return { state, flush, blocker, online }
+}
+
+/** Resolves with 'offline' when the network drops (TanStack Query's view of it). */
+function untilOffline(): { promise: Promise<'offline'>; cancel: () => void } {
+  let cancel = () => {}
+  const promise = new Promise<'offline'>((resolve) => {
+    cancel = onlineManager.subscribe((online) => {
+      if (!online) resolve('offline')
+    })
+  })
+  return { promise, cancel }
 }
 
 function isDirty(issues: EditorIssues, target: string): boolean {

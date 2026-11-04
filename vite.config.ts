@@ -13,7 +13,7 @@ const config = defineConfig({
     devtools(),
     cloudflare({
       viteEnvironment: { name: 'ssr' },
-      // E2E runs on its own local D1 (tests/e2e/global-setup.ts), never the dev one.
+      // E2E runs on its own local D1 (reset by tests/e2e/reset-db.ts), never the dev one.
       persistState: process.env.E2E ? { path: '.wrangler/e2e' } : true,
     }),
     tailwindcss(),

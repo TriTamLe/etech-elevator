@@ -6,11 +6,14 @@ import { BrandMark } from '#/components/app/brand-mark'
 import { Icons } from '#/components/app/icons'
 import { Button } from '#/components/ui/button'
 import { errorMessage } from '#/lib/error-message'
+import { useHydrationMark } from '#/lib/use-hydration-mark'
 
 /** Root/default error page: what went wrong in Vietnamese, retry (re-runs loaders) or go home. */
 export function ErrorPage({ error }: ErrorComponentProps) {
   const router = useRouter()
   React.useEffect(() => console.error(error), [error])
+  // An SSR page that failed still hydrates here: E2E's open() then sees the error at once.
+  useHydrationMark()
   return (
     <main className="mx-auto grid max-w-xl justify-items-center px-4 pt-16 pb-16 text-center sm:px-6">
       <BrandMark className="h-10" />
