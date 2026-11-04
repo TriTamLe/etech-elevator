@@ -28,6 +28,7 @@ import {
   Trash2Icon,
   TriangleAlertIcon,
   Undo2Icon,
+  WifiOffIcon,
   UploadIcon,
   XIcon,
   ZoomInIcon,
@@ -65,6 +66,7 @@ export const Icons = {
   loading: Loader2Icon,
   symbols: ShapesIcon,
   primitives: RulerDimensionLineIcon,
+  offline: WifiOffIcon,
 } satisfies Record<string, LucideIcon>
 
 export type IconName = keyof typeof Icons
@@ -100,4 +102,5 @@ export const ICON_MEANINGS: Record<IconName, string> = {
   loading: 'Đang xử lý',
   symbols: 'Thư viện ký hiệu',
   primitives: 'Phần tử vẽ (kích thước, ký hiệu vật liệu…)',
+  offline: 'Mất mạng',
 }

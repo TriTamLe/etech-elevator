@@ -11,10 +11,13 @@ import {
 } from '#/components/ui/tooltip'
 import { readJsonFile } from '#/features/projects/project-json'
 import { errorMessage, useCreateProject } from '#/features/projects/queries'
+import { useNetworkGate } from '#/lib/use-network-gate'
 
 // Picks a .json export, sends it to createProject (the server runs migrate()), opens it.
-export function ImportProjectButton() {
+/** `labelled`: an outline button with its text (empty state) instead of the icon button. */
+export function ImportProjectButton({ labelled = false }: { labelled?: boolean }) {
   const input = React.useRef<HTMLInputElement>(null)
+  const { hydrated, offline } = useNetworkGate()
   const create = useCreateProject()
   const navigate = useNavigate()
 
@@ -48,16 +51,25 @@ export function ImportProjectButton() {
         <TooltipTrigger asChild>
           <Button
             variant="outline"
-            size="icon"
-            aria-label="Nhập dự án từ file JSON"
+            size={labelled ? 'default' : 'icon'}
+            aria-label={
+              offline
+                ? `Nhập dự án từ file JSON — ${offline}`
+                : 'Nhập dự án từ file JSON'
+            }
+            disabled={!hydrated}
+            aria-disabled={offline !== null || create.isPending || undefined}
             loading={create.isPending}
-            onClick={() => input.current?.click()}
+            onClick={() => !offline && input.current?.click()}
             className="shrink-0"
           >
             <Icons.importJson aria-hidden="true" />
+            {labelled && 'Nhập JSON'}
           </Button>
         </TooltipTrigger>
-        <TooltipContent>Nhập JSON</TooltipContent>
+        <TooltipContent>
+          {offline ? `Nhập JSON · ${offline}` : 'Nhập JSON'}
+        </TooltipContent>
       </Tooltip>
     </>
   )

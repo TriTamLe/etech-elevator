@@ -10,6 +10,8 @@ import { TanStackDevtools } from '@tanstack/react-devtools'
 
 import TanStackQueryDevtools from '../integrations/tanstack-query/devtools'
 import { BrandMark } from '#/components/app/brand-mark'
+import { ErrorPage } from '#/components/app/error-page'
+import { APP_NAME } from '#/config/app'
 import { Toaster } from '#/components/ui/sonner'
 import { TooltipProvider } from '#/components/ui/tooltip'
 
@@ -32,7 +34,7 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
         content: 'width=device-width, initial-scale=1',
       },
       {
-        title: 'Công cụ tự động sinh báo cáo thiết kế thang máy',
+        title: APP_NAME,
       },
     ],
     links: [
@@ -48,6 +50,7 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
   }),
   shellComponent: RootDocument,
   notFoundComponent: NotFound,
+  errorComponent: ErrorPage,
 })
 
 function NotFound() {
@@ -68,7 +71,8 @@ function NotFound() {
 
 function RootDocument({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="vi">
+    // suppressHydrationWarning: pages add data-hydrated to <html> (useHydrationMark).
+    <html lang="vi" suppressHydrationWarning>
       <head>
         <HeadContent />
       </head>

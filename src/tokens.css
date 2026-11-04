@@ -7,6 +7,8 @@
   /* Surfaces — cool engineered paper, never #fff */
   --color-paper: oklch(98.5% 0.004 249);
   --color-paper-2: oklch(96.6% 0.006 249);
+  /* Opaque hover of paper-2 (sticky headers: a translucent fill would show what scrolls under) */
+  --color-paper-2-hover: oklch(93.6% 0.008 249);
   --color-graphite: oklch(23% 0.03 249);
 
   /* Rules — decorative hairlines vs. control boundaries (≥ 3:1) */
@@ -30,6 +32,7 @@
   /* Status — from the DTP logo greens / orange; danger added (not in logo) */
   --color-ok: oklch(50% 0.13 145);
   --color-warn: oklch(79.9% 0.164 77);
+  --color-warn-soft: oklch(96% 0.04 85);
   --color-danger: oklch(55% 0.19 27);
   --color-danger-soft: oklch(95% 0.025 27);
 
@@ -76,7 +79,8 @@
   --dur-slow: 320ms;
 }
 
-@media (pointer: coarse) {
+/* Touch screens and narrow windows (phones, tablets): 44 px controls. */
+@media (pointer: coarse), (max-width: 767px) {
   :root {
     --control-h: 2.75rem;
   }

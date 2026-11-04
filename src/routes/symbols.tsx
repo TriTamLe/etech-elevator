@@ -14,6 +14,7 @@ import { hline, rect, text, vline } from '#/drawing/prims'
 import { SYMBOL_IDS, placeSymbol, placedBox, symbol } from '#/drawing/symbols'
 import type { PlaceOpts, SymbolData, SymbolId } from '#/drawing/symbols'
 import { SHEET } from '#/drawing/types'
+import { pageTitle } from '#/config/app'
 
 // The symbol library taken from the reference DWG: each symbol on its own A3 sheet with
 // its bounds, insertion point (+) and real size, then a few stretch examples. Drawn
@@ -23,7 +24,7 @@ import { SHEET } from '#/drawing/types'
 export const Route = createFileRoute('/symbols')({
   ssr: false,
   head: () => ({
-    meta: [{ title: 'Thư viện ký hiệu · Công cụ sinh báo cáo thang máy' }],
+    meta: [{ title: pageTitle('Thư viện ký hiệu') }],
   }),
   component: SymbolsPage,
 })

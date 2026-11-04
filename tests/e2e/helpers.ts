@@ -55,11 +55,14 @@ export const field = (page: Page, path: string) =>
   page.locator(`[id="field-${path}"]`)
 
 /**
- * Opens a page and waits until React has hydrated it: the project list is rendered on
- * the server, and a click before hydration does nothing.
+ * Opens a page and waits until React has hydrated it (`html[data-hydrated]`, set by the
+ * page via useHydrationMark): the project list is rendered on the server, and a click
+ * before hydration does nothing. Only for SSR pages that call it (the list): the
+ * client-only editor never sets the mark, so reach it through the list (createProject).
  */
 export async function open(page: Page, url: string) {
-  await page.goto(url, { waitUntil: 'networkidle' })
+  await page.goto(url)
+  await page.locator('html[data-hydrated]').waitFor({ state: 'attached' })
 }
 
 /** Creates a project from a preset in the dialog and waits for its editor. */
@@ -70,10 +73,9 @@ export async function createProject(
 ) {
   await open(page, '/')
   const dialog = page.getByRole('dialog')
-  await expect(async () => {
-    await page.getByRole('button', { name: 'Tạo dự án' }).click()
-    await expect(dialog).toBeVisible({ timeout: 1000 })
-  }).toPass()
+  // The empty list has a second "Tạo dự án" (empty state); the toolbar one comes first.
+  await page.getByRole('button', { name: 'Tạo dự án', exact: true }).first().click()
+  await expect(dialog).toBeVisible()
   await dialog.getByText(preset).click()
   await dialog.getByLabel('Tên công trình').fill(name)
   await dialog.getByRole('button', { name: 'Tạo dự án' }).click()

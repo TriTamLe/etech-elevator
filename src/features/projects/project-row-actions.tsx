@@ -17,14 +17,18 @@ import {
 } from '#/components/ui/tooltip'
 import { exportProjectJson } from '#/features/projects/project-json'
 import { errorMessage, useDuplicateProject } from '#/features/projects/queries'
+import { useNetworkGate } from '#/lib/use-network-gate'
 import { cn } from '#/lib/utils'
 import type { ProjectListItem } from '#/server/project-repo'
 
-// Row actions, one list for both layouts: icon buttons with tooltips ≥ 640 px,
-// a "⋯" menu below. Opening a project is the name link itself.
+// Row actions, one list for both layouts: icon buttons with tooltips ≥ 768 px,
+// a "⋯" menu below. Opening a project is the name link itself. Every action calls the
+// server. While a row is busy or offline the buttons stay focusable (aria-disabled), so
+// focus never drops to <body> when a mutation starts; before hydration they are disabled.
 
 type RowActionProps = {
   project: ProjectListItem
+  /** A mutation for this row is in flight. */
   disabled: boolean
   onEdit: () => void
   /** Opens the delete confirmation. */
@@ -81,9 +85,11 @@ function useRowActions({
   ]
 }
 
-/** ≥ 640 px: every action visible as an icon button. */
+/** ≥ 768 px: every action visible as an icon button. */
 export function ProjectRowButtons(props: RowActionProps) {
   const actions = useRowActions(props)
+  const { hydrated, offline } = useNetworkGate()
+  const blocked = props.disabled || offline !== null
   return (
     <div className="flex justify-end gap-1">
       {actions.map((action) => (
@@ -92,9 +98,10 @@ export function ProjectRowButtons(props: RowActionProps) {
             <Button
               variant="ghost"
               size="icon-sm"
-              disabled={props.disabled}
+              disabled={!hydrated}
+              aria-disabled={blocked || undefined}
               aria-label={`${action.label} “${props.project.name}”`}
-              onClick={action.run}
+              onClick={() => !blocked && action.run()}
               className={cn(
                 action.destructive && 'hover:text-(--color-danger)',
               )}
@@ -102,25 +109,44 @@ export function ProjectRowButtons(props: RowActionProps) {
               <action.icon aria-hidden="true" />
             </Button>
           </TooltipTrigger>
-          <TooltipContent>{action.label}</TooltipContent>
+          <TooltipContent>
+            {offline ? `${action.label} · ${offline}` : action.label}
+          </TooltipContent>
         </Tooltip>
       ))}
     </div>
   )
 }
 
-/** < 640 px: the same actions behind a 44 px "⋯" trigger. */
+/** < 768 px: the same actions behind a 44 px "⋯" trigger. */
 export function ProjectRowMenu(props: RowActionProps) {
   const actions = useRowActions(props)
   // Closing the menu returns focus to its trigger; skip that when the action moves it.
   const skipFocusReturn = React.useRef(false)
+  const { hydrated, offline } = useNetworkGate()
+  const blocked = props.disabled || offline !== null
+  const [open, setOpen] = React.useState(false)
+  // Closed for good when the row becomes busy or the network drops (no reopening later).
+  React.useEffect(() => {
+    if (blocked) setOpen(false)
+  }, [blocked])
   return (
-    <DropdownMenu modal={false}>
-      <DropdownMenuTrigger asChild disabled={props.disabled}>
+    <DropdownMenu
+      modal={false}
+      open={open && !blocked}
+      onOpenChange={(next) => setOpen(next && !blocked)}
+    >
+      <DropdownMenuTrigger asChild>
         <Button
           variant="ghost"
           size="icon-sm"
-          aria-label={`Thao tác cho “${props.project.name}”`}
+          disabled={!hydrated}
+          aria-disabled={blocked || undefined}
+          aria-label={
+            offline
+              ? `Thao tác cho “${props.project.name}” — ${offline}`
+              : `Thao tác cho “${props.project.name}”`
+          }
           className="size-11 shrink-0"
         >
           <Icons.more aria-hidden="true" />

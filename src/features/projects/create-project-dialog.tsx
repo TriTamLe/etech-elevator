@@ -15,16 +15,25 @@ import {
 import { Field } from '#/components/ui/field'
 import { Input } from '#/components/ui/input'
 import { RadioGroup, RadioGroupItem } from '#/components/ui/radio-group'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '#/components/ui/tooltip'
 import { PROJECT_TEXT_MAX } from '#/domain/config'
 import { PRESETS } from '#/domain/presets'
 import type { PresetId } from '#/domain/presets'
 import { errorMessage, useCreateProject } from '#/features/projects/queries'
+import { useNetworkGate } from '#/lib/use-network-gate'
+import { cn } from '#/lib/utils'
 
 const presetName = (id: PresetId) =>
   PRESETS.find((p) => p.id === id)?.params.project.name ?? ''
 
-export function CreateProjectDialog() {
+/** `labelled`: the trigger shows its text at every width (empty state). */
+export function CreateProjectDialog({ labelled = false }: { labelled?: boolean }) {
   const [open, setOpen] = React.useState(false)
+  const { hydrated, offline } = useNetworkGate()
   const [presetId, setPresetId] = React.useState<PresetId>(PRESETS[0].id)
   const [name, setName] = React.useState(presetName(PRESETS[0].id))
   // The name follows the preset until the user types their own.
@@ -44,7 +53,8 @@ export function CreateProjectDialog() {
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault()
-    if (!name.trim()) return
+    // Offline the request would pause and the button spin until the network returns.
+    if (!name.trim() || offline) return
     create.mutate(
       { kind: 'preset', presetId, name: name.trim(), address: address.trim() },
       {
@@ -60,16 +70,32 @@ export function CreateProjectDialog() {
     <Dialog
       open={open}
       onOpenChange={(next) => {
+        if (next && offline) return
         setOpen(next)
         if (!next) reset()
       }}
     >
-      <DialogTrigger asChild>
-        <Button aria-label="Tạo dự án" className="shrink-0">
-          <Icons.create aria-hidden="true" />
-          <span className="hidden sm:inline">Tạo dự án</span>
-        </Button>
-      </DialogTrigger>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <DialogTrigger asChild>
+            <Button
+              disabled={!hydrated}
+              aria-disabled={offline !== null || undefined}
+              aria-label={offline ? `Tạo dự án — ${offline}` : 'Tạo dự án'}
+              className="shrink-0"
+            >
+              <Icons.create aria-hidden="true" />
+              <span className={cn(!labelled && 'hidden sm:inline')}>
+                Tạo dự án
+              </span>
+            </Button>
+          </DialogTrigger>
+        </TooltipTrigger>
+        {/* Icon-only below 640 px: the tooltip names it; offline it gives the reason. */}
+        <TooltipContent className={cn(!offline && (labelled ? 'hidden' : 'sm:hidden'))}>
+          {offline ? `Tạo dự án · ${offline}` : 'Tạo dự án'}
+        </TooltipContent>
+      </Tooltip>
       <DialogContent>
         <form onSubmit={submit} className="grid gap-5">
           <DialogHeader>
@@ -141,10 +167,16 @@ export function CreateProjectDialog() {
           </Field>
 
           <DialogFooter>
+            {offline && (
+              <p className="self-center text-(length:--text-sm) text-(--color-ink-3)">
+                {offline} để tạo dự án.
+              </p>
+            )}
             <Button
               type="submit"
               loading={create.isPending}
               disabled={!name.trim()}
+              aria-disabled={offline !== null || undefined}
             >
               Tạo dự án
             </Button>

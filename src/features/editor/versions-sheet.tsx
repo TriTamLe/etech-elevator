@@ -36,7 +36,9 @@ import {
   useSaveVersion,
   versionsQuery,
 } from '#/features/projects/queries'
+import { OFFLINE_TEXT } from '#/config/app'
 import { formatDate, formatUpdatedAt } from '#/lib/format'
+import { useOnline } from '#/lib/use-online'
 import type { VersionListItem } from '#/server/project-repo'
 
 /** Versions: snapshot with a note, restore into the form, or log one in the revision table. */
@@ -61,14 +63,20 @@ export function VersionsSheet({
   if (restoring) lastRestoreId.current = restoring.id
   const [busy, setBusy] = React.useState(false)
   const now = new Date()
+  const online = useOnline()
+  const offlineHint = `${OFFLINE_TEXT.needsNetwork}.`
 
   const snapshot = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (!online) {
+      toast(offlineHint)
+      return
+    }
     setBusy(true)
     try {
       if (!(await flush())) {
         toast.error(
-          'Còn lỗi trong form hoặc chưa lưu được — sửa xong rồi lưu phiên bản.',
+          'Còn ô báo lỗi hoặc chưa lưu được — sửa xong rồi lưu phiên bản.',
         )
         return
       }
@@ -88,9 +96,24 @@ export function VersionsSheet({
     setRestoreBusy(true)
     try {
       const version = await fetchVersion(projectId, v.id)
+      const previous = form.state.values
       replaceParams(version.params)
+      const restored = JSON.stringify(form.state.values)
+      // Undo puts back the values from before the restore, unless the form was edited
+      // since: those newer edits would be lost silently.
+      const undo = () => {
+        if (JSON.stringify(form.state.values) !== restored) {
+          toast('Đã sửa sau khi khôi phục nên không hoàn tác được.')
+          return
+        }
+        replaceParams(previous)
+      }
       toast.success(
         `Đã khôi phục phiên bản ${formatUpdatedAt(v.createdAt, now)}.`,
+        {
+          duration: 8000,
+          action: { label: 'Hoàn tác', onClick: undo },
+        },
       )
       setRestoring(null)
       onOpenChange(false)
@@ -141,10 +164,24 @@ export function VersionsSheet({
               maxLength={500}
             />
           </Field>
-          <Button type="submit" loading={busy} className="justify-self-start">
+          <Button
+            type="submit"
+            loading={busy}
+            aria-disabled={!online || busy || undefined}
+            aria-describedby={online ? undefined : 'versions-offline'}
+            className="justify-self-start"
+          >
             <Icons.versions aria-hidden="true" />
             Lưu phiên bản
           </Button>
+          {!online && (
+            <p
+              id="versions-offline"
+              className="text-(length:--text-sm) text-(--color-ink-3)"
+            >
+              {OFFLINE_TEXT.needsNetwork} để lưu hoặc khôi phục phiên bản.
+            </p>
+          )}
         </form>
 
         <div className="min-h-0 flex-1 overflow-y-auto px-5 py-4">
@@ -154,9 +191,20 @@ export function VersionsSheet({
               <Skeleton className="h-14" />
             </div>
           ) : versions.isError ? (
-            <p className="text-(length:--text-sm) text-(--color-danger)">
-              Không tải được danh sách phiên bản: {errorMessage(versions.error)}
-            </p>
+            <div className="grid justify-items-start gap-3">
+              <p className="text-(length:--text-sm) text-(--color-danger)">
+                Không tải được danh sách phiên bản: {errorMessage(versions.error)}
+              </p>
+              <Button
+                variant="outline"
+                size="sm"
+                loading={versions.isFetching}
+                onClick={() => void versions.refetch()}
+              >
+                <Icons.restore aria-hidden="true" />
+                Thử lại
+              </Button>
+            </div>
           ) : versions.data.length === 0 ? (
             <p className="text-(length:--text-sm) text-(--color-ink-3)">
               Chưa có phiên bản nào.
@@ -183,7 +231,10 @@ export function VersionsSheet({
                       id={`version-restore-${v.id}`}
                       variant="outline"
                       size="sm"
-                      onClick={() => setRestoring(v)}
+                      aria-disabled={!online || undefined}
+                      onClick={() =>
+                        online ? setRestoring(v) : toast(offlineHint)
+                      }
                     >
                       <Icons.restore aria-hidden="true" />
                       Khôi phục

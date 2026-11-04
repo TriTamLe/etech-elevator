@@ -29,7 +29,7 @@ export function DerivedPanel() {
       </h2>
       {!d ? (
         <p className="mt-2 text-(length:--text-sm) text-(--color-ink-3)">
-          Sửa các lỗi trong form để xem giá trị tự tính.
+          Sửa các ô đang báo lỗi để xem giá trị tự tính.
         </p>
       ) : (
         <dl className="mt-3 grid gap-3 text-(length:--text-sm)">
@@ -37,7 +37,7 @@ export function DerivedPanel() {
             label="Tổng chiều cao hố"
             value={
               d.shaftTotalHeight === null
-                ? '-- mm (chưa đủ chiều cao tầng)'
+                ? '— (chưa đủ chiều cao tầng)'
                 : `${mm.format(d.shaftTotalHeight)} mm`
             }
           />

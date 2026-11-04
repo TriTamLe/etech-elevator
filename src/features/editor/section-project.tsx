@@ -95,7 +95,7 @@ export function SectionProject() {
           </p>
           {!params && (
             <p className="text-(length:--text-xs) text-(--color-ink-3)">
-              Sửa các lỗi trong form để xem danh sách trang.
+              Sửa các ô đang báo lỗi để xem danh sách trang.
             </p>
           )}
           {(params ? pageList(params) : [])

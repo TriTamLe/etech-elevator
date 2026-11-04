@@ -4,7 +4,6 @@ import {
   useMutationState,
   useQueryClient,
 } from '@tanstack/react-query'
-import { isNotFound } from '@tanstack/react-router'
 import { toast } from 'sonner'
 
 import type { PresetId } from '#/domain/presets'
@@ -23,6 +22,7 @@ import {
   updateProjectInfo,
 } from '#/server/projects'
 import type { ProjectListItem } from '#/server/project-repo'
+import { errorMessage } from '#/lib/error-message'
 
 export const projectKeys = {
   all: ['projects'] as const,
@@ -58,12 +58,8 @@ export function usePendingRowIds(): ReadonlySet<string> {
   return new Set(ids.filter((id): id is string => Boolean(id)))
 }
 
-export function errorMessage(error: unknown): string {
-  if (isNotFound(error)) return 'Dự án không còn tồn tại.'
-  return error instanceof Error && error.message
-    ? error.message
-    : 'Đã có lỗi, vui lòng thử lại.'
-}
+// Re-exported: callers keep importing it from here.
+export { errorMessage }
 
 /**
  * Refetch the list once the last row mutation settles. Refetching while another

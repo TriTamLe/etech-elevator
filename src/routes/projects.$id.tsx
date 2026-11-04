@@ -1,6 +1,9 @@
 import type * as React from 'react'
-import { Link, createFileRoute } from '@tanstack/react-router'
-import { useSuspenseQuery } from '@tanstack/react-query'
+import { Link, createFileRoute, useRouter } from '@tanstack/react-router'
+import {
+  useQueryErrorResetBoundary,
+  useSuspenseQuery,
+} from '@tanstack/react-query'
 
 import { BrandMark } from '#/components/app/brand-mark'
 import { Icons } from '#/components/app/icons'
@@ -45,19 +48,50 @@ function EditorPage() {
   return <Editor key={project.id} project={project} />
 }
 
+/** Matches the Workbench: form column (420 px) + graphite preview ≥ 1024 px, tabs below. */
 function EditorPending() {
+  const cards = (
+    <div className="grid gap-3 p-3 sm:p-5">
+      {[0, 1, 2].map((i) => (
+        <div
+          key={i}
+          className="grid gap-3 rounded-(--radius-card) border border-(--color-rule) p-4"
+        >
+          <Skeleton className="h-5 w-1/2" />
+          <Skeleton className="h-9" />
+          <Skeleton className="h-9" />
+        </div>
+      ))}
+    </div>
+  )
   return (
-    <>
-      <EditorHeader />
-      <main className="mx-auto max-w-5xl px-4 py-8 sm:px-6">
-        <Skeleton className="h-8 w-2/3" />
-        <Skeleton className="mt-3 h-4 w-1/3" />
-      </main>
-    </>
+    <div
+      className="flex h-dvh flex-col"
+      role="status"
+      aria-label="Đang mở dự án"
+    >
+      <EditorHeader>
+        <Skeleton className="h-9 w-24 max-sm:w-10" />
+        <Skeleton className="h-9 w-24 max-sm:w-10" />
+      </EditorHeader>
+      <div className="hidden min-h-0 flex-1 grid-cols-[420px_minmax(0,1fr)] lg:grid">
+        <div className="border-r border-(--color-rule)">{cards}</div>
+        <div className="bg-(--color-graphite)" />
+      </div>
+      <div className="min-h-0 flex-1 lg:hidden">
+        <Skeleton className="mx-4 my-2 h-9 max-md:h-12 sm:mx-5" />
+        {cards}
+      </div>
+    </div>
   )
 }
 
-function EditorError({ error, reset }: { error: unknown; reset: () => void }) {
+function EditorError({ error }: { error: unknown }) {
+  // invalidate() re-runs the loader and resets the boundary; reset() alone would only
+  // re-render the same failed match. The query boundary is reset too, or a query that
+  // failed during render (useSuspenseQuery) would throw its cached error again.
+  const router = useRouter()
+  const queryErrors = useQueryErrorResetBoundary()
   return (
     <>
       <EditorHeader />
@@ -66,7 +100,14 @@ function EditorError({ error, reset }: { error: unknown; reset: () => void }) {
           <AlertTitle>Không mở được dự án</AlertTitle>
           <AlertDescription>{errorMessage(error)}</AlertDescription>
         </Alert>
-        <Button variant="outline" className="mt-4" onClick={reset}>
+        <Button
+          variant="outline"
+          className="mt-4"
+          onClick={() => {
+            queryErrors.reset()
+            void router.invalidate()
+          }}
+        >
           <Icons.restore aria-hidden="true" />
           Thử lại
         </Button>

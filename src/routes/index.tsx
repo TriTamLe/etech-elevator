@@ -4,10 +4,13 @@ import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { z } from 'zod'
 
 import { BrandMark } from '#/components/app/brand-mark'
+import { OfflineBanner } from '#/components/app/offline-banner'
 import { Icons } from '#/components/app/icons'
 import { Alert, AlertDescription, AlertTitle } from '#/components/ui/alert'
 import { Button } from '#/components/ui/button'
 import { Input } from '#/components/ui/input'
+import { Kbd } from '#/components/ui/kbd'
+import { APP_NAME } from '#/config/app'
 import { CreateProjectDialog } from '#/features/projects/create-project-dialog'
 import { ImportProjectButton } from '#/features/projects/import-project-button'
 import {
@@ -16,6 +19,8 @@ import {
 } from '#/features/projects/project-table'
 import { errorMessage, projectsQuery } from '#/features/projects/queries'
 import { useDebouncedValue } from '#/lib/use-debounced-value'
+import { useHotkey } from '#/lib/use-hotkey'
+import { useHydrationMark } from '#/lib/use-hydration-mark'
 
 const Search = z.object({ q: z.string().optional().catch(undefined) })
 
@@ -53,12 +58,20 @@ function ProjectsPage() {
   const list = useQuery({ ...projectsQuery, placeholderData: keepPreviousData })
   const refetching = list.isFetching && !list.isPending
 
+  const search = React.useRef<HTMLInputElement>(null)
+  useHotkey('/', () => {
+    search.current?.focus()
+    search.current?.select()
+  })
+  // After useHotkey: effects run in order, so "/" is live once the mark is set.
+  useHydrationMark()
+
   return (
     <main className="mx-auto max-w-3xl px-4 pt-12 pb-16 sm:px-6 sm:pt-16">
       <header className="grid justify-items-center text-center">
         <BrandMark className="h-12 sm:h-16" />
         <h1 className="mt-6 text-(length:--text-xl) font-semibold text-balance sm:text-(length:--text-2xl)">
-          Công cụ tự động sinh báo cáo thiết kế thang máy
+          {APP_NAME}
         </h1>
         <div className="mt-3 flex flex-wrap justify-center gap-1">
           <Button variant="ghost" size="sm" asChild>
@@ -76,6 +89,8 @@ function ProjectsPage() {
         </div>
       </header>
 
+      <OfflineBanner className="mt-8 overflow-hidden rounded-(--radius-card) border border-(--color-rule) [&>p]:border-0" />
+
       <section
         aria-label="Danh sách dự án"
         className="mt-8 rounded-(--radius-card) border border-(--color-rule) bg-(--color-paper)"
@@ -87,9 +102,11 @@ function ProjectsPage() {
               aria-hidden="true"
             />
             <Input
+              ref={search}
               type="search"
               aria-label="Tìm dự án"
-              placeholder="Tìm theo tên công trình hoặc địa chỉ…"
+              aria-keyshortcuts="/"
+              placeholder="Tìm dự án…"
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => {
@@ -101,29 +118,64 @@ function ProjectsPage() {
               className="pr-9 pl-9 [&::-webkit-search-cancel-button]:hidden"
             />
             {refetching ? (
-              <Icons.loading
-                className="absolute top-1/2 right-3 size-4 -translate-y-1/2 animate-spin text-(--color-ink-3)"
-                aria-label="Đang cập nhật danh sách"
-              />
+              <span
+                role="status"
+                className="absolute top-1/2 right-3 -translate-y-1/2 text-(--color-ink-3)"
+              >
+                <Icons.loading
+                  className="size-4 motion-safe:animate-spin"
+                  aria-hidden="true"
+                />
+                <span className="sr-only">Đang cập nhật danh sách</span>
+              </span>
+            ) : input ? (
+              <button
+                type="button"
+                aria-label="Xóa tìm kiếm"
+                onClick={clear}
+                className="absolute top-1/2 right-1 grid size-8 -translate-y-1/2 place-items-center rounded-(--radius-control) text-(--color-ink-3) hover:text-(--color-ink) focus-visible:outline-2 focus-visible:outline-(--color-focus) max-md:right-0 max-md:size-11"
+              >
+                <Icons.clear className="size-4" aria-hidden="true" />
+              </button>
             ) : (
-              input && (
-                <button
-                  type="button"
-                  aria-label="Xóa tìm kiếm"
-                  onClick={clear}
-                  className="absolute top-1/2 right-1 grid size-8 -translate-y-1/2 place-items-center rounded-(--radius-control) text-(--color-ink-3) hover:text-(--color-ink) focus-visible:outline-2 focus-visible:outline-(--color-focus)"
-                >
-                  <Icons.clear className="size-4" aria-hidden="true" />
-                </button>
-              )
+              <Kbd
+                aria-hidden="true"
+                className="pointer-events-none absolute top-1/2 right-2.5 -translate-y-1/2 max-sm:hidden"
+              >
+                /
+              </Kbd>
             )}
           </div>
           <ImportProjectButton />
           <CreateProjectDialog />
         </div>
 
-        {list.isPending ? (
-          <ProjectTableSkeleton />
+        {/* Rows already shown stay put when a refetch fails; the big alert is only for a
+            first load that never arrived. */}
+        {list.isError && list.data && (
+          <div
+            role="alert"
+            className="flex flex-wrap items-center gap-x-3 gap-y-1 border-b border-(--color-rule) bg-(--color-danger-soft) px-3 py-2 text-(length:--text-sm)"
+          >
+            <span className="text-(--color-danger)">
+              Không tải lại được danh sách. {errorMessage(list.error)}
+            </span>
+            <Button
+              variant="link"
+              size="sm"
+              loading={list.isFetching}
+              onClick={() => void list.refetch()}
+            >
+              Thử lại
+            </Button>
+          </div>
+        )}
+        {list.data ? (
+          <ProjectTable
+            rows={list.data}
+            query={debounced}
+            onClearQuery={clear}
+          />
         ) : list.isError ? (
           <div className="p-3">
             <Alert variant="destructive">
@@ -132,7 +184,6 @@ function ProjectsPage() {
             </Alert>
             <Button
               variant="outline"
-              size="sm"
               className="mt-3"
               loading={list.isFetching}
               onClick={() => void list.refetch()}
@@ -142,11 +193,7 @@ function ProjectsPage() {
             </Button>
           </div>
         ) : (
-          <ProjectTable
-            rows={list.data}
-            query={debounced}
-            onClearQuery={clear}
-          />
+          <ProjectTableSkeleton />
         )}
       </section>
     </main>

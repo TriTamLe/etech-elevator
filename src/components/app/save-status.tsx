@@ -10,6 +10,8 @@ export type SaveState =
   | { kind: 'pending' }
   /** Not saved: the form has shape errors (blank or invalid numbers). */
   | { kind: 'invalid'; count: number }
+  /** Offline with edits (or a paused save) waiting for the network. */
+  | { kind: 'offline' }
 
 
 // Silent-success status line in the mono label voice. aria-live so screen readers hear changes.
@@ -33,6 +35,9 @@ export function SaveStatus({
           Chưa lưu — còn {state.count} lỗi
         </span>
       )}
+      {state.kind === 'offline' && (
+        <span className="text-(--color-ink-2)">Mất mạng · chờ lưu</span>
+      )}
       {state.kind === 'saving' && (
         <span className="text-(--color-ink-3)">Đang lưu…</span>
       )}
@@ -43,7 +48,7 @@ export function SaveStatus({
       )}
       {state.kind === 'error' && (
         <>
-          <span className="text-(--color-danger)">Lưu lỗi</span>
+          <span className="text-(--color-danger)">Không lưu được</span>
           <button
             type="button"
             onClick={state.retry}

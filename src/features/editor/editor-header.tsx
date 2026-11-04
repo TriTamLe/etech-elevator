@@ -35,6 +35,11 @@ import {
 } from '#/features/projects/project-json'
 import { useExportPdf } from '#/features/editor/use-export-pdf'
 import { errorMessage } from '#/features/projects/queries'
+import { OFFLINE_TEXT } from '#/config/app'
+import { useOnline } from '#/lib/use-online'
+import { Kbd } from '#/components/ui/kbd'
+import { ariaHotkey, formatHotkey } from '#/lib/hotkey'
+import { useHotkey } from '#/lib/use-hotkey'
 
 export function EditorHeader({
   name,
@@ -51,7 +56,7 @@ export function EditorHeader({
 
   const exportJson = () => {
     if (!issues.params) {
-      toast.error('Còn lỗi trong form — sửa xong rồi xuất JSON.')
+      toast.error(`Còn ${issues.errors} ô báo lỗi — sửa xong rồi xuất JSON.`)
       return
     }
     downloadParamsJson(issues.params)
@@ -65,10 +70,16 @@ export function EditorHeader({
     }
   }
 
-  // Rule errors block the PDF; warnings do not. Zod errors leave params null.
-  const pdfReady = issues.errors === 0 ? issues.params : null
-  const pdfBlockedBy = `Còn ${issues.errors} lỗi cần sửa trước khi xuất PDF.`
+  // Rule errors block the PDF; warnings do not. Zod errors leave params null. Offline the
+  // PDF libraries and fonts may not have been fetched yet.
+  const online = useOnline()
+  const pdfReady = online && issues.errors === 0 ? issues.params : null
+  const pdfBlockedBy = online
+    ? `Còn ${issues.errors} lỗi cần sửa trước khi tải PDF.`
+    : `${OFFLINE_TEXT.needsNetwork} để tải PDF.`
   const pdf = useExportPdf(pdfReady, pdfBlockedBy)
+  // ⌘/Ctrl P prints the drawing set, not the editor page. run() explains when it is blocked.
+  useHotkey('mod+p', () => void pdf.run(), { allowInInputs: true })
   const pdfStatus = !pdf.progress
     ? null
     : pdf.progress.total === 0
@@ -79,7 +90,7 @@ export function EditorHeader({
     <header className="flex flex-wrap items-center gap-x-3 gap-y-2 border-b border-(--color-rule) bg-(--color-paper) px-4 py-2.5 sm:px-6">
       <Tooltip>
         <TooltipTrigger asChild>
-          <Button variant="ghost" size="icon-sm" asChild>
+          <Button variant="ghost" size="icon-sm" className="max-md:size-11" asChild>
             <Link to="/" id={HEADER_IDS.back} aria-label="Về danh sách dự án">
               <Icons.back aria-hidden="true" />
             </Link>
@@ -137,6 +148,7 @@ export function EditorHeader({
               aria-disabled={!pdfReady || pdfStatus !== null || undefined}
               aria-busy={pdfStatus !== null || undefined}
               aria-label={pdfReady ? undefined : `Tải PDF — ${pdfBlockedBy}`}
+              aria-keyshortcuts={ariaHotkey('mod+p')}
               onClick={() => void pdf.run()}
             >
               {pdfStatus ? (
@@ -161,8 +173,11 @@ export function EditorHeader({
               )}
             </Button>
           </TooltipTrigger>
-          <TooltipContent>
+          <TooltipContent className="flex items-center gap-2">
             {pdfReady ? (pdfStatus ?? 'Tải bộ bản vẽ PDF (A3)') : pdfBlockedBy}
+            {pdfReady && !pdfStatus && (
+              <Kbd aria-hidden="true">{formatHotkey('mod+p')}</Kbd>
+            )}
           </TooltipContent>
         </Tooltip>
         <span className="sr-only" aria-live="polite">

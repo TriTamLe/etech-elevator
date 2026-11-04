@@ -969,11 +969,16 @@ Làm theo 4 phần P12a–d, commit từng phần. Đo CPU Worker để sang P13
   - Lưu: `repo.save` không parse Zod lần hai (validator của `saveProject` đã parse); `updateInfo` chỉ parse 2 ô tên/địa chỉ nó ghép vào.
   - Sửa lỗi P12a: `global-setup.ts` xóa D1 E2E sau khi dev server đã bật (Playwright bật `webServer` trước `globalSetup`), làm D1 hỏng giữa lần chạy dài; nay reset trong lệnh `webServer` (`tests/e2e/reset-db.ts`).
 - [ ] **CPU của Worker dưới 10 ms** (kiểm bằng `wrangler tail`, P13 sau khi deploy).
-- [ ] **Hoàn thiện giao diện:**
-  - Trạng thái rỗng, lỗi mạng, phím tắt.
-  - Rà lại toàn bộ chữ tiếng Việt.
-  - Slop test Hallmark lần 2.
-  - Kiểm tra ở 320–768px.
+- [x] **Hoàn thiện giao diện (P12c):**
+  - Lỗi: `src/lib/error-message.ts` đổi mọi lỗi ra một câu tiếng Việt (mạng, mảng issue Zod của validator, lỗi kỹ thuật tiếng Anh → câu chung + `console.error`). `ErrorPage` là `errorComponent` của root và `defaultErrorComponent`; "Thử lại" gọi `router.invalidate()` (chạy lại loader). `PaneBoundary` bọc phần xem trước và panel Tự tính, tự thử lại khi params đổi; lỗi vẽ thumbnail (trong idle callback) được ném lại trong render để boundary bắt.
+  - Mất mạng: `useOnline()` theo `onlineManager` của Query; `OfflineBanner` ở màn soạn và danh sách; trạng thái "Mất mạng · chờ lưu"; có mạng lại thì lưu tiếp. Rời trang lúc mất mạng hỏi ngay (đếm save đang chạy bằng ref, vì `save.isPending` trong `shouldBlockFn` là giá trị cũ). Nút gọi server dùng `useNetworkGate()`: `disabled` tới khi hydrate, `aria-disabled` + "Cần có mạng" khi mất mạng (Tải PDF, phiên bản, Tạo, Nhập, nút của dòng). `offline.spec.ts`.
+  - Danh sách: tải lại hỏng thì giữ bảng, thêm dải lỗi + "Thử lại". `html[data-hydrated]`; `open()` của E2E chờ dấu này thay cho `networkidle`.
+  - Phím tắt (`src/lib/hotkey.ts`, `use-hotkey.ts`, `Kbd`): Ctrl/⌘ + S lưu ngay, Ctrl/⌘ + P tải PDF (chạy cả khi đang trong ô), "/" vào ô tìm (không chạy khi đang gõ). `shortcuts.spec.ts`. Trạng thái lưu không có tooltip ⌘ S (không phải phần tử nhận focus); phím chỉ hiện trong tooltip Tải PDF.
+  - Hoàn thiện: Hoàn tác sau khi khôi phục phiên bản; "Thử lại" khi không tải được danh sách phiên bản; màn trống có Tạo dự án + Nhập JSON; chữ thống nhất ("Không lưu được", "tải PDF", tên app dài ở mọi trang qua `src/config/app.ts`, tab màn soạn "<tên> · <app>"); khung chờ màn soạn khớp bố cục thật.
+  - Dưới 768 px mọi nút ≥ 44 px (`--control-h` và cỡ của `Button`); danh sách chuyển sang dạng xếp chồng dưới 768 px (trước 640 px), vì 4 nút 44 px không vừa cột thao tác. `responsive.spec.ts` (320, 375, 768, 1024 px): không cuộn ngang, vùng bấm ≥ 44 px dưới 768 px, chụp ảnh vào `test-results/`.
+  - Ưu tiên thấp: token `--color-paper-2-hover`, `--color-warn-soft`; vòng focus của tab theo `--color-focus`; bỏ `cursor-default` của `select.tsx`; `aria-label` trên thẻ không có vai trò đổi thành chữ `sr-only`.
+  - Hallmark audit lần 2 (ảnh 320/375/768/1024 px): 0 critical · 1 major (placeholder ô tìm bị cắt ở 320 px → "Tìm dự án…") · 2 minor (thumbnail xám lúc chờ vẽ, giữ; nút devtools chỉ có ở dev).
+  - `code-reviewer`: trạng thái lưu tách thành hàm thuần `saveStatus` (có test) và không còn báo "Mất mạng" khi một save chỉ đang chờ save trước nó; mất mạng không xếp hàng một save mỗi lần ngừng gõ (có mạng lại thì lưu bản mới nhất một lần); `errorMessage` thuần (log ở QueryCache/MutationCache và boundary), coi `navigator` không có `onLine` (Workers) là có mạng; `PaneBoundary` không để focus rơi về `<body>`; phím tắt không chạy khi đang mở hộp thoại, "/" khớp cả bàn phím cần Shift; Hoàn tác khôi phục không đè sửa mới; tiêu đề tab theo tên đang sửa; "Thử lại" ở màn soạn reset cả boundary của Query.
 - [ ] **Tài liệu:** README (cách cập nhật ký hiệu, sao lưu, deploy), cập nhật `CLAUDE.md`.
 - [ ] `code-reviewer` soát toàn bộ.
 

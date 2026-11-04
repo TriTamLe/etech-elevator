@@ -34,7 +34,16 @@ const ThumbSvg = React.memo(function ThumbSvg({
   React.useEffect(() => {
     const pg = source?.d.pages.find((x) => x.key === pageKey)
     if (!source || !pg) return
-    return whenIdle(() => setPrims(renderPage(source.params, source.d, pg)))
+    return whenIdle(() => {
+      try {
+        setPrims(renderPage(source.params, source.d, pg))
+      } catch (error) {
+        // Outside render, so no boundary sees it: rethrow inside the next render instead.
+        setPrims(() => {
+          throw error
+        })
+      }
+    })
   }, [source, pageKey])
   return prims ? (
     <SheetSvg prims={prims} label={null} className="block h-auto w-full" />

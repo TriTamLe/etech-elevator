@@ -33,6 +33,7 @@ import type { Area, HatchName, View } from '#/drawing/primitives'
 import { placeSymbol, symbol } from '#/drawing/symbols'
 import { SHEET } from '#/drawing/types'
 import type { Prim, Pt } from '#/drawing/types'
+import { pageTitle } from '#/config/app'
 
 // Gallery of the shared drawing elements (P8), each on an A3 sheet through the same
 // SheetSvg as the preview and the PDF, so the PO can check them against the reference
@@ -42,7 +43,7 @@ import type { Prim, Pt } from '#/drawing/types'
 export const Route = createFileRoute('/primitives')({
   ssr: false,
   head: () => ({
-    meta: [{ title: 'Phần tử vẽ · Công cụ sinh báo cáo thang máy' }],
+    meta: [{ title: pageTitle('Phần tử vẽ') }],
   }),
   component: PrimitivesPage,
 })

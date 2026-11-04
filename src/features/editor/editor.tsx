@@ -1,5 +1,6 @@
 import * as React from 'react'
 import { useStore } from '@tanstack/react-form'
+import { toast } from 'sonner'
 
 import {
   Accordion,
@@ -40,6 +41,10 @@ import { VersionsSheet } from '#/features/editor/versions-sheet'
 import type { PageKey } from '#/domain/derive'
 import type { ElevatorParams } from '#/domain/schema'
 import { Icons } from '#/components/app/icons'
+import { OfflineBanner } from '#/components/app/offline-banner'
+import { PaneBoundary } from '#/components/app/pane-boundary'
+import { OFFLINE_TEXT, pageTitle } from '#/config/app'
+import { useHotkey } from '#/lib/use-hotkey'
 import { cn } from '#/lib/utils'
 import type { ProjectDetail } from '#/server/project-repo'
 
@@ -119,6 +124,28 @@ export function Editor({ project }: { project: ProjectDetail }) {
     [form, issues, replaceParams],
   )
   const autosave = useAutosave(project.id, issues, initial, savedAt)
+  // Tab title follows the name as it is edited (a route `head` would keep the loaded one).
+  const name = values.project.name
+  React.useEffect(() => {
+    const before = document.title
+    document.title = pageTitle(name.trim() || undefined)
+    return () => {
+      document.title = before
+    }
+  }, [name])
+  // ⌘/Ctrl S: save now instead of after the debounce (the browser's "save page" is useless here).
+  useHotkey(
+    'mod+s',
+    () => {
+      if (!issues.params) toast(`Còn ${issues.errors} lỗi nên chưa lưu được.`)
+      else if (!autosave.online) toast(OFFLINE_TEXT.banner)
+      // Nothing new: say so, or the shortcut looks like it did nothing.
+      else if (autosave.state.kind === 'saved' || autosave.state.kind === 'idle')
+        toast('Không có thay đổi mới, mọi thứ đã được lưu.')
+      else void autosave.flush()
+    },
+    { allowInInputs: true },
+  )
   // Kept here, not in the preview: the preview unmounts with its tab on narrow screens.
   const lastValid = useLastValid(issues.params)
   const [open, setOpen] = useOpenSections(project.id)
@@ -138,6 +165,21 @@ export function Editor({ project }: { project: ProjectDetail }) {
     }
     return counts
   }, [issues])
+
+  const preview = (layout: 'side' | 'stacked') => (
+    <PaneBoundary
+      message="Không vẽ được phần xem trước."
+      resetKey={lastValid}
+    >
+      <SheetPreview
+        params={lastValid}
+        stale={!issues.params}
+        page={previewPage}
+        onPageChange={setPreviewPage}
+        layout={layout}
+      />
+    </PaneBoundary>
+  )
 
   const formPane = (
     // minmax(0,1fr): a long title or select value must not widen the column past the pane.
@@ -169,7 +211,7 @@ export function Editor({ project }: { project: ProjectDetail }) {
                   'focus-visible:-outline-offset-2',
                   'items-center rounded-(--radius-card) bg-(--color-paper-2) px-4 py-3 text-(length:--text-base) font-semibold text-(--color-ink)',
                   // Opaque on hover: the header is sticky, a translucent fill shows the fields behind it.
-                  'hover:bg-[color-mix(in_oklch,var(--color-paper-2),var(--color-rule))] data-[state=open]:rounded-b-none data-[state=open]:border-b data-[state=open]:border-(--color-rule)',
+                  'hover:bg-(--color-paper-2-hover) data-[state=open]:rounded-b-none data-[state=open]:border-b data-[state=open]:border-(--color-rule)',
                 )}
               >
                 <span className="flex min-w-0 flex-1 items-center gap-2.5">
@@ -206,7 +248,12 @@ export function Editor({ project }: { project: ProjectDetail }) {
           )
         })}
       </Accordion>
-      <DerivedPanel />
+      <PaneBoundary
+        message="Không tính được các giá trị tự tính."
+        resetKey={issues.params}
+      >
+        <DerivedPanel />
+      </PaneBoundary>
     </div>
   )
 
@@ -218,6 +265,7 @@ export function Editor({ project }: { project: ProjectDetail }) {
           save={autosave.state}
           onOpenVersions={() => setVersionsOpen(true)}
         />
+        <OfflineBanner />
         {isDesktop ? (
           <div className="grid min-h-0 flex-1 grid-cols-[420px_minmax(0,1fr)]">
             <aside
@@ -228,13 +276,7 @@ export function Editor({ project }: { project: ProjectDetail }) {
               {formPane}
             </aside>
             <section aria-label="Xem trước" className="min-h-0 overflow-hidden">
-              <SheetPreview
-                params={lastValid}
-                stale={!issues.params}
-                page={previewPage}
-                onPageChange={setPreviewPage}
-                layout="side"
-              />
+{preview('side')}
             </section>
           </div>
         ) : (
@@ -257,13 +299,7 @@ export function Editor({ project }: { project: ProjectDetail }) {
               value="preview"
               className="min-h-0 flex-1 overflow-hidden"
             >
-              <SheetPreview
-                params={lastValid}
-                stale={!issues.params}
-                page={previewPage}
-                onPageChange={setPreviewPage}
-                layout="stacked"
-              />
+{preview('stacked')}
             </TabsContent>
           </Tabs>
         )}
@@ -289,9 +325,11 @@ export function Editor({ project }: { project: ProjectDetail }) {
           <AlertDialogHeader>
             <AlertDialogTitle>Rời trang khi chưa lưu?</AlertDialogTitle>
             <AlertDialogDescription>
-              {issues.params
-                ? 'Chưa lưu được thay đổi mới nhất. Nếu rời trang, thay đổi đó sẽ mất.'
-                : `Form còn ${issues.errors} lỗi nên chưa lưu được. Nếu rời trang, các thay đổi từ lần lưu trước sẽ mất.`}
+              {!issues.params
+                ? `Còn ${issues.errors} lỗi nên chưa lưu được. Nếu rời trang, các thay đổi từ lần lưu trước sẽ mất.`
+                : autosave.online
+                  ? 'Chưa lưu được thay đổi mới nhất. Nếu rời trang, thay đổi đó sẽ mất.'
+                  : 'Đang mất mạng nên thay đổi mới nhất chưa lưu. Nó sẽ tự lưu khi có mạng lại nếu bạn không đóng tab.'}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

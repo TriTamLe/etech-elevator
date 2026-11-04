@@ -39,12 +39,13 @@ const buttonVariants = cva(
       },
       size: {
         default: 'h-(--control-h) px-4 text-sm',
-        xs: 'h-7 gap-1 px-2 text-xs',
-        sm: 'h-8 gap-2 px-3 text-sm',
+        // Below 768 px every size reaches the 44 px touch target (--control-h is 44 there).
+        xs: 'h-7 gap-1 px-2 text-xs max-md:h-11',
+        sm: 'h-8 gap-2 px-3 text-sm max-md:h-11',
         lg: 'h-11 px-6 text-base',
         icon: 'size-(--control-h)',
-        'icon-xs': 'size-7',
-        'icon-sm': 'size-8',
+        'icon-xs': 'size-7 max-md:size-11',
+        'icon-sm': 'size-8 max-md:size-11',
         'icon-lg': 'size-11',
       },
     },

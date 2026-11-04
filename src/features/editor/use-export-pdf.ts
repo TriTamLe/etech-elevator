@@ -44,7 +44,7 @@ export function useExportPdf(ready: ElevatorParams | null, blockedBy: string) {
         e instanceof ExportError
           ? e.message
           : 'Đã có lỗi — kiểm tra mạng rồi thử lại.'
-      toast.error(`Không xuất được PDF. ${reason}`, {
+      toast.error(`Không tải được PDF. ${reason}`, {
         action: { label: 'Thử lại', onClick: () => void run() },
       })
     } finally {

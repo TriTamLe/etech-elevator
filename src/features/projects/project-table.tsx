@@ -20,8 +20,10 @@ import type {
 import { Icons } from '#/components/app/icons'
 import { Button } from '#/components/ui/button'
 import { Skeleton } from '#/components/ui/skeleton'
+import { CreateProjectDialog } from '#/features/projects/create-project-dialog'
 import { DeleteProjectDialog } from '#/features/projects/delete-project-dialog'
 import { EditProjectDialog } from '#/features/projects/edit-project-dialog'
+import { ImportProjectButton } from '#/features/projects/import-project-button'
 import {
   ProjectRowButtons,
   ProjectRowMenu,
@@ -145,8 +147,14 @@ export function ProjectTable({
       <>
         {dialogs}
         <EmptyState
-        title="Chưa có dự án nào"
-        body="Tạo dự án mới từ một trong hai bộ mẫu, hoặc nhập file JSON."
+          title="Chưa có dự án nào"
+          body="Tạo dự án mới từ một trong hai bộ mẫu, hoặc nhập file JSON."
+          action={
+            <div className="flex flex-wrap justify-center gap-2">
+              <CreateProjectDialog labelled />
+              <ImportProjectButton labelled />
+            </div>
+          }
         />
       </>
     )
@@ -156,14 +164,14 @@ export function ProjectTable({
       <>
         {dialogs}
         <EmptyState
-        title={`Không có dự án khớp “${query.trim()}”`}
-        body="Thử bỏ dấu hoặc tìm theo địa chỉ."
-        action={
-          <Button variant="outline" size="sm" onClick={onClearQuery}>
-            <Icons.clear aria-hidden="true" />
-            Xóa tìm kiếm
-          </Button>
-        }
+          title={`Không có dự án khớp “${query.trim()}”.`}
+          body="Thử từ khóa khác, bỏ dấu hoặc tìm theo địa chỉ."
+          action={
+            <Button variant="outline" onClick={onClearQuery}>
+              <Icons.clear aria-hidden="true" />
+              Xóa tìm kiếm
+            </Button>
+          }
         />
       </>
     )
@@ -174,8 +182,8 @@ export function ProjectTable({
 
   return (
     <div ref={container}>
-      {/* ≥ 640 px: fixed-layout table */}
-      <table className="hidden w-full table-fixed text-(length:--text-sm) sm:table">
+      {/* ≥ 768 px: fixed-layout table */}
+      <table className="hidden w-full table-fixed text-(length:--text-sm) md:table">
         <colgroup>
           <col />
           <col className="w-[30%]" />
@@ -233,8 +241,8 @@ export function ProjectTable({
         </tbody>
       </table>
 
-      {/* < 640 px: the same row model as a stacked list */}
-      <ul className="sm:hidden">
+      {/* < 768 px: the same row model as a stacked list */}
+      <ul className="md:hidden">
         {visible.map(({ original: p }) => {
           const busy = pending.has(p.id)
           return (
@@ -247,7 +255,12 @@ export function ProjectTable({
               )}
             >
               <div className="min-w-0 flex-1">
-                <ProjectLink project={p} className="line-clamp-2" />
+                {/* 44 px tall touch target; the clamp sits on the inner text. */}
+                <ProjectLink
+                  project={p}
+                  className="flex min-h-11 items-center"
+                  textClassName="line-clamp-2"
+                />
                 <p className="mt-0.5 flex min-w-0 gap-2 text-(length:--text-xs) text-(--color-ink-3)">
                   <span className="truncate" title={p.address || undefined}>
                     <Address value={p.address} />
@@ -311,9 +324,11 @@ function SortHeader({
 function ProjectLink({
   project,
   className,
+  textClassName,
 }: {
   project: ProjectListItem
   className?: string
+  textClassName?: string
 }) {
   return (
     <Link
@@ -326,7 +341,11 @@ function ProjectLink({
         className,
       )}
     >
-      {project.name}
+      {textClassName ? (
+        <span className={textClassName}>{project.name}</span>
+      ) : (
+        project.name
+      )}
     </Link>
   )
 }
@@ -336,8 +355,9 @@ function Address({ value }: { value: string }) {
   return value ? (
     value
   ) : (
-    <span aria-label="Chưa có địa chỉ" className="text-(--color-ink-3)">
-      —
+    <span className="text-(--color-ink-3)">
+      <span aria-hidden="true">—</span>
+      <span className="sr-only">Chưa có địa chỉ</span>
     </span>
   )
 }
@@ -369,11 +389,11 @@ export function ProjectTableSkeleton() {
         <li
           key={i}
           className={cn(
-            'flex h-16 items-center gap-4 border-b border-(--color-rule) px-3 last:border-0 sm:h-12 sm:pointer-coarse:h-13',
+            'flex h-16 items-center gap-4 border-b border-(--color-rule) px-3 last:border-0 md:h-12 md:pointer-coarse:h-13',
           )}
         >
           <Skeleton className="h-4 flex-1" />
-          <Skeleton className="hidden h-4 w-[30%] sm:block" />
+          <Skeleton className="hidden h-4 w-[30%] md:block" />
           <Skeleton className="h-4 w-24" />
         </li>
       ))}

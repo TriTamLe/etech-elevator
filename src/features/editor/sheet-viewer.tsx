@@ -29,7 +29,7 @@ const FIT_MARGIN = 0.96
 const PAN_STEP = 80
 
 const TOOL_CLASS =
-  'text-(--color-paper) hover:bg-(--color-paper)/10 hover:text-(--color-paper) max-sm:size-11'
+  'text-(--color-paper) hover:bg-(--color-paper)/10 hover:text-(--color-paper) max-md:size-11'
 
 /**
  * Icon button for the dark toolbar. `inactive` uses aria-disabled, not disabled, so the
@@ -206,7 +206,7 @@ export function SheetViewer({
               size="sm"
               aria-label="1:1 · Cỡ thật 100 %"
               onClick={manual(() => void ref.current?.centerView(1))}
-              className={`label-mono ${TOOL_CLASS} max-sm:h-11 max-sm:w-auto`}
+              className={`label-mono ${TOOL_CLASS} max-md:h-11 max-md:w-auto`}
             >
               1:1
             </Button>

@@ -55,8 +55,8 @@ Hallmark **Cobalt** recoloured with the DTP logo palette (navy `oklch(35.6% 0.08
 - Use **TanStack Table** (`@tanstack/react-table`, headless; load its Intent skill first) with `components/ui/table`. Don't hand-roll sort/filter logic.
 - Search: debounce ~250 ms (`useDebouncedValue` in `src/lib/`), diacritic-insensitive (`đ`→`d`, strip marks), state in the URL search param `q`.
 - Loading/UX: skeleton rows at real row height; keep old rows while refetching (`placeholderData`); per-row pending state on mutations; optimistic edit/delete; delete asks first (`AlertDialog`) and then still offers an Undo toast; inline error + "Thử lại"; separate empty vs no-match states.
-- Row actions: ≥ 640 px icon buttons with `Tooltip` + `aria-label`; < 640 px one `Icons.more` menu (44 px). Edits go through a dialog — no inline cell editing.
-- Responsive: `table-fixed` + explicit column widths ≥ 640 px; < 640 px render the same rows as a stacked list (44 px targets). Long Vietnamese names truncate with `min-w-0` + full name in `title`. No horizontal page scroll at 320 px, no nested scroll container, no `100vh` traps.
+- Row actions: ≥ 768 px icon buttons with `Tooltip` + `aria-label`; < 768 px one `Icons.more` menu (44 px). Edits go through a dialog — no inline cell editing.
+- Responsive: `table-fixed` + explicit column widths ≥ 768 px; < 768 px render the same rows as a stacked list (44 px targets). Long Vietnamese names truncate with `min-w-0` + full name in `title`. No horizontal page scroll at 320 px, no nested scroll container, no `100vh` traps.
 - List endpoints return only list columns (never the `params` blob) to stay under the 10 ms CPU budget.
 
 ### Editor (`src/features/editor/`)
@@ -69,7 +69,9 @@ Hallmark **Cobalt** recoloured with the DTP logo palette (navy `oklch(35.6% 0.08
 
 - `yarn lint` runs `eslint-plugin-jsx-a11y` (recommended) on `src/**/*.tsx`. Fix the markup; disable a rule only per line with `-- <reason>`. Radix controls are registered for `label-has-associated-control` in `eslint.config.js`.
 - Anything clickable is a real `<button>` or `<a href>` (via `Button`/`Link`), never a clickable `div`/`svg`. Icon-only buttons have `aria-label` and a `Tooltip`.
-- The pointer cursor comes from one rule in `src/styles.css`; don't add `cursor-*` classes (shadcn items that ship `cursor-default` get it removed).
+- The pointer cursor comes from one rule in `src/styles.css`; don't add `cursor-*` classes (shadcn items that ship `cursor-default` get it removed). The only exceptions live in `Button`: `not-allowed` when disabled/`aria-disabled`, `progress` while `aria-busy`.
+- Below 768 px every control is ≥ 44 px (`--control-h` and the `Button` sizes do it; `tests/e2e/responsive.spec.ts` checks).
+- Buttons that call the server use `useNetworkGate()`: `disabled` until hydrated, `aria-disabled` + reason while offline.
 - Destructive actions confirm with `AlertDialog` (focus lands on Cancel). After dialogs close or rows disappear, move focus somewhere sensible — never leave it on `body`.
 
 ## Assets & private files

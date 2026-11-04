@@ -40,7 +40,7 @@ function SheetContent({
         {children}
         <SheetPrimitive.Close
           data-slot="sheet-close"
-          className="absolute top-4 right-4 grid size-8 place-items-center rounded-(--radius-control) text-(--color-ink-3) hover:bg-(--color-paper-2) hover:text-(--color-ink) focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--color-focus)"
+          className="absolute top-4 right-4 grid size-8 max-md:top-2.5 max-md:right-2.5 max-md:size-11 place-items-center rounded-(--radius-control) text-(--color-ink-3) hover:bg-(--color-paper-2) hover:text-(--color-ink) focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--color-focus)"
         >
           <Icons.clear className="size-4" aria-hidden="true" />
           <span className="sr-only">Đóng</span>
