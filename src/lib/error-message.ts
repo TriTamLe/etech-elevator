@@ -12,7 +12,8 @@ export const ERROR_TEXT = {
 } as const
 
 // Chrome "Failed to fetch", Firefox "NetworkError when attempting…", Safari "Load failed".
-const NETWORK = /failed to fetch|networkerror|load failed|network request failed/i
+const NETWORK =
+  /failed to fetch|networkerror|load failed|network request failed/i
 
 // Latin letters with Vietnamese marks (À…ỹ covers đ/Đ and the Latin Extended Additional block).
 const VIETNAMESE = /[À-ỹ]/
@@ -41,7 +42,8 @@ function zodMessage(message: string): string | null {
 export function errorMessage(
   error: unknown,
   // Workers and Node have a `navigator` without `onLine`: only an explicit false counts.
-  online: boolean = typeof navigator === 'undefined' || navigator.onLine !== false,
+  online: boolean = typeof navigator === 'undefined' ||
+    navigator.onLine !== false,
 ): string {
   if (isNotFound(error)) return ERROR_TEXT.notFound
   const message = error instanceof Error ? error.message : ''

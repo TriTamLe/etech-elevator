@@ -15,7 +15,7 @@
       "binding": "DB",
       "database_name": "elevator-db",
       "database_id": "451451c7-1c02-4fb5-8151-e13a49e5bdfd",
-      "migrations_dir": "drizzle"
-    }
-  ]
+      "migrations_dir": "drizzle",
+    },
+  ],
 }

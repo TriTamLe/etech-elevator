@@ -20,8 +20,12 @@ describe('matchesQuery', () => {
   })
 
   it('matches on the address alone', () => {
-    expect(matchesQuery(['NHÀ ANH BA', '12 Lê Lợi, Hải Châu'], 'le loi')).toBe(true)
-    expect(matchesQuery(['NHÀ ANH BA', '12 Lê Lợi, Hải Châu'], 'hai chau 12')).toBe(true)
+    expect(matchesQuery(['NHÀ ANH BA', '12 Lê Lợi, Hải Châu'], 'le loi')).toBe(
+      true,
+    )
+    expect(
+      matchesQuery(['NHÀ ANH BA', '12 Lê Lợi, Hải Châu'], 'hai chau 12'),
+    ).toBe(true)
   })
 
   it('requires every word', () => {

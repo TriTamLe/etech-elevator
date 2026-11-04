@@ -51,7 +51,8 @@ describe('saveStatus', () => {
     last: { kind: 'saved', at },
     retry: () => {},
   }
-  const kind = (over: Partial<SaveInputs>) => saveStatus({ ...base, ...over }).kind
+  const kind = (over: Partial<SaveInputs>) =>
+    saveStatus({ ...base, ...over }).kind
 
   it('saved, edited (pending debounce), saving', () => {
     expect(saveStatus(base)).toEqual({ kind: 'saved', at })
@@ -73,11 +74,15 @@ describe('saveStatus', () => {
   })
 
   it('shape errors: invalid with the count, even offline', () => {
-    expect(saveStatus({ ...base, valid: false, errors: 3, dirty: true })).toEqual({
+    expect(
+      saveStatus({ ...base, valid: false, errors: 3, dirty: true }),
+    ).toEqual({
       kind: 'invalid',
       count: 3,
     })
-    expect(kind({ online: false, valid: false, errors: 1, dirty: true })).toBe('invalid')
+    expect(kind({ online: false, valid: false, errors: 1, dirty: true })).toBe(
+      'invalid',
+    )
   })
 
   it('a failed save with edits left offers retry', () => {

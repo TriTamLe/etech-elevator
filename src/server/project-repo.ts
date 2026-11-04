@@ -22,7 +22,11 @@ export type ProjectListItem = {
 
 export type ProjectDetail = ProjectListItem & { params: ElevatorParams }
 
-export type VersionListItem = { id: string; note: string | null; createdAt: Date }
+export type VersionListItem = {
+  id: string
+  note: string | null
+  createdAt: Date
+}
 
 const listColumns = {
   id: projects.id,
@@ -31,7 +35,8 @@ const listColumns = {
   updatedAt: projects.updatedAt,
 }
 
-const alive = (id: string) => and(eq(projects.id, id), isNull(projects.deletedAt))
+const alive = (id: string) =>
+  and(eq(projects.id, id), isNull(projects.deletedAt))
 
 /** Light list columns only — never the params blob (Workers 10 ms CPU budget). */
 export function list(db: ProjectDb): Promise<Array<ProjectListItem>> {
@@ -122,7 +127,10 @@ export async function updateInfo(
 ): Promise<ProjectListItem | null> {
   // save() no longer parses: check the two fields this merges in (cheap, not the blob).
   const { name, address } = ElevatorParams.shape.project.shape
-  const next = { name: name.parse(info.name), address: address.parse(info.address) }
+  const next = {
+    name: name.parse(info.name),
+    address: address.parse(info.address),
+  }
   const current = await get(db, id)
   if (!current) return null
   return save(db, id, {

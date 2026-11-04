@@ -23,7 +23,9 @@ const p95 = (xs: Array<number>) => {
 async function keystrokeLatency(page: Page, key: string): Promise<number> {
   await page.evaluate(() => {
     const w = window as unknown as { __lat?: Promise<number> }
-    const sheet = document.querySelector('[role="region"][aria-label^="Bản vẽ"]')
+    const sheet = document.querySelector(
+      '[role="region"][aria-label^="Bản vẽ"]',
+    )
     if (!sheet) throw new Error('main sheet not found')
     w.__lat = new Promise<number>((resolve) => {
       let start = 0

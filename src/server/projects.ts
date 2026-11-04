@@ -13,7 +13,11 @@ import * as repo from '#/server/project-repo'
 // small D1 queries through project-repo (Workers free plan: 10 ms CPU per request).
 
 const Id = z.string().min(1).max(64)
-const Name = z.string().trim().min(1, 'Tên công trình không được để trống.').max(PROJECT_TEXT_MAX.name)
+const Name = z
+  .string()
+  .trim()
+  .min(1, 'Tên công trình không được để trống.')
+  .max(PROJECT_TEXT_MAX.name)
 const Address = z.string().trim().max(PROJECT_TEXT_MAX.address)
 const ById = z.object({ id: Id })
 
@@ -83,9 +87,7 @@ export const restoreProject = createServerFn({ method: 'POST' })
   })
 
 export const saveVersion = createServerFn({ method: 'POST' })
-  .validator(
-    z.object({ id: Id, note: z.string().trim().max(500).nullable() }),
-  )
+  .validator(z.object({ id: Id, note: z.string().trim().max(500).nullable() }))
   .handler(async ({ data }) =>
     found(await repo.saveVersion(getDb(), data.id, data.note || null)),
   )

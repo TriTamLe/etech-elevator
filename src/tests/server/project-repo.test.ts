@@ -13,8 +13,12 @@ import type { ProjectDb } from '#/server/project-repo'
 
 function makeDb(): { db: ProjectDb; sqlite: DatabaseSync } {
   const sqlite = new DatabaseSync(':memory:')
-  for (const file of readdirSync('drizzle').filter((f) => f.endsWith('.sql')).sort()) {
-    for (const stmt of readFileSync(`drizzle/${file}`, 'utf8').split('--> statement-breakpoint')) {
+  for (const file of readdirSync('drizzle')
+    .filter((f) => f.endsWith('.sql'))
+    .sort()) {
+    for (const stmt of readFileSync(`drizzle/${file}`, 'utf8').split(
+      '--> statement-breakpoint',
+    )) {
       if (stmt.trim()) sqlite.exec(stmt)
     }
   }
@@ -55,7 +59,12 @@ describe('project repo', () => {
 
     const rows = await repo.list(db)
     expect(rows).toHaveLength(1)
-    expect(Object.keys(rows[0]).sort()).toEqual(['address', 'id', 'name', 'updatedAt'])
+    expect(Object.keys(rows[0]).sort()).toEqual([
+      'address',
+      'id',
+      'name',
+      'updatedAt',
+    ])
     expect(rows[0].updatedAt).toBeInstanceOf(Date)
   })
 
@@ -73,7 +82,10 @@ describe('project repo', () => {
       name: ' NHÀ ANH BA ',
       address: '12 Lê Lợi, Hải Châu',
     })
-    expect(updated).toMatchObject({ name: 'NHÀ ANH BA', address: '12 Lê Lợi, Hải Châu' })
+    expect(updated).toMatchObject({
+      name: 'NHÀ ANH BA',
+      address: '12 Lê Lợi, Hải Châu',
+    })
     const project = (await repo.get(db, id))?.params.project
     expect(project?.name).toBe('NHÀ ANH BA')
     expect(project?.address).toBe('12 Lê Lợi, Hải Châu')
@@ -81,13 +93,19 @@ describe('project repo', () => {
 
   it('updateInfo accepts an empty address and rejects unknown ids', async () => {
     const { id } = await repo.create(db, presetParams('house-5f'))
-    expect((await repo.updateInfo(db, id, { name: 'X', address: '' }))?.address).toBe('')
-    expect(await repo.updateInfo(db, 'missing', { name: 'X', address: '' })).toBeNull()
+    expect(
+      (await repo.updateInfo(db, id, { name: 'X', address: '' }))?.address,
+    ).toBe('')
+    expect(
+      await repo.updateInfo(db, 'missing', { name: 'X', address: '' }),
+    ).toBeNull()
   })
 
   it('updateInfo rejects a blank name', async () => {
     const { id } = await repo.create(db, presetParams('house-5f'))
-    await expect(repo.updateInfo(db, id, { name: '   ', address: '' })).rejects.toThrow()
+    await expect(
+      repo.updateInfo(db, id, { name: '   ', address: '' }),
+    ).rejects.toThrow()
   })
 
   // Schema validation lives in saveProject's validator; save writes what it is given once.
@@ -105,7 +123,9 @@ describe('project repo', () => {
     expect(await repo.softDelete(db, id)).toBe(true)
     expect(await repo.list(db)).toHaveLength(0)
     expect(await repo.get(db, id)).toBeNull()
-    const raw = sqlite.prepare('select deleted_at from projects where id = ?').get(id)
+    const raw = sqlite
+      .prepare('select deleted_at from projects where id = ?')
+      .get(id)
     expect(raw?.deleted_at).not.toBeNull()
 
     expect(await repo.softDelete(db, id)).toBe(false)
@@ -149,7 +169,9 @@ describe('project repo', () => {
     // What a row written before the v2 schema looks like.
     const toV1 = `json_set(json_remove(params, '$.project.titleBlockPart'), '$.schemaVersion', 1)`
     sqlite.exec(`update projects set params = ${toV1}, schema_version = 1`)
-    sqlite.exec(`update project_versions set params = ${toV1}, schema_version = 1`)
+    sqlite.exec(
+      `update project_versions set params = ${toV1}, schema_version = 1`,
+    )
 
     const detail = await repo.get(db, id)
     expect(detail?.params).toEqual(params)

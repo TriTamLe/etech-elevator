@@ -1,17 +1,25 @@
 import { describe, expect, it } from 'vitest'
 
-import { collectIssues, fieldKey, pathKey, sectionOf } from '#/features/editor/issues'
+import {
+  collectIssues,
+  fieldKey,
+  pathKey,
+  sectionOf,
+} from '#/features/editor/issues'
 import { presetParams } from '#/domain/presets'
 
 describe('collectIssues', () => {
-  it.each(['hotel-9f', 'house-5f'] as const)('preset %s: valid, no errors, no warnings', (id) => {
-    const r = collectIssues(presetParams(id))
-    expect(r.params).not.toBeNull()
-    expect(r.errors).toBe(0)
-    expect(r.warnings).toBe(0)
-    expect(r.list).toEqual([])
-    expect(r.byPath.size).toBe(0)
-  })
+  it.each(['hotel-9f', 'house-5f'] as const)(
+    'preset %s: valid, no errors, no warnings',
+    (id) => {
+      const r = collectIssues(presetParams(id))
+      expect(r.params).not.toBeNull()
+      expect(r.errors).toBe(0)
+      expect(r.warnings).toBe(0)
+      expect(r.list).toEqual([])
+      expect(r.byPath.size).toBe(0)
+    },
+  )
 
   it('blank mm field (NaN) -> params null, "Nhập một số." at the path, no cross-field rules', () => {
     const v = structuredClone(presetParams('house-5f'))
@@ -53,7 +61,9 @@ describe('collectIssues', () => {
     v.project.name = ''
     const r = collectIssues(v)
     expect(r.params).toBeNull()
-    expect(r.byPath.get('project.name')?.[0].message).toBe('Không được để trống.')
+    expect(r.byPath.get('project.name')?.[0].message).toBe(
+      'Không được để trống.',
+    )
   })
 
   it('floor height 0 -> issue at floors.1.height', () => {

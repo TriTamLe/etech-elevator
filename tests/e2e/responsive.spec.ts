@@ -26,7 +26,9 @@ function smallTargets(page: Page) {
           el.checkVisibility() &&
           !el.closest('p') &&
           // TanStack devtools (dev server only).
-          !el.closest('.tsqd-parent-container, [class*="tanstack-devtools"], [id*="devtools"]'),
+          !el.closest(
+            '.tsqd-parent-container, [class*="tanstack-devtools"], [id*="devtools"]',
+          ),
       )
       .map((el) => {
         const r = el.getBoundingClientRect()

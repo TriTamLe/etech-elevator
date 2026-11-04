@@ -27,7 +27,10 @@ export class PaneBoundary extends React.Component<Props, State> {
     return { error }
   }
 
-  static getDerivedStateFromProps(props: Props, state: State): Partial<State> | null {
+  static getDerivedStateFromProps(
+    props: Props,
+    state: State,
+  ): Partial<State> | null {
     return Object.is(props.resetKey, state.key)
       ? null
       : { error: null, key: props.resetKey }
@@ -45,7 +48,9 @@ export class PaneBoundary extends React.Component<Props, State> {
       this.root.current?.querySelector<HTMLElement>('button')?.focus()
     } else if (prev.error && !this.state.error) {
       this.root.current
-        ?.querySelector<HTMLElement>('button, [href], [tabindex]:not([tabindex="-1"])')
+        ?.querySelector<HTMLElement>(
+          'button, [href], [tabindex]:not([tabindex="-1"])',
+        )
         ?.focus()
     }
   }

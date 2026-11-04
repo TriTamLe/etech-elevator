@@ -34,7 +34,10 @@ export function DeleteProjectDialog({
   if (project && project.name !== shownName) setShownName(project.name)
 
   return (
-    <AlertDialog open={project !== null} onOpenChange={(open) => !open && onClose()}>
+    <AlertDialog
+      open={project !== null}
+      onOpenChange={(open) => !open && onClose()}
+    >
       <AlertDialogContent
         onOpenAutoFocus={() => {
           if (project) last.current = { id: project.id, deleted: false }
@@ -50,8 +53,8 @@ export function DeleteProjectDialog({
         <AlertDialogHeader>
           <AlertDialogTitle>Xóa dự án?</AlertDialogTitle>
           <AlertDialogDescription>
-            “{shownName}” sẽ bị xóa khỏi danh sách. Bạn có thể hoàn tác ngay
-            sau khi xóa.
+            “{shownName}” sẽ bị xóa khỏi danh sách. Bạn có thể hoàn tác ngay sau
+            khi xóa.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>

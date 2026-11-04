@@ -186,11 +186,11 @@ export function useRestoreProject() {
   return useMutation({
     mutationKey: rowMutationKey,
     mutationFn: (vars: { id: string }) => restoreProject({ data: vars }),
-    onError: (error) => toast.error(`Không hoàn tác được: ${errorMessage(error)}`),
+    onError: (error) =>
+      toast.error(`Không hoàn tác được: ${errorMessage(error)}`),
     onSettled: invalidate,
   })
 }
-
 
 export const versionsQuery = (id: string) =>
   queryOptions({
@@ -226,8 +226,7 @@ export function useSaveVersion(id: string) {
   return useMutation({
     // Same scope as autosave: the snapshot is taken only after queued saves have landed.
     scope: { id: `save-${id}` },
-    mutationFn: (note: string | null) =>
-      saveVersion({ data: { id, note } }),
+    mutationFn: (note: string | null) => saveVersion({ data: { id, note } }),
     onSuccess: () =>
       queryClient.invalidateQueries({ queryKey: projectKeys.versions(id) }),
     onError: (error) =>

@@ -90,7 +90,12 @@ export function EditorHeader({
     <header className="flex flex-wrap items-center gap-x-3 gap-y-2 border-b border-(--color-rule) bg-(--color-paper) px-4 py-2.5 sm:px-6">
       <Tooltip>
         <TooltipTrigger asChild>
-          <Button variant="ghost" size="icon-sm" className="max-md:size-11" asChild>
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            className="max-md:size-11"
+            asChild
+          >
             <Link to="/" id={HEADER_IDS.back} aria-label="Về danh sách dự án">
               <Icons.back aria-hidden="true" />
             </Link>

@@ -193,7 +193,8 @@ export function VersionsSheet({
           ) : versions.isError ? (
             <div className="grid justify-items-start gap-3">
               <p className="text-(length:--text-sm) text-(--color-danger)">
-                Không tải được danh sách phiên bản: {errorMessage(versions.error)}
+                Không tải được danh sách phiên bản:{' '}
+                {errorMessage(versions.error)}
               </p>
               <Button
                 variant="outline"

@@ -56,7 +56,12 @@ const SECTIONS = [
   ['structure', 'C', 'Kết cấu hố & cửa tầng', React.memo(SectionStructure)],
   ['floors', 'D', 'Danh sách tầng', React.memo(SectionFloors)],
   ['topRoom', 'E', 'Buồng trên cùng / phòng máy', React.memo(SectionTopRoom)],
-  ['responsibility', 'F', 'Hạng mục trách nhiệm', React.memo(SectionResponsibility)],
+  [
+    'responsibility',
+    'F',
+    'Hạng mục trách nhiệm',
+    React.memo(SectionResponsibility),
+  ],
   // Part of the title block, kept apart because it is a growing list: no letter, an icon.
   ['revisions', null, 'Lịch sử hiệu chỉnh', React.memo(SectionRevisions)],
 ] as const
@@ -140,7 +145,10 @@ export function Editor({ project }: { project: ProjectDetail }) {
       if (!issues.params) toast(`Còn ${issues.errors} lỗi nên chưa lưu được.`)
       else if (!autosave.online) toast(OFFLINE_TEXT.banner)
       // Nothing new: say so, or the shortcut looks like it did nothing.
-      else if (autosave.state.kind === 'saved' || autosave.state.kind === 'idle')
+      else if (
+        autosave.state.kind === 'saved' ||
+        autosave.state.kind === 'idle'
+      )
         toast('Không có thay đổi mới, mọi thứ đã được lưu.')
       else void autosave.flush()
     },
@@ -167,10 +175,7 @@ export function Editor({ project }: { project: ProjectDetail }) {
   }, [issues])
 
   const preview = (layout: 'side' | 'stacked') => (
-    <PaneBoundary
-      message="Không vẽ được phần xem trước."
-      resetKey={lastValid}
-    >
+    <PaneBoundary message="Không vẽ được phần xem trước." resetKey={lastValid}>
       <SheetPreview
         params={lastValid}
         stale={!issues.params}
@@ -276,7 +281,7 @@ export function Editor({ project }: { project: ProjectDetail }) {
               {formPane}
             </aside>
             <section aria-label="Xem trước" className="min-h-0 overflow-hidden">
-{preview('side')}
+              {preview('side')}
             </section>
           </div>
         ) : (
@@ -299,7 +304,7 @@ export function Editor({ project }: { project: ProjectDetail }) {
               value="preview"
               className="min-h-0 flex-1 overflow-hidden"
             >
-{preview('stacked')}
+              {preview('stacked')}
             </TabsContent>
           </Tabs>
         )}

@@ -6,3 +6,14 @@ src/routeTree.gen.ts
 drizzle/meta
 src/drawing/fonts/tinos-metrics.ts
 src/drawing/symbols/data/
+
+# Hand-written docs keep their layout (PO 04/11/2026)
+*.md
+
+# Local, never committed
+.claude/settings.json
+dist
+test-results
+playwright-report
+.verify
+backups

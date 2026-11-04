@@ -193,7 +193,10 @@ export function ProjectTable({
         <thead>
           <tr className="border-b border-(--color-rule) text-left">
             <SortHeader column={nameHeader} />
-            <th scope="col" className="px-3 label-mono font-normal text-(--color-ink-3)">
+            <th
+              scope="col"
+              className="px-3 label-mono font-normal text-(--color-ink-3)"
+            >
               Địa chỉ
             </th>
             <SortHeader column={dateHeader} />

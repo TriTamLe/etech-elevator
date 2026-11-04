@@ -13,7 +13,6 @@ export type SaveState =
   /** Offline with edits (or a paused save) waiting for the network. */
   | { kind: 'offline' }
 
-
 // Silent-success status line in the mono label voice. aria-live so screen readers hear changes.
 export function SaveStatus({
   state,
@@ -42,9 +41,7 @@ export function SaveStatus({
         <span className="text-(--color-ink-3)">Đang lưu…</span>
       )}
       {state.kind === 'saved' && (
-        <span className="text-(--color-ok)">
-          Đã lưu {formatTime(state.at)}
-        </span>
+        <span className="text-(--color-ok)">Đã lưu {formatTime(state.at)}</span>
       )}
       {state.kind === 'error' && (
         <>

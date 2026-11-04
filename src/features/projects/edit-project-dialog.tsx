@@ -71,7 +71,9 @@ function EditForm({
     <form onSubmit={submit} className="grid gap-4">
       <DialogHeader>
         <DialogTitle>Sửa thông tin dự án</DialogTitle>
-        <DialogDescription>Thông số kỹ thuật sửa trong màn soạn.</DialogDescription>
+        <DialogDescription>
+          Thông số kỹ thuật sửa trong màn soạn.
+        </DialogDescription>
       </DialogHeader>
       <Field
         label="Tên công trình"

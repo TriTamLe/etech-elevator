@@ -33,7 +33,8 @@ export function matchHotkey(
   const other = apple ? event.ctrlKey : event.metaKey
   // A bare character ("/") is matched on the character itself: some layouts need Shift
   // (or AltGr) to type it.
-  const bareChar = !want.mod && !want.shift && !want.alt && want.key.length === 1
+  const bareChar =
+    !want.mod && !want.shift && !want.alt && want.key.length === 1
   return (
     event.key.toLowerCase() === want.key &&
     mod === want.mod &&
@@ -85,7 +86,11 @@ const NON_TEXT_INPUTS = new Set([
 export function isTypingTarget(el: EventTarget | null): boolean {
   // Duck-typed (no instanceof HTMLElement): elements from other frames, and plain tests.
   if (!el || !('tagName' in el)) return false
-  const node = el as { tagName: string; isContentEditable?: boolean; type?: string }
+  const node = el as {
+    tagName: string
+    isContentEditable?: boolean
+    type?: string
+  }
   if (node.isContentEditable) return true
   if (node.tagName === 'TEXTAREA' || node.tagName === 'SELECT') return true
   return node.tagName === 'INPUT' && !NON_TEXT_INPUTS.has(node.type ?? 'text')

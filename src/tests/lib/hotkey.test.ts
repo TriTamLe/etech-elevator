@@ -1,8 +1,16 @@
 import { describe, expect, it } from 'vitest'
 
-import { ariaHotkey, formatHotkey, isTypingTarget, matchHotkey } from '#/lib/hotkey'
+import {
+  ariaHotkey,
+  formatHotkey,
+  isTypingTarget,
+  matchHotkey,
+} from '#/lib/hotkey'
 
-const key = (k: string, mods: Partial<Record<'meta' | 'ctrl' | 'shift' | 'alt', boolean>> = {}) => ({
+const key = (
+  k: string,
+  mods: Partial<Record<'meta' | 'ctrl' | 'shift' | 'alt', boolean>> = {},
+) => ({
   key: k,
   metaKey: Boolean(mods.meta),
   ctrlKey: Boolean(mods.ctrl),
@@ -20,8 +28,12 @@ describe('matchHotkey', () => {
 
   it('ignores case (Caps Lock) but not extra modifiers', () => {
     expect(matchHotkey(key('S', { ctrl: true }), 'mod+s', false)).toBe(true)
-    expect(matchHotkey(key('s', { ctrl: true, shift: true }), 'mod+s', false)).toBe(false)
-    expect(matchHotkey(key('p', { ctrl: true, alt: true }), 'mod+p', false)).toBe(false)
+    expect(
+      matchHotkey(key('s', { ctrl: true, shift: true }), 'mod+s', false),
+    ).toBe(false)
+    expect(
+      matchHotkey(key('p', { ctrl: true, alt: true }), 'mod+p', false),
+    ).toBe(false)
   })
 
   it('a bare key needs no modifier', () => {

@@ -74,7 +74,10 @@ export async function createProject(
   await open(page, '/')
   const dialog = page.getByRole('dialog')
   // The empty list has a second "Tạo dự án" (empty state); the toolbar one comes first.
-  await page.getByRole('button', { name: 'Tạo dự án', exact: true }).first().click()
+  await page
+    .getByRole('button', { name: 'Tạo dự án', exact: true })
+    .first()
+    .click()
   await expect(dialog).toBeVisible()
   await dialog.getByText(preset).click()
   await dialog.getByLabel('Tên công trình').fill(name)

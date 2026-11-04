@@ -96,10 +96,12 @@ export function SheetPreview({
   const thumbParams = useDebouncedValue(shown, THUMBS_DELAY_MS)
   const strip = useStablePages(pages)
   const thumbSource = React.useMemo<ThumbSource | null>(
-    () => (thumbParams ? { params: thumbParams, d: derive(thumbParams) } : null),
+    () =>
+      thumbParams ? { params: thumbParams, d: derive(thumbParams) } : null,
     [thumbParams],
   )
-  const sheets = d && pages ? { ready: pages.length, total: d.pages.length } : null
+  const sheets =
+    d && pages ? { ready: pages.length, total: d.pages.length } : null
 
   const go = (i: number) => {
     const next = pages?.[i]

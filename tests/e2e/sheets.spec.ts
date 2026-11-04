@@ -16,11 +16,9 @@ for (const preset of ['hotel-9f', 'house-5f'] as const) {
     const pngs = pdfPages(Buffer.from(base64, 'base64'))
     expect(pngs).toHaveLength(9)
     pngs.forEach((png, i) =>
-      expect
-        .soft(png)
-        .toMatchSnapshot(`${preset}-${i + 1}.png`, {
-          maxDiffPixelRatio: 0.001,
-        }),
+      expect.soft(png).toMatchSnapshot(`${preset}-${i + 1}.png`, {
+        maxDiffPixelRatio: 0.001,
+      }),
     )
   })
 }

@@ -33,7 +33,8 @@ export type SaveInputs = {
  * behind another (same mutation scope, isPaused in Query) is still just "saving".
  */
 export function saveStatus(i: SaveInputs): SaveState {
-  if (!i.online && (i.pending || (i.valid && i.dirty))) return { kind: 'offline' }
+  if (!i.online && (i.pending || (i.valid && i.dirty)))
+    return { kind: 'offline' }
   if (i.pending) return { kind: 'saving' }
   if (!i.valid) return { kind: 'invalid', count: i.errors }
   if (i.dirty) {

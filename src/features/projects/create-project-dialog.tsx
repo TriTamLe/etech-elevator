@@ -31,7 +31,11 @@ const presetName = (id: PresetId) =>
   PRESETS.find((p) => p.id === id)?.params.project.name ?? ''
 
 /** `labelled`: the trigger shows its text at every width (empty state). */
-export function CreateProjectDialog({ labelled = false }: { labelled?: boolean }) {
+export function CreateProjectDialog({
+  labelled = false,
+}: {
+  labelled?: boolean
+}) {
   const [open, setOpen] = React.useState(false)
   const { hydrated, offline } = useNetworkGate()
   const [presetId, setPresetId] = React.useState<PresetId>(PRESETS[0].id)
@@ -92,7 +96,9 @@ export function CreateProjectDialog({ labelled = false }: { labelled?: boolean }
           </DialogTrigger>
         </TooltipTrigger>
         {/* Icon-only below 640 px: the tooltip names it; offline it gives the reason. */}
-        <TooltipContent className={cn(!offline && (labelled ? 'hidden' : 'sm:hidden'))}>
+        <TooltipContent
+          className={cn(!offline && (labelled ? 'hidden' : 'sm:hidden'))}
+        >
           {offline ? `Tạo dự án · ${offline}` : 'Tạo dự án'}
         </TooltipContent>
       </Tooltip>
