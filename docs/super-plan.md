@@ -930,7 +930,7 @@ PO chốt (03/11/2026): bảng chiều cao không có tiêu đề (như bộ Ch�
   - nhịp dầm dùng chung ở `section-beams.ts`; dòng OH của bảng mang `parts` từ `derive`;
   - `SectionFrame.top`; hằng `SECTION.maxMidBeams`.
 - Trang 05 có khoảng 4800 nét. 1344 test xanh; lint, typecheck, build xanh; các file P11 đúng Prettier.
-- Trước P12: 48 file cũ của repo chưa chạy Prettier (`yarn run check` báo), không thuộc P11.
+- Trước P12: 48 file cũ của repo chưa chạy Prettier (`yarn run check`, nay là `yarn format:check`, báo), không thuộc P11. Đã xử lý ở P12d.
 
 **Tiêu chí xong:** đủ 9 trang khớp cả 2 bộ mẫu; với 20 tầng vẫn vừa khổ A3.
 
@@ -979,8 +979,20 @@ Làm theo 4 phần P12a–d, commit từng phần. Đo CPU Worker để sang P13
   - Ưu tiên thấp: token `--color-paper-2-hover`, `--color-warn-soft`; vòng focus của tab theo `--color-focus`; bỏ `cursor-default` của `select.tsx`; `aria-label` trên thẻ không có vai trò đổi thành chữ `sr-only`.
   - Hallmark audit lần 2 (ảnh 320/375/768/1024 px): 0 critical · 1 major (placeholder ô tìm bị cắt ở 320 px → "Tìm dự án…") · 2 minor (thumbnail xám lúc chờ vẽ, giữ; nút devtools chỉ có ở dev).
   - `code-reviewer`: trạng thái lưu tách thành hàm thuần `saveStatus` (có test) và không còn báo "Mất mạng" khi một save chỉ đang chờ save trước nó; mất mạng không xếp hàng một save mỗi lần ngừng gõ (có mạng lại thì lưu bản mới nhất một lần); `errorMessage` thuần (log ở QueryCache/MutationCache và boundary), coi `navigator` không có `onLine` (Workers) là có mạng; `PaneBoundary` không để focus rơi về `<body>`; phím tắt không chạy khi đang mở hộp thoại, "/" khớp cả bàn phím cần Shift; Hoàn tác khôi phục không đè sửa mới; tiêu đề tab theo tên đang sửa; "Thử lại" ở màn soạn reset cả boundary của Query.
-- [ ] **Tài liệu:** README (cách cập nhật ký hiệu, sao lưu, deploy), cập nhật `CLAUDE.md`.
-- [ ] `code-reviewer` soát toàn bộ.
+- [x] **Định dạng và tài liệu (P12d):**
+  - Prettier toàn repo trong một commit riêng `style:`, ghi vào `.git-blame-ignore-revs`. Prettier bỏ qua markdown (PO 04/11), và `yarn format:check` thành bước bắt buộc trước khi commit.
+  - README viết lại: cài đặt (kể cả Chrome + poppler cho E2E, Python + libredwg cho ký hiệu), bảng đủ script, kiểm thử, thư mục, cập nhật ký hiệu; phần vận hành trỏ sang `docs/van-hanh.md`.
+  - `CLAUDE.md`: các quy ước của P12 (`errorMessage`, `src/config/app.ts`, `useHotkey`, `useHydrationMark`, `PaneBoundary`, `caffeinate` cho E2E).
+- [x] `code-reviewer` soát toàn bộ P12 (04/11): 0 nghiêm trọng · 3 nên sửa · 6 gợi ý.
+  - Đã sửa:
+    - rời trang khi mạng rớt giữa lúc đang lưu không còn treo (blocker đua với `onlineManager`);
+    - ref của autosave cập nhật trong `useLayoutEffect`, không gán trong render;
+    - `/dev/export` import thư viện PDF lười;
+    - `ErrorPage` đặt dấu hydrate;
+    - sửa comment cũ trong `vite.config.ts` và câu chữ README.
+  - Để lại:
+    - chưa ghim phiên bản Node (README ghi Node 22);
+    - `.claude/settings.json` không nằm trong `.gitignore`, chờ PO quyết.
 
 ---
 

@@ -11,7 +11,7 @@ Internal web app (1 user) that turns a parameter form into the A3 elevator const
 Package manager is **yarn 1** — never run `npm install` / `pnpm` (no extra lockfiles).
 
 - `yarn dev` (local D1 via the Cloudflare vite plugin) · `yarn build`
-- `yarn typecheck` · `yarn lint` · `yarn test` — all must pass before a commit
+- `yarn typecheck` · `yarn lint` · `yarn format:check` (Prettier) · `yarn test` — all must pass before a commit; `yarn format` fixes formatting. Prettier skips markdown (`.prettierignore`): docs keep their hand layout
 - `yarn test:e2e`: Playwright in the local Chrome (no browser download). It starts its own dev server on port 3100 with a separate local D1 (`.wrangler/e2e`, reset each run). Needs poppler (`pdftoppm`, `pdfinfo`). After an intended drawing change, `yarn test:e2e:update` refreshes the page baselines in `tests/e2e/__snapshots__/` (commit them). `yarn test:e2e:perf` runs only the `@perf` timings (typing, PDF export), kept out of `test:e2e` because they swing with machine load. `DEBUG=pw:webserver` prints the dev server's output.
 - `yarn export:preset [hotel-9f|house-5f|all]` → `.verify/<preset>.pdf` via the running dev server's `/dev/export` and the local Chrome (playwright-core, no browser download); `EXPORT_BASE_URL` overrides `http://localhost:3000`
 - Production (Workers + D1 + Access): deploy, migrate remote, backup/restore, who can sign in → `docs/van-hanh.md`
@@ -33,8 +33,11 @@ Package manager is **yarn 1** — never run `npm install` / `pnpm` (no extra loc
 - Project params are one JSON blob validated by Zod with `schemaVersion`; changing the shape needs a bump + `migrate` step. Deletes are soft (`deletedAt`).
 - No auth code: Cloudflare Access protects the Worker (allowed emails are managed in the Cloudflare dashboard, not in the repo).
 - Imports use the `#/` alias; new files are kebab-case.
+- Errors shown to the user always go through `errorMessage()` (`src/lib/error-message.ts`): one Vietnamese sentence, pure (failures are logged by the Query caches and error boundaries, not there). A failing editor pane is wrapped in `PaneBoundary`, not left to take down the editor.
+- App name and copy used in several places live in `src/config/app.ts` (`APP_NAME`, `pageTitle`, `OFFLINE_TEXT`).
+- Keyboard shortcuts use `useHotkey` (`src/lib/use-hotkey.ts`, `mod+s` style from `src/lib/hotkey.ts`): no ad-hoc `keydown` listeners; they skip while typing (unless `allowInInputs`) and while a dialog is open.
 - Tests are **not colocated**: they live in `src/tests/`, mirroring `src/` (e.g. `src/domain/derive.ts` → `src/tests/domain/derive.test.ts`) and import code via `#/`.
-- E2E specs live in `tests/e2e/` (fixtures in `tests/e2e/fixtures/`). Wait for hydration on the SSR list page (`open()` in `tests/e2e/helpers.ts`).
+- E2E specs live in `tests/e2e/` (fixtures in `tests/e2e/fixtures/`). `open()` in `tests/e2e/helpers.ts` waits for `html[data-hydrated]`, which an SSR page sets by calling `useHydrationMark()` (the router hydrates route content after the shell, so the shell can't set it). Only open SSR pages directly; reach the client-only editor through `createProject`. On macOS run long E2E under `caffeinate -i` (a sleeping Mac times the run out).
 - For the component created by shadCn, remove the "use client" because we do not use nextjs
 
 ### File-based routing defining convention
@@ -69,9 +72,9 @@ Hallmark **Cobalt** recoloured with the DTP logo palette (navy `oklch(35.6% 0.08
 
 - `yarn lint` runs `eslint-plugin-jsx-a11y` (recommended) on `src/**/*.tsx`. Fix the markup; disable a rule only per line with `-- <reason>`. Radix controls are registered for `label-has-associated-control` in `eslint.config.js`.
 - Anything clickable is a real `<button>` or `<a href>` (via `Button`/`Link`), never a clickable `div`/`svg`. Icon-only buttons have `aria-label` and a `Tooltip`.
-- The pointer cursor comes from one rule in `src/styles.css`; don't add `cursor-*` classes (shadcn items that ship `cursor-default` get it removed). The only exceptions live in `Button`: `not-allowed` when disabled/`aria-disabled`, `progress` while `aria-busy`.
-- Below 768 px every control is ≥ 44 px (`--control-h` and the `Button` sizes do it; `tests/e2e/responsive.spec.ts` checks).
-- Buttons that call the server use `useNetworkGate()`: `disabled` until hydrated, `aria-disabled` + reason while offline.
+- The pointer cursor comes from one rule in `src/styles.css`; don't add `cursor-*` classes (shadcn items that ship `cursor-default` get it removed). Only `Button` overrides it: `not-allowed` when (aria-)disabled, `progress` while `aria-busy`.
+- Below 768 px every control is ≥ 44 px: `--control-h` and the `Button` sizes handle it, `tests/e2e/responsive.spec.ts` checks it.
+- Buttons that call the server use `useNetworkGate()` (`src/lib/use-network-gate.ts`): `disabled` until hydrated, `aria-disabled` plus the reason while offline.
 - Destructive actions confirm with `AlertDialog` (focus lands on Cancel). After dialogs close or rows disappear, move focus somewhere sensible — never leave it on `body`.
 
 ## Assets & private files

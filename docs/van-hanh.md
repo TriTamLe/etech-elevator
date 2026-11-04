@@ -8,7 +8,7 @@ Mọi lệnh dưới đây chạy ở thư mục gốc của repo, sau khi đã 
 
 ## Deploy bản mới
 
-1. `yarn lint && yarn typecheck && yarn test`
+1. `yarn lint && yarn typecheck && yarn format:check && yarn test`
 2. Nếu có migration mới trong `drizzle/` (sau `yarn db:generate`): chạy `yarn db:backup` rồi `yarn db:migrate:remote`, **trước** khi deploy.
 3. `yarn deploy` (build rồi `wrangler deploy`).
 4. Mở app, thử nhanh: danh sách dự án → mở một dự án → tải PDF.
